@@ -10,7 +10,7 @@ const ASSET_CLASSES: { key: string; label: string; color: string; types: string[
   { key: "property", label: "Property", color: "hsl(35, 70%, 55%)", types: ["property"] },
   { key: "pension", label: "Pension", color: "hsl(270, 45%, 55%)", types: ["sipp", "workplace_pension", "db_pension"] },
   { key: "crypto", label: "Crypto", color: "hsl(45, 85%, 55%)", types: ["crypto"] },
-  { key: "debt", label: "Debt", color: "hsl(0, 60%, 50%)", types: ["mortgage"] },
+  
 ];
 
 interface Props {
@@ -39,8 +39,8 @@ export default function AllocationDonut({ accounts }: Props) {
     return ASSET_CLASSES
       .map((cls) => {
         const total = accounts
-          .filter((a) => cls.types.includes(a.account_type))
-          .reduce((s, a) => s + Math.abs(Number(a.current_value)), 0);
+          .filter((a) => cls.types.includes(a.account_type) && Number(a.current_value) > 0)
+          .reduce((s, a) => s + Number(a.current_value), 0);
         return { name: cls.label, value: total, color: cls.color, key: cls.key };
       })
       .filter((d) => d.value > 0);
