@@ -4,6 +4,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
+import { SidebarProvider } from "@/contexts/SidebarContext";
 import AppSidebar from "@/components/AppSidebar";
 import AppLayout from "@/components/AppLayout";
 import OverviewPage from "@/pages/OverviewPage";
@@ -32,21 +33,23 @@ function ProtectedRoutes() {
   if (!user) return <Navigate to="/auth" replace />;
 
   return (
-    <div className="dark">
-      <AppSidebar />
-      <AppLayout>
-        <Routes>
-          <Route path="/" element={<OverviewPage />} />
-          <Route path="/accounts" element={<AccountsPage />} />
-          <Route path="/contributions" element={<ContributionsPage />} />
-          <Route path="/documents" element={<DocumentsPage />} />
-          <Route path="/tax" element={<TaxPage />} />
-          <Route path="/retirement" element={<RetirementPage />} />
-          <Route path="/settings" element={<SettingsPage />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </AppLayout>
-    </div>
+    <SidebarProvider>
+      <div className="dark">
+        <AppSidebar />
+        <AppLayout>
+          <Routes>
+            <Route path="/" element={<OverviewPage />} />
+            <Route path="/accounts" element={<AccountsPage />} />
+            <Route path="/contributions" element={<ContributionsPage />} />
+            <Route path="/documents" element={<DocumentsPage />} />
+            <Route path="/tax" element={<TaxPage />} />
+            <Route path="/retirement" element={<RetirementPage />} />
+            <Route path="/settings" element={<SettingsPage />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </AppLayout>
+      </div>
+    </SidebarProvider>
   );
 }
 
