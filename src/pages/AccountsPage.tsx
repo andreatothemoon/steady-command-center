@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Plus, ArrowUpDown, Clock } from "lucide-react";
-import { mockAccounts } from "@/data/mockData";
+import { Plus, ArrowUpDown, Clock, Inbox } from "lucide-react";
+import { useAccounts, type Account } from "@/hooks/useAccounts";
 import { accountTypeLabels } from "@/data/types";
 import { formatCurrency, formatDate, staleness, daysAgo } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import AddAccountDialog from "@/components/AddAccountDialog";
 
 type GroupBy = "type" | "owner" | "wrapper";
 
@@ -23,26 +25,34 @@ const stagger = {
   },
 };
 
-export default function AccountsPage() {
-  const [groupBy, setGroupBy] = useState<GroupBy>("type");
-
-  const grouped = mockAccounts.reduce<Record<string, typeof mockAccounts>>((acc, account) => {
+function groupAccounts(accounts: Account[], groupBy: GroupBy) {
+  return accounts.reduce<Record<string, Account[]>>((acc, account) => {
     let key: string;
-    if (groupBy === "type") key = accountTypeLabels[account.type];
-    else if (groupBy === "owner") key = account.owner;
-    else key = account.wrapper === "none" ? "Unwrapped" : account.wrapper.toUpperCase();
+    if (groupBy === "type") key = accountTypeLabels[account.account_type] ?? account.account_type;
+    else if (groupBy === "owner") key = account.owner_name;
+    else key = account.wrapper_type === "none" ? "Unwrapped" : account.wrapper_type.toUpperCase();
     (acc[key] ??= []).push(account);
     return acc;
   }, {});
+}
+
+export default function AccountsPage() {
+  const [groupBy, setGroupBy] = useState<GroupBy>("type");
+  const [addOpen, setAddOpen] = useState(false);
+  const { data: accounts = [], isLoading } = useAccounts();
+
+  const grouped = groupAccounts(accounts, groupBy);
 
   return (
     <motion.div className="space-y-6" variants={stagger.container} initial="initial" animate="animate">
       <motion.div variants={stagger.item} className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight text-foreground">Accounts</h1>
-          <p className="label-subtle mt-1">{mockAccounts.length} accounts tracked</p>
+          <p className="label-subtle mt-1">
+            {isLoading ? "Loading…" : `${accounts.length} account${accounts.length !== 1 ? "s" : ""} tracked`}
+          </p>
         </div>
-        <Button size="sm" className="gap-2">
+        <Button size="sm" className="gap-2" onClick={() => setAddOpen(true)}>
           <Plus className="h-4 w-4" />
           Add Account
         </Button>
@@ -69,62 +79,83 @@ export default function AccountsPage() {
         </div>
       </motion.div>
 
-      <div className="space-y-5">
-        {Object.entries(grouped)
-          .sort(([, a], [, b]) => b.reduce((s, x) => s + x.value, 0) - a.reduce((s, x) => s + x.value, 0))
-          .map(([group, accounts]) => {
-            const groupTotal = accounts.reduce((s, a) => s + a.value, 0);
-            return (
-              <motion.div key={group} variants={stagger.item}>
-                <div className="flex items-center justify-between mb-2.5">
-                  <h2 className="label-muted">{group}</h2>
-                  <span className="text-sm font-medium text-muted-foreground tabular-nums">
-                    {formatCurrency(groupTotal)}
-                  </span>
-                </div>
-                <div className="card-surface divide-y divide-border overflow-hidden">
-                  {accounts.map((account) => {
-                    const stale = staleness(account.lastUpdated);
-                    return (
-                      <div
-                        key={account.id}
-                        className="flex items-center justify-between px-5 py-3.5 hover:bg-secondary/30 transition-colors cursor-pointer"
-                      >
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
-                            <p className="text-sm font-medium text-card-foreground truncate">
-                              {account.name}
+      {isLoading ? (
+        <div className="space-y-4">
+          {[1, 2, 3].map((i) => (
+            <Skeleton key={i} className="h-20 w-full rounded-xl" />
+          ))}
+        </div>
+      ) : accounts.length === 0 ? (
+        <motion.div variants={stagger.item} className="card-surface p-12 flex flex-col items-center gap-3 text-center">
+          <Inbox className="h-10 w-10 text-muted-foreground/40" />
+          <p className="text-sm text-muted-foreground">No accounts yet. Add your first account to get started.</p>
+          <Button size="sm" variant="outline" onClick={() => setAddOpen(true)}>
+            <Plus className="h-4 w-4 mr-1" /> Add Account
+          </Button>
+        </motion.div>
+      ) : (
+        <div className="space-y-5">
+          {Object.entries(grouped)
+            .sort(([, a], [, b]) =>
+              b.reduce((s, x) => s + Number(x.current_value), 0) - a.reduce((s, x) => s + Number(x.current_value), 0)
+            )
+            .map(([group, accts]) => {
+              const groupTotal = accts.reduce((s, a) => s + Number(a.current_value), 0);
+              return (
+                <motion.div key={group} variants={stagger.item}>
+                  <div className="flex items-center justify-between mb-2.5">
+                    <h2 className="label-muted">{group}</h2>
+                    <span className="text-sm font-medium text-muted-foreground tabular-nums">
+                      {formatCurrency(groupTotal)}
+                    </span>
+                  </div>
+                  <div className="card-surface divide-y divide-border overflow-hidden">
+                    {accts.map((account) => {
+                      const stale = staleness(account.last_updated);
+                      const provider = account.institutions?.name ?? "—";
+                      return (
+                        <div
+                          key={account.id}
+                          className="flex items-center justify-between px-5 py-3.5 hover:bg-secondary/30 transition-colors cursor-pointer"
+                        >
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <p className="text-sm font-medium text-card-foreground truncate">
+                                {account.name}
+                              </p>
+                              {stale === "stale" && (
+                                <span className="inline-flex items-center gap-1 text-[10px] font-medium text-warning bg-warning/10 px-1.5 py-0.5 rounded-full">
+                                  <Clock className="h-2.5 w-2.5" />
+                                  {daysAgo(account.last_updated)}d ago
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-[11px] text-muted-foreground mt-0.5">
+                              {provider} · {account.owner_name} · {formatDate(account.last_updated)}
                             </p>
-                            {stale === "stale" && (
-                              <span className="inline-flex items-center gap-1 text-[10px] font-medium text-warning bg-warning/10 px-1.5 py-0.5 rounded-full">
-                                <Clock className="h-2.5 w-2.5" />
-                                {daysAgo(account.lastUpdated)}d ago
-                              </span>
-                            )}
                           </div>
-                          <p className="text-[11px] text-muted-foreground mt-0.5">
-                            {account.provider} · {account.owner} · {formatDate(account.lastUpdated)}
-                          </p>
+                          <div className="text-right">
+                            <p
+                              className={cn(
+                                "text-sm font-semibold tabular-nums",
+                                Number(account.current_value) < 0 ? "text-destructive" : "text-card-foreground"
+                              )}
+                            >
+                              {formatCurrency(Number(account.current_value))}
+                            </p>
+                            <p className="text-[10px] text-muted-foreground capitalize">{account.source_type}</p>
+                          </div>
                         </div>
-                        <div className="text-right">
-                          <p
-                            className={cn(
-                              "text-sm font-semibold tabular-nums",
-                              account.value < 0 ? "text-destructive" : "text-card-foreground"
-                            )}
-                          >
-                            {formatCurrency(account.value)}
-                          </p>
-                          <p className="text-[10px] text-muted-foreground capitalize">{account.source}</p>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </motion.div>
-            );
-          })}
-      </div>
+                      );
+                    })}
+                  </div>
+                </motion.div>
+              );
+            })}
+        </div>
+      )}
+
+      <AddAccountDialog open={addOpen} onOpenChange={setAddOpen} />
     </motion.div>
   );
 }
