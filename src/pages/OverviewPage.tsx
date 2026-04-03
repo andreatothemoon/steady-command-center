@@ -228,6 +228,7 @@ export default function OverviewPage() {
               status="neutral"
             />
           </div>
+        </div>
       </motion.div>
 
       {/* Stale Data */}
