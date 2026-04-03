@@ -27,6 +27,7 @@ import { useHouseholdProfiles } from "@/hooks/useHouseholdProfiles";
 import { formatCurrency, staleness, daysAgo } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
+import AllocationDonut from "@/components/AllocationDonut";
 
 function useAnimatedValue(target: number, duration = 1200) {
   const [value, setValue] = useState(0);
