@@ -10,7 +10,7 @@ const ASSET_CLASSES: { key: string; label: string; color: string; types: string[
   { key: "property", label: "Property", color: "hsl(35, 70%, 55%)", types: ["property"] },
   { key: "pension", label: "Pension", color: "hsl(270, 45%, 55%)", types: ["sipp", "workplace_pension", "db_pension"] },
   { key: "crypto", label: "Crypto", color: "hsl(45, 85%, 55%)", types: ["crypto"] },
-  { key: "debt", label: "Debt", color: "hsl(0, 60%, 50%)", types: ["mortgage"] },
+  
 ];
 
 interface Props {
