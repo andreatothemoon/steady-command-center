@@ -29,6 +29,14 @@ const navItems = [
 
 function SidebarContent({ collapsed, toggle, onNavigate }: { collapsed: boolean; toggle: () => void; onNavigate?: () => void }) {
   const location = useLocation();
+  const { data: profiles = [] } = useHouseholdProfiles();
+  const adults = profiles.filter((p) => p.role === "adult");
+  const initials = adults.length > 0
+    ? adults.map((p) => p.name.charAt(0).toUpperCase()).join("")
+    : "?";
+  const householdLabel = adults.length > 0
+    ? adults.map((p) => p.name).join(" & ")
+    : "My Household";
 
   return (
     <>
