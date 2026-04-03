@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import {
   LayoutDashboard,
@@ -12,6 +11,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useSidebarCollapse } from "@/contexts/SidebarContext";
 
 const navItems = [
   { to: "/", label: "Overview", icon: LayoutDashboard },
@@ -24,7 +24,7 @@ const navItems = [
 
 export default function AppSidebar() {
   const location = useLocation();
-  const [collapsed, setCollapsed] = useState(false);
+  const { collapsed, toggle } = useSidebarCollapse();
 
   return (
     <aside
@@ -33,7 +33,6 @@ export default function AppSidebar() {
         collapsed ? "w-[68px]" : "w-56"
       )}
     >
-      {/* Logo */}
       <div className={cn("flex h-16 items-center gap-2.5", collapsed ? "px-4 justify-center" : "px-5")}>
         <div className="h-9 w-9 rounded-xl bg-sidebar-primary/90 flex items-center justify-center flex-shrink-0">
           <span className="text-sidebar-primary-foreground font-bold text-sm">W</span>
@@ -45,7 +44,6 @@ export default function AppSidebar() {
         )}
       </div>
 
-      {/* Navigation */}
       <nav className={cn("flex-1 space-y-0.5 pt-3", collapsed ? "px-2" : "px-3")}>
         {navItems.map(({ to, label, icon: Icon }) => {
           const isActive = location.pathname === to;
@@ -63,7 +61,6 @@ export default function AppSidebar() {
         })}
       </nav>
 
-      {/* Bottom section */}
       <div className="space-y-2 p-3">
         <NavLink
           to="/settings"
@@ -75,7 +72,7 @@ export default function AppSidebar() {
         </NavLink>
 
         <button
-          onClick={() => setCollapsed(!collapsed)}
+          onClick={toggle}
           className="nav-item-inactive w-full justify-center"
           title={collapsed ? "Expand" : "Collapse"}
         >
@@ -99,9 +96,7 @@ export default function AppSidebar() {
             </div>
             {!collapsed && (
               <div className="flex-1 min-w-0">
-                <p className="text-[13px] font-medium text-sidebar-accent-foreground truncate">
-                  James & Sarah
-                </p>
+                <p className="text-[13px] font-medium text-sidebar-accent-foreground truncate">James & Sarah</p>
                 <p className="text-[11px] text-sidebar-foreground truncate">Household</p>
               </div>
             )}
