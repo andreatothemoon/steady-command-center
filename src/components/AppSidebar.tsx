@@ -1,4 +1,5 @@
 import { NavLink, useLocation } from "react-router-dom";
+import { useHouseholdProfiles } from "@/hooks/useHouseholdProfiles";
 import {
   LayoutDashboard,
   Wallet,
