@@ -46,3 +46,40 @@ export function useAddHouseholdProfile() {
     },
   });
 }
+
+export function useUpdateHouseholdProfile() {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id, ...updates }: Partial<HouseholdProfile> & { id: string }) => {
+      const { data, error } = await supabase
+        .from("household_profiles")
+        .update(updates)
+        .eq("id", id)
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["household_profiles"] });
+    },
+  });
+}
+
+export function useDeleteHouseholdProfile() {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from("household_profiles")
+        .delete()
+        .eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["household_profiles"] });
+    },
+  });
+}
