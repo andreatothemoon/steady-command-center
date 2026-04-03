@@ -39,8 +39,8 @@ export default function AllocationDonut({ accounts }: Props) {
     return ASSET_CLASSES
       .map((cls) => {
         const total = accounts
-          .filter((a) => cls.types.includes(a.account_type))
-          .reduce((s, a) => s + Math.abs(Number(a.current_value)), 0);
+          .filter((a) => cls.types.includes(a.account_type) && Number(a.current_value) > 0)
+          .reduce((s, a) => s + Number(a.current_value), 0);
         return { name: cls.label, value: total, color: cls.color, key: cls.key };
       })
       .filter((d) => d.value > 0);
