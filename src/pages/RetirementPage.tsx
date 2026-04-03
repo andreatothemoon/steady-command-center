@@ -1,8 +1,17 @@
 import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
-import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis, ReferenceDot } from "recharts";
 import { formatCurrency } from "@/lib/format";
 import { Slider } from "@/components/ui/slider";
+import { cn } from "@/lib/utils";
+
+const stagger = {
+  container: { transition: { staggerChildren: 0.06 } },
+  item: {
+    initial: { opacity: 0, y: 10 },
+    animate: { opacity: 1, y: 0, transition: { duration: 0.35 } },
+  },
+};
 
 export default function RetirementPage() {
   const [currentAge, setCurrentAge] = useState(35);
@@ -39,97 +48,93 @@ export default function RetirementPage() {
   const drawdownRate = 0.04;
   const estimatedIncome = Math.round(finalReal * drawdownRate);
   const gap = targetIncome - estimatedIncome;
+  const lastPoint = projection[projection.length - 1];
 
-  const sliders: { label: string; value: number; onChange: (v: number) => void; min: number; max: number; step: number; format: (v: number) => string }[] = [
-    { label: "Current Age", value: currentAge, onChange: setCurrentAge, min: 18, max: 65, step: 1, format: (v) => `${v}` },
-    { label: "Retirement Age", value: retireAge, onChange: setRetireAge, min: 50, max: 75, step: 1, format: (v) => `${v}` },
+  const sliders = [
+    { label: "Current Age", value: currentAge, onChange: setCurrentAge, min: 18, max: 65, step: 1, format: (v: number) => `${v}` },
+    { label: "Retirement Age", value: retireAge, onChange: setRetireAge, min: 50, max: 75, step: 1, format: (v: number) => `${v}` },
     { label: "Current Pot", value: currentPot, onChange: setCurrentPot, min: 0, max: 1000000, step: 5000, format: formatCurrency },
     { label: "Your Monthly", value: monthlyContrib, onChange: setMonthlyContrib, min: 0, max: 5000, step: 50, format: formatCurrency },
     { label: "Employer Monthly", value: employerContrib, onChange: setEmployerContrib, min: 0, max: 5000, step: 50, format: formatCurrency },
-    { label: "Expected Return", value: expectedReturn, onChange: setExpectedReturn, min: 1, max: 10, step: 0.5, format: (v) => `${v}%` },
-    { label: "Inflation", value: inflation, onChange: setInflation, min: 0, max: 6, step: 0.5, format: (v) => `${v}%` },
+    { label: "Expected Return", value: expectedReturn, onChange: setExpectedReturn, min: 1, max: 10, step: 0.5, format: (v: number) => `${v}%` },
+    { label: "Inflation", value: inflation, onChange: setInflation, min: 0, max: 6, step: 0.5, format: (v: number) => `${v}%` },
     { label: "Target Income", value: targetIncome, onChange: setTargetIncome, min: 10000, max: 100000, step: 1000, format: formatCurrency },
   ];
 
   return (
-    <div className="space-y-6">
-      <div>
+    <motion.div className="space-y-5" variants={stagger.container} initial="initial" animate="animate">
+      <motion.div variants={stagger.item}>
         <h1 className="text-2xl font-semibold tracking-tight text-foreground">Retirement</h1>
-        <p className="text-sm text-muted-foreground mt-1">Project your pension pot and retirement income</p>
-      </div>
+        <p className="label-subtle mt-1">Project your pension pot and retirement income</p>
+      </motion.div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <div className="rounded-xl border border-border bg-card p-5">
-          <p className="text-sm text-muted-foreground">Projected Pot (Real)</p>
-          <p className="text-2xl font-semibold text-card-foreground mt-1">{formatCurrency(finalReal)}</p>
-          <p className="text-xs text-muted-foreground mt-1">Nominal: {formatCurrency(finalNominal)}</p>
+      <motion.div variants={stagger.item} className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <div className="card-surface p-4">
+          <p className="label-muted">Projected Pot (Real)</p>
+          <p className="value-large mt-1.5">{formatCurrency(finalReal)}</p>
+          <p className="text-[11px] text-muted-foreground mt-1">Nominal: {formatCurrency(finalNominal)}</p>
         </div>
-        <div className="rounded-xl border border-border bg-card p-5">
-          <p className="text-sm text-muted-foreground">Est. Annual Income</p>
-          <p className="text-2xl font-semibold text-card-foreground mt-1">{formatCurrency(estimatedIncome)}</p>
-          <p className="text-xs text-muted-foreground mt-1">4% drawdown rate</p>
+        <div className="card-surface p-4">
+          <p className="label-muted">Est. Annual Income</p>
+          <p className="value-large mt-1.5">{formatCurrency(estimatedIncome)}</p>
+          <p className="text-[11px] text-muted-foreground mt-1">4% drawdown rate</p>
         </div>
-        <div className={`rounded-xl border p-5 ${gap > 0 ? "border-warning/30 bg-card" : "border-success/30 bg-card"}`}>
-          <p className="text-sm text-muted-foreground">Income Gap</p>
-          <p className={`text-2xl font-semibold mt-1 ${gap > 0 ? "text-warning" : "text-success"}`}>
+        <div className={cn("card-surface p-4", gap > 0 ? "border-warning/20" : "border-success/20")}>
+          <p className="label-muted">Income Gap</p>
+          <p className={cn("value-large mt-1.5", gap > 0 ? "text-warning" : "text-success")}>
             {gap > 0 ? `-${formatCurrency(gap)}` : `+${formatCurrency(Math.abs(gap))}`}
           </p>
-          <p className="text-xs text-muted-foreground mt-1">
+          <p className="text-[11px] text-muted-foreground mt-1">
             {gap > 0 ? "Below target — increase contributions" : "On track to meet target"}
           </p>
         </div>
-      </div>
+      </motion.div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <motion.div
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="lg:col-span-2 rounded-xl border border-border bg-card p-5"
-        >
-          <h2 className="text-sm font-medium text-muted-foreground mb-4">Pension Projection</h2>
+      <motion.div variants={stagger.item} className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+        <div className="lg:col-span-2 hero-surface p-5">
+          <p className="label-muted mb-4">Pension Projection</p>
           <ResponsiveContainer width="100%" height={320}>
             <AreaChart data={projection}>
               <defs>
                 <linearGradient id="nomGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="hsl(200, 70%, 50%)" stopOpacity={0.2} />
+                  <stop offset="0%" stopColor="hsl(200, 70%, 50%)" stopOpacity={0.15} />
                   <stop offset="100%" stopColor="hsl(200, 70%, 50%)" stopOpacity={0} />
                 </linearGradient>
                 <linearGradient id="realGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="hsl(160, 60%, 45%)" stopOpacity={0.3} />
+                  <stop offset="0%" stopColor="hsl(160, 60%, 45%)" stopOpacity={0.25} />
                   <stop offset="100%" stopColor="hsl(160, 60%, 45%)" stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <XAxis dataKey="age" tick={{ fontSize: 11 }} tickLine={false} axisLine={false} />
-              <YAxis tickFormatter={(v) => `£${(v / 1000).toFixed(0)}k`} tick={{ fontSize: 11 }} tickLine={false} axisLine={false} width={60} />
+              <XAxis dataKey="age" tick={{ fontSize: 11, fill: "hsl(215, 12%, 48%)" }} tickLine={false} axisLine={false} />
+              <YAxis tickFormatter={(v) => `£${(v / 1000).toFixed(0)}k`} tick={{ fontSize: 11, fill: "hsl(215, 12%, 48%)" }} tickLine={false} axisLine={false} width={60} />
               <Tooltip
-                formatter={(value: number, name: string) => [formatCurrency(value), name === "nominal" ? "Nominal" : "Real (inflation-adjusted)"]}
-                contentStyle={{
-                  backgroundColor: "hsl(225, 20%, 11%)",
-                  border: "1px solid hsl(225, 15%, 18%)",
-                  borderRadius: "8px",
-                  fontSize: "12px",
-                  color: "hsl(210, 20%, 92%)",
+                content={({ active, payload, label }) => {
+                  if (!active || !payload?.length) return null;
+                  return (
+                    <div className="card-surface px-3 py-2 shadow-xl border border-border">
+                      <p className="text-xs text-muted-foreground">Age {label}</p>
+                      <p className="text-sm font-semibold text-foreground">{formatCurrency(payload[1]?.value as number)} real</p>
+                      <p className="text-xs text-muted-foreground">{formatCurrency(payload[0]?.value as number)} nominal</p>
+                    </div>
+                  );
                 }}
               />
-              <Area type="monotone" dataKey="nominal" stroke="hsl(200, 70%, 50%)" strokeWidth={1.5} fill="url(#nomGrad)" />
-              <Area type="monotone" dataKey="real" stroke="hsl(160, 60%, 45%)" strokeWidth={2} fill="url(#realGrad)" />
+              <Area type="monotone" dataKey="nominal" stroke="hsl(200, 70%, 50%)" strokeWidth={1.5} fill="url(#nomGrad)" animationDuration={1200} />
+              <Area type="monotone" dataKey="real" stroke="hsl(160, 60%, 45%)" strokeWidth={2.5} fill="url(#realGrad)" animationDuration={1500} />
+              {lastPoint && (
+                <ReferenceDot x={lastPoint.age} y={lastPoint.real} r={4} fill="hsl(160, 60%, 45%)" stroke="hsl(228, 20%, 10%)" strokeWidth={2} />
+              )}
             </AreaChart>
           </ResponsiveContainer>
-        </motion.div>
+        </div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="rounded-xl border border-border bg-card p-5 space-y-5"
-        >
-          <h2 className="text-sm font-medium text-muted-foreground">Assumptions</h2>
+        <div className="card-insight p-5 space-y-4">
+          <p className="label-muted">Assumptions</p>
           {sliders.map((s) => (
             <div key={s.label}>
-              <div className="flex justify-between mb-2">
-                <span className="text-xs text-muted-foreground">{s.label}</span>
-                <span className="text-xs font-medium text-card-foreground tabular-nums">{s.format(s.value)}</span>
+              <div className="flex justify-between mb-1.5">
+                <span className="text-[11px] text-muted-foreground">{s.label}</span>
+                <span className="text-[11px] font-semibold text-card-foreground tabular-nums">{s.format(s.value)}</span>
               </div>
               <Slider
                 value={[s.value]}
@@ -141,8 +146,8 @@ export default function RetirementPage() {
               />
             </div>
           ))}
-        </motion.div>
-      </div>
-    </div>
+        </div>
+      </motion.div>
+    </motion.div>
   );
 }
