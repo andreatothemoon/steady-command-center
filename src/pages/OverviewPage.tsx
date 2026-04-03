@@ -208,6 +208,10 @@ export default function OverviewPage() {
         />
       </motion.div>
 
+      {/* Allocation + Insights */}
+      <motion.div variants={stagger.item} className="grid grid-cols-1 gap-3 lg:grid-cols-2">
+        <AllocationDonut accounts={accounts} />
+
       {/* Insights Row */}
       <motion.div variants={stagger.item} className="grid grid-cols-1 gap-3 lg:grid-cols-2">
         <div className="card-insight p-5">
