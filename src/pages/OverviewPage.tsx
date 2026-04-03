@@ -27,6 +27,7 @@ import { useHouseholdProfiles } from "@/hooks/useHouseholdProfiles";
 import { formatCurrency, staleness, daysAgo } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
+import AllocationDonut from "@/components/AllocationDonut";
 
 function useAnimatedValue(target: number, duration = 1200) {
   const [value, setValue] = useState(0);
@@ -207,8 +208,10 @@ export default function OverviewPage() {
         />
       </motion.div>
 
-      {/* Insights Row */}
+      {/* Allocation + Tax Position */}
       <motion.div variants={stagger.item} className="grid grid-cols-1 gap-3 lg:grid-cols-2">
+        <AllocationDonut accounts={accounts} />
+
         <div className="card-insight p-5">
           <div className="flex items-center justify-between mb-4">
             <p className="label-muted">Tax Position</p>
@@ -226,7 +229,10 @@ export default function OverviewPage() {
             />
           </div>
         </div>
+      </motion.div>
 
+      {/* Stale Data */}
+      <motion.div variants={stagger.item}>
         {staleAccounts.length > 0 ? (
           <div className="card-alert p-5">
             <div className="flex items-center gap-2 mb-4">
