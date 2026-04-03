@@ -10,6 +10,7 @@ import {
   Clock,
   ChevronRight,
   ArrowUpRight,
+  Users,
 } from "lucide-react";
 import {
   Area,
@@ -20,12 +21,13 @@ import {
   YAxis,
   ReferenceDot,
 } from "recharts";
-import { mockAccounts, mockNetWorthHistory } from "@/data/mockData";
+import { mockNetWorthHistory } from "@/data/mockData";
+import { useAccounts } from "@/hooks/useAccounts";
+import { useHouseholdProfiles } from "@/hooks/useHouseholdProfiles";
 import { formatCurrency, staleness, daysAgo } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
 
-// Animated counter hook
 function useAnimatedValue(target: number, duration = 1200) {
   const [value, setValue] = useState(0);
   const startTime = useRef<number | null>(null);
@@ -52,53 +54,45 @@ type TimeRange = "3M" | "6M" | "12M" | "ALL";
 export default function OverviewPage() {
   const navigate = useNavigate();
   const [timeRange, setTimeRange] = useState<TimeRange>("ALL");
+  const { data: accounts = [] } = useAccounts();
+  const { data: profiles = [] } = useHouseholdProfiles();
 
-  const totalAssets = mockAccounts
-    .filter((a) => a.value > 0)
-    .reduce((s, a) => s + a.value, 0);
-  const totalLiabilities = mockAccounts
-    .filter((a) => a.value < 0)
-    .reduce((s, a) => s + a.value, 0);
+  const adults = profiles.filter((p) => p.role === "adult");
+  const children = profiles.filter((p) => p.role === "child");
+
+  const totalAssets = accounts
+    .filter((a) => Number(a.current_value) > 0)
+    .reduce((s, a) => s + Number(a.current_value), 0);
+  const totalLiabilities = accounts
+    .filter((a) => Number(a.current_value) < 0)
+    .reduce((s, a) => s + Number(a.current_value), 0);
   const netWorth = totalAssets + totalLiabilities;
-  const pensions = mockAccounts
+
+  const pensions = accounts
+    .filter((a) => ["sipp", "workplace_pension", "db_pension"].includes(a.account_type))
+    .reduce((s, a) => s + Number(a.current_value), 0);
+  const investable = accounts
     .filter((a) =>
-      ["sipp", "workplace_pension", "db_pension"].includes(a.type)
+      ["stocks_and_shares_isa", "cash_isa", "gia", "sipp", "workplace_pension", "crypto"].includes(a.account_type)
     )
-    .reduce((s, a) => s + a.value, 0);
-  const investable = mockAccounts
-    .filter((a) =>
-      [
-        "stocks_and_shares_isa",
-        "cash_isa",
-        "gia",
-        "sipp",
-        "workplace_pension",
-        "crypto",
-      ].includes(a.type)
-    )
-    .reduce((s, a) => s + a.value, 0);
-  const isaUsed = 18000;
-  const isaLimit = 20000;
+    .reduce((s, a) => s + Number(a.current_value), 0);
+
+  // ISA allowance: £20k per adult in household
+  const isaLimit = adults.length > 0 ? adults.length * 20000 : 20000;
+  const isaUsed = 18000; // placeholder — would come from tax_year_summaries
   const ani = 72000;
 
-  const staleAccounts = mockAccounts.filter(
-    (a) => staleness(a.lastUpdated) === "stale"
-  );
+  const staleAccounts = accounts.filter((a) => staleness(a.last_updated) === "stale");
 
   const animatedNetWorth = useAnimatedValue(netWorth);
 
-  // Filter chart data by time range
   const filteredChart = (() => {
     const len = mockNetWorthHistory.length;
     switch (timeRange) {
-      case "3M":
-        return mockNetWorthHistory.slice(-3);
-      case "6M":
-        return mockNetWorthHistory.slice(-6);
-      case "12M":
-        return mockNetWorthHistory.slice(-12);
-      default:
-        return mockNetWorthHistory;
+      case "3M": return mockNetWorthHistory.slice(-3);
+      case "6M": return mockNetWorthHistory.slice(-6);
+      case "12M": return mockNetWorthHistory.slice(-12);
+      default: return mockNetWorthHistory;
     }
   })();
 
@@ -106,7 +100,6 @@ export default function OverviewPage() {
   const deltaAbs = netWorth - prevValue;
   const deltaPct = prevValue > 0 ? ((deltaAbs / prevValue) * 100).toFixed(1) : "0";
   const deltaPositive = deltaAbs >= 0;
-
   const lastPoint = filteredChart[filteredChart.length - 1];
 
   const stagger = {
@@ -118,17 +111,21 @@ export default function OverviewPage() {
   };
 
   return (
-    <motion.div
-      className="space-y-5"
-      variants={stagger.container}
-      initial="initial"
-      animate="animate"
-    >
+    <motion.div className="space-y-5" variants={stagger.container} initial="initial" animate="animate">
       {/* Hero Net Worth */}
       <motion.div variants={stagger.item} className="hero-surface p-6 lg:p-8">
         <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
           <div>
-            <p className="label-muted mb-2">Net Worth</p>
+            <div className="flex items-center gap-2 mb-2">
+              <p className="label-muted">Household Net Worth</p>
+              {profiles.length > 0 && (
+                <span className="inline-flex items-center gap-1 text-[10px] text-muted-foreground bg-secondary/50 px-2 py-0.5 rounded-full">
+                  <Users className="h-3 w-3" />
+                  {adults.length} adult{adults.length !== 1 ? "s" : ""}
+                  {children.length > 0 && ` · ${children.length} child${children.length !== 1 ? "ren" : ""}`}
+                </span>
+              )}
+            </div>
             <h1 className="value-hero text-5xl lg:text-[3.5rem] leading-none">
               {formatCurrency(animatedNetWorth)}
             </h1>
@@ -139,17 +136,11 @@ export default function OverviewPage() {
                   deltaPositive ? "text-success" : "text-destructive"
                 )}
               >
-                {deltaPositive ? (
-                  <TrendingUp className="h-4 w-4" />
-                ) : (
-                  <TrendingDown className="h-4 w-4" />
-                )}
-                {deltaPositive ? "+" : ""}
-                {formatCurrency(deltaAbs)}
+                {deltaPositive ? <TrendingUp className="h-4 w-4" /> : <TrendingDown className="h-4 w-4" />}
+                {deltaPositive ? "+" : ""}{formatCurrency(deltaAbs)}
               </span>
               <span className="text-muted-foreground text-sm">
-                {deltaPositive ? "+" : ""}
-                {deltaPct}% this period
+                {deltaPositive ? "+" : ""}{deltaPct}% this period
               </span>
             </div>
           </div>
@@ -171,30 +162,16 @@ export default function OverviewPage() {
           </div>
         </div>
 
-        {/* Inline sparkline / chart */}
         <div className="mt-5 -mx-2">
           <ResponsiveContainer width="100%" height={180}>
             <AreaChart data={filteredChart}>
               <defs>
                 <linearGradient id="heroGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop
-                    offset="0%"
-                    stopColor="hsl(160, 60%, 45%)"
-                    stopOpacity={0.25}
-                  />
-                  <stop
-                    offset="100%"
-                    stopColor="hsl(160, 60%, 45%)"
-                    stopOpacity={0}
-                  />
+                  <stop offset="0%" stopColor="hsl(160, 60%, 45%)" stopOpacity={0.25} />
+                  <stop offset="100%" stopColor="hsl(160, 60%, 45%)" stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <XAxis
-                dataKey="month"
-                tick={{ fontSize: 11, fill: "hsl(215, 12%, 48%)" }}
-                tickLine={false}
-                axisLine={false}
-              />
+              <XAxis dataKey="month" tick={{ fontSize: 11, fill: "hsl(215, 12%, 48%)" }} tickLine={false} axisLine={false} />
               <YAxis hide domain={["dataMin - 5000", "dataMax + 5000"]} />
               <Tooltip
                 content={({ active, payload, label }) => {
@@ -203,87 +180,53 @@ export default function OverviewPage() {
                   return (
                     <div className="card-surface px-3 py-2 shadow-xl border border-border">
                       <p className="text-xs text-muted-foreground">{label}</p>
-                      <p className="text-sm font-semibold text-foreground">
-                        {formatCurrency(val)}
-                      </p>
+                      <p className="text-sm font-semibold text-foreground">{formatCurrency(val)}</p>
                     </div>
                   );
                 }}
               />
-              <Area
-                type="monotone"
-                dataKey="value"
-                stroke="hsl(160, 60%, 45%)"
-                strokeWidth={2.5}
-                fill="url(#heroGrad)"
-                animationDuration={1500}
-                animationEasing="ease-out"
-              />
+              <Area type="monotone" dataKey="value" stroke="hsl(160, 60%, 45%)" strokeWidth={2.5} fill="url(#heroGrad)" animationDuration={1500} animationEasing="ease-out" />
               {lastPoint && (
-                <ReferenceDot
-                  x={lastPoint.month}
-                  y={lastPoint.value}
-                  r={4}
-                  fill="hsl(160, 60%, 45%)"
-                  stroke="hsl(228, 20%, 10%)"
-                  strokeWidth={2}
-                />
+                <ReferenceDot x={lastPoint.month} y={lastPoint.value} r={4} fill="hsl(160, 60%, 45%)" stroke="hsl(228, 20%, 10%)" strokeWidth={2} />
               )}
             </AreaChart>
           </ResponsiveContainer>
         </div>
       </motion.div>
 
-      {/* Compact KPI Row */}
-      <motion.div
-        variants={stagger.item}
-        className="grid grid-cols-1 gap-3 sm:grid-cols-3"
-      >
+      {/* KPI Row */}
+      <motion.div variants={stagger.item} className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <KPICard label="Investable Assets" value={formatCurrency(investable)} sub="ISA + Pension + GIA + Crypto" icon={<Wallet className="h-4 w-4" />} />
+        <KPICard label="Pensions" value={formatCurrency(pensions)} sub="SIPP + Workplace" icon={<PiggyBank className="h-4 w-4" />} />
         <KPICard
-          label="Investable Assets"
-          value={formatCurrency(investable)}
-          sub="ISA + Pension + GIA + Crypto"
-          icon={<Wallet className="h-4 w-4" />}
-        />
-        <KPICard
-          label="Pensions"
-          value={formatCurrency(pensions)}
-          sub="SIPP + Workplace"
-          icon={<PiggyBank className="h-4 w-4" />}
-        />
-        <KPICard
-          label="ISA Allowance"
-          value={`${formatCurrency(isaUsed)}`}
-          sub={`${formatCurrency(isaLimit - isaUsed)} of ${formatCurrency(isaLimit)} remaining`}
+          label="Household ISA Allowance"
+          value={formatCurrency(isaUsed)}
+          sub={`${formatCurrency(isaLimit - isaUsed)} of ${formatCurrency(isaLimit)} remaining (${adults.length || 1} adult${(adults.length || 1) !== 1 ? "s" : ""})`}
           icon={<ShieldCheck className="h-4 w-4" />}
           progress={(isaUsed / isaLimit) * 100}
         />
       </motion.div>
 
       {/* Insights Row */}
-      <motion.div
-        variants={stagger.item}
-        className="grid grid-cols-1 gap-3 lg:grid-cols-2"
-      >
-        {/* Tax Position */}
+      <motion.div variants={stagger.item} className="grid grid-cols-1 gap-3 lg:grid-cols-2">
         <div className="card-insight p-5">
           <div className="flex items-center justify-between mb-4">
             <p className="label-muted">Tax Position</p>
-            <button
-              onClick={() => navigate("/tax")}
-              className="text-xs text-muted-foreground hover:text-primary transition-colors flex items-center gap-0.5"
-            >
+            <button onClick={() => navigate("/tax")} className="text-xs text-muted-foreground hover:text-primary transition-colors flex items-center gap-0.5">
               View all <ChevronRight className="h-3 w-3" />
             </button>
           </div>
           <div className="space-y-3">
             <TaxRow label="Est. ANI" value={formatCurrency(ani)} status={ani >= 100000 ? "danger" : "ok"} />
             <TaxRow label="Tax Band" value="Higher (40%)" status="neutral" />
-            <TaxRow label="Retirement Progress" value="62%" status="warning" />
+            <TaxRow
+              label="Family Members"
+              value={`${adults.length} adult${adults.length !== 1 ? "s" : ""}${children.length > 0 ? `, ${children.length} child${children.length !== 1 ? "ren" : ""}` : ""}`}
+              status="neutral"
+            />
           </div>
         </div>
 
-        {/* Stale Data — Actionable */}
         {staleAccounts.length > 0 ? (
           <div className="card-alert p-5">
             <div className="flex items-center gap-2 mb-4">
@@ -302,11 +245,9 @@ export default function OverviewPage() {
                   <div className="flex items-center gap-2.5">
                     <Clock className="h-3.5 w-3.5 text-warning/70" />
                     <div className="text-left">
-                      <p className="text-sm font-medium text-card-foreground">
-                        {a.name}
-                      </p>
+                      <p className="text-sm font-medium text-card-foreground">{a.name}</p>
                       <p className="text-[11px] text-muted-foreground">
-                        {a.provider} · {daysAgo(a.lastUpdated)} days ago
+                        {a.institutions?.name ?? "—"} · {daysAgo(a.last_updated)} days ago
                       </p>
                     </div>
                   </div>
@@ -329,19 +270,7 @@ export default function OverviewPage() {
 
 /* ─── Sub-components ─── */
 
-function KPICard({
-  label,
-  value,
-  sub,
-  icon,
-  progress,
-}: {
-  label: string;
-  value: string;
-  sub: string;
-  icon: React.ReactNode;
-  progress?: number;
-}) {
+function KPICard({ label, value, sub, icon, progress }: { label: string; value: string; sub: string; icon: React.ReactNode; progress?: number }) {
   return (
     <div className="card-surface-hover p-4">
       <div className="flex items-center justify-between mb-2">
@@ -352,10 +281,7 @@ function KPICard({
       {progress !== undefined && (
         <div className="mt-2 h-1.5 rounded-full bg-secondary/60 overflow-hidden">
           <motion.div
-            className={cn(
-              "h-full rounded-full",
-              progress > 90 ? "bg-warning" : "bg-primary"
-            )}
+            className={cn("h-full rounded-full", progress > 90 ? "bg-warning" : "bg-primary")}
             initial={{ width: 0 }}
             animate={{ width: `${progress}%` }}
             transition={{ duration: 0.8, ease: "easeOut", delay: 0.3 }}
@@ -367,27 +293,12 @@ function KPICard({
   );
 }
 
-function TaxRow({
-  label,
-  value,
-  status,
-}: {
-  label: string;
-  value: string;
-  status: "ok" | "warning" | "danger" | "neutral";
-}) {
-  const colors = {
-    ok: "text-success",
-    warning: "text-warning",
-    danger: "text-destructive",
-    neutral: "text-card-foreground",
-  };
+function TaxRow({ label, value, status }: { label: string; value: string; status: "ok" | "warning" | "danger" | "neutral" }) {
+  const colors = { ok: "text-success", warning: "text-warning", danger: "text-destructive", neutral: "text-card-foreground" };
   return (
     <div className="flex items-center justify-between">
       <span className="text-sm text-muted-foreground">{label}</span>
-      <span className={cn("text-sm font-semibold tabular-nums", colors[status])}>
-        {value}
-      </span>
+      <span className={cn("text-sm font-semibold tabular-nums", colors[status])}>{value}</span>
     </div>
   );
 }

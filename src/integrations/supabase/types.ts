@@ -331,6 +331,50 @@ export type Database = {
           },
         ]
       }
+      household_profiles: {
+        Row: {
+          created_at: string
+          date_of_birth: string | null
+          household_id: string
+          id: string
+          is_primary: boolean
+          name: string
+          ni_number: string | null
+          role: Database["public"]["Enums"]["member_role"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          date_of_birth?: string | null
+          household_id: string
+          id?: string
+          is_primary?: boolean
+          name: string
+          ni_number?: string | null
+          role?: Database["public"]["Enums"]["member_role"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          date_of_birth?: string | null
+          household_id?: string
+          id?: string
+          is_primary?: boolean
+          name?: string
+          ni_number?: string | null
+          role?: Database["public"]["Enums"]["member_role"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "household_profiles_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       households: {
         Row: {
           created_at: string
@@ -534,6 +578,7 @@ export type Database = {
           household_id: string
           id: string
           isa_contributions: number | null
+          member_profile_id: string | null
           pension_contributions: number | null
           tax_year: string
           updated_at: string
@@ -546,6 +591,7 @@ export type Database = {
           household_id: string
           id?: string
           isa_contributions?: number | null
+          member_profile_id?: string | null
           pension_contributions?: number | null
           tax_year: string
           updated_at?: string
@@ -558,6 +604,7 @@ export type Database = {
           household_id?: string
           id?: string
           isa_contributions?: number | null
+          member_profile_id?: string | null
           pension_contributions?: number | null
           tax_year?: string
           updated_at?: string
@@ -568,6 +615,13 @@ export type Database = {
             columns: ["household_id"]
             isOneToOne: false
             referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tax_year_summaries_member_profile_id_fkey"
+            columns: ["member_profile_id"]
+            isOneToOne: false
+            referencedRelation: "household_profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -612,6 +666,7 @@ export type Database = {
         | "previewing"
         | "completed"
         | "failed"
+      member_role: "adult" | "child"
       source_type: "manual" | "imported" | "api"
       wrapper_type: "none" | "isa" | "sipp" | "workplace_pension" | "db_pension"
     }
@@ -772,6 +827,7 @@ export const Constants = {
         "completed",
         "failed",
       ],
+      member_role: ["adult", "child"],
       source_type: ["manual", "imported", "api"],
       wrapper_type: ["none", "isa", "sipp", "workplace_pension", "db_pension"],
     },

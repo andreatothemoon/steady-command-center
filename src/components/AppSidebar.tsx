@@ -1,4 +1,5 @@
 import { NavLink, useLocation } from "react-router-dom";
+import { useHouseholdProfiles } from "@/hooks/useHouseholdProfiles";
 import {
   LayoutDashboard,
   Wallet,
@@ -28,6 +29,14 @@ const navItems = [
 
 function SidebarContent({ collapsed, toggle, onNavigate }: { collapsed: boolean; toggle: () => void; onNavigate?: () => void }) {
   const location = useLocation();
+  const { data: profiles = [] } = useHouseholdProfiles();
+  const adults = profiles.filter((p) => p.role === "adult");
+  const initials = adults.length > 0
+    ? adults.map((p) => p.name.charAt(0).toUpperCase()).join("")
+    : "?";
+  const householdLabel = adults.length > 0
+    ? adults.map((p) => p.name).join(" & ")
+    : "My Household";
 
   return (
     <>
@@ -94,11 +103,11 @@ function SidebarContent({ collapsed, toggle, onNavigate }: { collapsed: boolean;
         )}>
           <div className={cn("flex items-center", collapsed ? "" : "gap-3 px-1")}>
             <div className="h-8 w-8 rounded-full bg-sidebar-accent flex items-center justify-center flex-shrink-0">
-              <span className="text-[11px] font-semibold text-sidebar-accent-foreground">JS</span>
+              <span className="text-[11px] font-semibold text-sidebar-accent-foreground">{initials.slice(0, 2)}</span>
             </div>
             {!collapsed && (
               <div className="flex-1 min-w-0">
-                <p className="text-[13px] font-medium text-sidebar-accent-foreground truncate">James & Sarah</p>
+                <p className="text-[13px] font-medium text-sidebar-accent-foreground truncate">{householdLabel}</p>
                 <p className="text-[11px] text-sidebar-foreground truncate">Household</p>
               </div>
             )}
