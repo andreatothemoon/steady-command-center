@@ -228,8 +228,10 @@ export default function OverviewPage() {
               status="neutral"
             />
           </div>
-        </div>
+      </motion.div>
 
+      {/* Stale Data */}
+      <motion.div variants={stagger.item}>
         {staleAccounts.length > 0 ? (
           <div className="card-alert p-5">
             <div className="flex items-center gap-2 mb-4">
