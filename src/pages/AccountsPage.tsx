@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import AddAccountDialog from "@/components/AddAccountDialog";
+import EditAccountDialog from "@/components/EditAccountDialog";
 
 type GroupBy = "type" | "owner" | "wrapper";
 
