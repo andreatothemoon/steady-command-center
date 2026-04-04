@@ -32,6 +32,7 @@ const navItems = [
 
 function SidebarContent({ collapsed, toggle, onNavigate }: { collapsed: boolean; toggle: () => void; onNavigate?: () => void }) {
   const location = useLocation();
+  const { isPageVisible } = usePageVisibility();
   const { data: profiles = [] } = useHouseholdProfiles();
   const adults = profiles.filter((p) => p.role === "adult");
   const initials = adults.length > 0
