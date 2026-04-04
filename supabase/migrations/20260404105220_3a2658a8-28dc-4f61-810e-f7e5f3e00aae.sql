@@ -1,0 +1,1 @@
+ALTER TABLE public.tax_year_summaries ADD COLUMN rental_income numeric DEFAULT 0;
