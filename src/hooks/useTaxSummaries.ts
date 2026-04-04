@@ -9,6 +9,7 @@ export interface MemberFormState {
   salary: number;
   bonus: number;
   taxable_benefits: number;
+  dividend_income: number;
   salary_sacrifice_pension: number;
   employer_pension: number;
   personal_pension_net: number;
@@ -22,6 +23,7 @@ export const emptyForm: MemberFormState = {
   salary: 0,
   bonus: 0,
   taxable_benefits: 0,
+  dividend_income: 0,
   salary_sacrifice_pension: 0,
   employer_pension: 0,
   personal_pension_net: 0,
@@ -37,6 +39,7 @@ export function summaryToForm(s: TaxYearSummary | undefined): MemberFormState {
     salary: Number(s.salary ?? 0),
     bonus: Number(s.bonus ?? 0),
     taxable_benefits: Number(s.taxable_benefits ?? 0),
+    dividend_income: Number(s.dividend_income ?? 0),
     salary_sacrifice_pension: Number(s.salary_sacrifice_pension ?? 0),
     employer_pension: Number(s.employer_pension ?? 0),
     personal_pension_net: Number(s.personal_pension_net ?? 0),
@@ -48,7 +51,7 @@ export function summaryToForm(s: TaxYearSummary | undefined): MemberFormState {
 }
 
 export function computeANI(f: MemberFormState) {
-  const gross_income = f.salary + f.bonus + f.taxable_benefits;
+  const gross_income = f.salary + f.bonus + f.taxable_benefits + f.dividend_income;
   const salary_sacrifice_total = f.salary_sacrifice_pension + f.other_salary_sacrifice;
   const grossed_up_personal_pension = f.personal_pension_net * (100 / 80);
   const grossed_up_gift_aid = f.gift_aid * (100 / 80);
@@ -61,6 +64,7 @@ export function computeANI(f: MemberFormState) {
 
   return {
     gross_income,
+    dividend_income: f.dividend_income,
     salary_sacrifice_total,
     grossed_up_personal_pension,
     grossed_up_gift_aid,
@@ -108,6 +112,7 @@ export function useUpsertTaxSummary() {
         salary: input.salary,
         bonus: input.bonus,
         taxable_benefits: input.taxable_benefits,
+        dividend_income: input.dividend_income,
         salary_sacrifice_pension: input.salary_sacrifice_pension,
         employer_pension: input.employer_pension,
         personal_pension_net: input.personal_pension_net,

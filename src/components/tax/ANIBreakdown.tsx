@@ -4,6 +4,7 @@ import { TrendingDown } from "lucide-react";
 
 interface ANIResult {
   gross_income: number;
+  dividend_income?: number;
   salary_sacrifice_total: number;
   grossed_up_personal_pension: number;
   grossed_up_gift_aid: number;
@@ -26,6 +27,9 @@ export function ANIBreakdown({ computed }: { computed: ANIResult }) {
 
       <div className="space-y-1 text-sm tabular-nums">
         <Row label="Gross Income" value={computed.gross_income} />
+        {(computed.dividend_income ?? 0) > 0 && (
+          <Row label="  incl. Dividends" value={computed.dividend_income!} />
+        )}
         {computed.salary_sacrifice_total > 0 && (
           <Row label="Less: Salary Sacrifice" value={-computed.salary_sacrifice_total} negative />
         )}
