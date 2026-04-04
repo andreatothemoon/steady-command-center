@@ -647,6 +647,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_ni_number: { Args: { _profile_id: string }; Returns: string }
       get_user_household_ids: { Args: { _user_id: string }; Returns: string[] }
       is_household_member: {
         Args: { _household_id: string; _user_id: string }
