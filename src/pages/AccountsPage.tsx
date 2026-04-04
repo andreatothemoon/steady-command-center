@@ -119,6 +119,7 @@ export default function AccountsPage() {
                         <div
                           key={account.id}
                           className="flex items-center justify-between px-5 py-3.5 hover:bg-secondary/30 transition-colors cursor-pointer"
+                          onClick={() => setEditAccount(account)}
                         >
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2">
