@@ -31,6 +31,9 @@ export function ANIBreakdown({ computed }: { computed: ANIResult }) {
         {(computed.dividend_income ?? 0) > 0 && (
           <Row label="  incl. Dividends" value={computed.dividend_income!} />
         )}
+        {(computed.rental_income ?? 0) > 0 && (
+          <Row label="  incl. Rental" value={computed.rental_income!} />
+        )}
         {computed.salary_sacrifice_total > 0 && (
           <Row label="Less: Salary Sacrifice" value={-computed.salary_sacrifice_total} negative />
         )}

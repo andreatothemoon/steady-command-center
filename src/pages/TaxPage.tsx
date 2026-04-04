@@ -220,11 +220,12 @@ export default function TaxPage() {
           <>
             <div>
               <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">Income</p>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 <ReadOnlyField label="Salary" value={form.salary} />
                 <ReadOnlyField label="Bonus" value={form.bonus} />
                 <ReadOnlyField label="Taxable BIK" value={form.taxable_benefits} />
                 <ReadOnlyField label="Dividends" value={form.dividend_income} />
+                <ReadOnlyField label="Rental" value={form.rental_income} />
               </div>
             </div>
             <div>
