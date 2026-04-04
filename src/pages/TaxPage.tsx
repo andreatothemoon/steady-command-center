@@ -73,7 +73,7 @@ function CurrencyField({
           type="text"
           inputMode="decimal"
           disabled={disabled}
-          className="pl-7 tabular-nums text-sm"
+          className="pl-7 tabular-nums text-sm bg-background border-border text-foreground"
           placeholder="0"
           value={raw}
           onChange={(e) => {
