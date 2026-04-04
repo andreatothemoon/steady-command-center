@@ -91,6 +91,8 @@ export default function EditAccountDialog({ account, open, onOpenChange }: Props
           wrapper_type: account.wrapper_type,
           current_value: Number(account.current_value),
           owner_name: account.owner_name,
+          interest_rate: (account as any).interest_rate ?? "",
+          term_remaining_months: (account as any).term_remaining_months ?? "",
         }
       : undefined,
   });
