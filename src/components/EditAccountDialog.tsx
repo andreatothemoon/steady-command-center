@@ -146,12 +146,12 @@ export default function EditAccountDialog({ account, open, onOpenChange }: Props
   const showDebtFields = ["mortgage", "loan", "credit_card"].includes(watchedType);
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md bg-card border-border">
-        <DialogHeader>
-          <DialogTitle>Edit Account</DialogTitle>
-          <DialogDescription>Update account details or remove it.</DialogDescription>
-        </DialogHeader>
+    <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
+      <ResponsiveDialogContent>
+        <ResponsiveDialogHeader>
+          <ResponsiveDialogTitle>Edit Account</ResponsiveDialogTitle>
+          <ResponsiveDialogDescription>Update account details or remove it.</ResponsiveDialogDescription>
+        </ResponsiveDialogHeader>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 mt-2">
           <div className="space-y-2">
             <Label htmlFor="edit-name">Account Name</Label>
