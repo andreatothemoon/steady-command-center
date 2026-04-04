@@ -11,6 +11,8 @@ import {
 import MemberDialog from "@/components/MemberDialog";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { Switch } from "@/components/ui/switch";
+import { usePageVisibility, ALL_TOGGLEABLE_PAGES } from "@/contexts/PageVisibilityContext";
 import {
   AlertDialog,
   AlertDialogAction,
