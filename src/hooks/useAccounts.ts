@@ -39,10 +39,21 @@ export function useAddAccount() {
         .select()
         .single();
       if (error) throw error;
+
+      // If it's a db_pension account, create a corresponding db_pensions record
+      if (input.account_type === "db_pension") {
+        await supabase.from("db_pensions").insert({
+          household_id: householdId,
+          name: input.name,
+          account_id: data.id,
+        });
+      }
+
       return data;
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["accounts"] });
+      qc.invalidateQueries({ queryKey: ["db_pensions"] });
     },
   });
 }
@@ -59,10 +70,20 @@ export function useUpdateAccount() {
         .select()
         .single();
       if (error) throw error;
+
+      // Sync name to linked db_pension if applicable
+      if (updates.name) {
+        await supabase
+          .from("db_pensions")
+          .update({ name: updates.name })
+          .eq("account_id", id);
+      }
+
       return data;
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["accounts"] });
+      qc.invalidateQueries({ queryKey: ["db_pensions"] });
     },
   });
 }
@@ -72,11 +93,15 @@ export function useDeleteAccount() {
 
   return useMutation({
     mutationFn: async (id: string) => {
+      // Delete any linked db_pension first (account_id ON DELETE SET NULL would orphan it)
+      await supabase.from("db_pensions").delete().eq("account_id", id);
+
       const { error } = await supabase.from("accounts").delete().eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["accounts"] });
+      qc.invalidateQueries({ queryKey: ["db_pensions"] });
     },
   });
 }
