@@ -83,6 +83,8 @@ export default function AddAccountDialog({ open, onOpenChange }: Props) {
         current_value: values.current_value,
         owner_name: values.owner_name,
         linked_account_id: values.account_type === "mortgage" ? linkedAccountId : null,
+        interest_rate: values.account_type === "mortgage" && values.interest_rate !== "" ? Number(values.interest_rate) : null,
+        term_remaining_months: values.account_type === "mortgage" && values.term_remaining_months !== "" ? Number(values.term_remaining_months) : null,
       } as any);
       toast.success("Account added");
       form.reset();
