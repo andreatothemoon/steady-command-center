@@ -232,6 +232,18 @@ export default function OverviewPage() {
         </div>
       </motion.div>
 
+      {/* ═══ Allocation + Tax Status ═══ */}
+      <motion.div variants={stagger.item} className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <AllocationDonut accounts={accounts} />
+        <TaxStatusCard
+          ani={ani}
+          isaUsed={isaUsed}
+          isaLimit={isaLimit}
+          adults={adults.length || 1}
+          children={children.length}
+        />
+      </motion.div>
+
       {/* ═══ KPI Row ═══ */}
       <motion.div variants={stagger.item} className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <KPICard label="Investable Assets" value={formatCurrency(investable)} sub="ISA + Pension + GIA + Crypto" icon={<Wallet className="h-4 w-4" />} />
@@ -242,18 +254,6 @@ export default function OverviewPage() {
           sub={`${formatCurrency(isaLimit - isaUsed)} of ${formatCurrency(isaLimit)} remaining`}
           icon={<ShieldCheck className="h-4 w-4" />}
           progress={(isaUsed / isaLimit) * 100}
-        />
-      </motion.div>
-
-      {/* ═══ Allocation + Tax Status ═══ */}
-      <motion.div variants={stagger.item} className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <AllocationDonut accounts={accounts} />
-        <TaxStatusCard
-          ani={ani}
-          isaUsed={isaUsed}
-          isaLimit={isaLimit}
-          adults={adults.length || 1}
-          children={children.length}
         />
       </motion.div>
 
