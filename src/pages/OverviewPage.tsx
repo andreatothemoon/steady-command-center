@@ -192,7 +192,7 @@ export default function OverviewPage() {
                     </feMerge>
                   </filter>
                 </defs>
-                <XAxis dataKey="month" tick={{ fontSize: 10, fill: "hsl(215, 12%, 40%)" }} tickLine={false} axisLine={false} />
+                <XAxis dataKey="month" tick={{ fontSize: 10, fill: "hsl(220, 9%, 46%)" }} tickLine={false} axisLine={false} />
                 <YAxis hide domain={["dataMin - 5000", "dataMax + 5000"]} />
                 <Tooltip
                   content={({ active, payload, label }) => {
