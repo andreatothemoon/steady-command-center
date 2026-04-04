@@ -179,6 +179,118 @@ export type Database = {
           },
         ]
       }
+      db_accrual_slices: {
+        Row: {
+          accrual_rate: number
+          created_at: string
+          id: string
+          pension_earned: number
+          pension_id: string
+          pensionable_salary: number
+          revalued_value: number
+          year: number
+        }
+        Insert: {
+          accrual_rate?: number
+          created_at?: string
+          id?: string
+          pension_earned?: number
+          pension_id: string
+          pensionable_salary?: number
+          revalued_value?: number
+          year: number
+        }
+        Update: {
+          accrual_rate?: number
+          created_at?: string
+          id?: string
+          pension_earned?: number
+          pension_id?: string
+          pensionable_salary?: number
+          revalued_value?: number
+          year?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "db_accrual_slices_pension_id_fkey"
+            columns: ["pension_id"]
+            isOneToOne: false
+            referencedRelation: "db_pensions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      db_pensions: {
+        Row: {
+          accrual_rate: number
+          created_at: string
+          current_age: number
+          current_salary: number
+          existing_income: number
+          household_id: string
+          id: string
+          indexation_cap: number
+          indexation_type: Database["public"]["Enums"]["indexation_type"]
+          is_active_member: boolean
+          name: string
+          retirement_age: number
+          revaluation_rate: number
+          revaluation_type: Database["public"]["Enums"]["revaluation_type"]
+          revaluation_uplift: number
+          salary_growth_rate: number
+          scheme_type: Database["public"]["Enums"]["db_scheme_type"]
+          updated_at: string
+        }
+        Insert: {
+          accrual_rate?: number
+          created_at?: string
+          current_age?: number
+          current_salary?: number
+          existing_income?: number
+          household_id: string
+          id?: string
+          indexation_cap?: number
+          indexation_type?: Database["public"]["Enums"]["indexation_type"]
+          is_active_member?: boolean
+          name?: string
+          retirement_age?: number
+          revaluation_rate?: number
+          revaluation_type?: Database["public"]["Enums"]["revaluation_type"]
+          revaluation_uplift?: number
+          salary_growth_rate?: number
+          scheme_type?: Database["public"]["Enums"]["db_scheme_type"]
+          updated_at?: string
+        }
+        Update: {
+          accrual_rate?: number
+          created_at?: string
+          current_age?: number
+          current_salary?: number
+          existing_income?: number
+          household_id?: string
+          id?: string
+          indexation_cap?: number
+          indexation_type?: Database["public"]["Enums"]["indexation_type"]
+          is_active_member?: boolean
+          name?: string
+          retirement_age?: number
+          revaluation_rate?: number
+          revaluation_type?: Database["public"]["Enums"]["revaluation_type"]
+          revaluation_uplift?: number
+          salary_growth_rate?: number
+          scheme_type?: Database["public"]["Enums"]["db_scheme_type"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "db_pensions_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       documents: {
         Row: {
           created_at: string
@@ -703,6 +815,7 @@ export type Database = {
         | "loan"
         | "credit_card"
       confidence_level: "high" | "medium" | "low"
+      db_scheme_type: "CARE" | "FINAL_SALARY"
       document_status: "pending" | "approved" | "rejected"
       document_type:
         | "pension_statement"
@@ -717,7 +830,9 @@ export type Database = {
         | "previewing"
         | "completed"
         | "failed"
+      indexation_type: "CPI" | "capped"
       member_role: "adult" | "child"
+      revaluation_type: "CPI" | "fixed"
       source_type: "manual" | "imported" | "api"
       wrapper_type: "none" | "isa" | "sipp" | "workplace_pension" | "db_pension"
     }
@@ -864,6 +979,7 @@ export const Constants = {
         "credit_card",
       ],
       confidence_level: ["high", "medium", "low"],
+      db_scheme_type: ["CARE", "FINAL_SALARY"],
       document_status: ["pending", "approved", "rejected"],
       document_type: [
         "pension_statement",
@@ -880,7 +996,9 @@ export const Constants = {
         "completed",
         "failed",
       ],
+      indexation_type: ["CPI", "capped"],
       member_role: ["adult", "child"],
+      revaluation_type: ["CPI", "fixed"],
       source_type: ["manual", "imported", "api"],
       wrapper_type: ["none", "isa", "sipp", "workplace_pension", "db_pension"],
     },
