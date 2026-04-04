@@ -4,7 +4,7 @@ import { TrendingUp, TrendingDown, Users } from "lucide-react";
 import {
   Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis, ReferenceDot,
 } from "recharts";
-import { mockNetWorthHistory } from "@/data/mockData";
+import { useNetWorthHistory, filterByTimeRange } from "@/hooks/useNetWorthHistory";
 import { formatCurrency } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { Account } from "@/hooks/useAccounts";
@@ -30,13 +30,8 @@ function useAnimatedValue(target: number, duration = 1200) {
   return value;
 }
 
-function getFilteredChart(timeRange: TimeRange) {
-  switch (timeRange) {
-    case "3M": return mockNetWorthHistory.slice(-3);
-    case "6M": return mockNetWorthHistory.slice(-6);
-    case "12M": return mockNetWorthHistory.slice(-12);
-    default: return mockNetWorthHistory;
-  }
+function getFilteredChart(allPoints: { month: string; value: number }[], timeRange: TimeRange) {
+  return filterByTimeRange(allPoints, timeRange);
 }
 
 interface Props {
@@ -48,6 +43,8 @@ interface Props {
 export default function NetWorthHero({ accounts, adultsCount, childrenCount }: Props) {
   const [timeRange, setTimeRange] = useState<TimeRange>("ALL");
 
+  const { data: historyPoints = [] } = useNetWorthHistory(accounts);
+
   const totalAssets = accounts
     .filter((a) => Number(a.current_value) > 0)
     .reduce((s, a) => s + Number(a.current_value), 0);
@@ -56,7 +53,7 @@ export default function NetWorthHero({ accounts, adultsCount, childrenCount }: P
     .reduce((s, a) => s + Number(a.current_value), 0);
   const netWorth = totalAssets + totalLiabilities;
 
-  const filteredChart = getFilteredChart(timeRange);
+  const filteredChart = getFilteredChart(historyPoints, timeRange);
   const prevValue = filteredChart.length > 1 ? filteredChart[0].value : netWorth;
   const deltaAbs = netWorth - prevValue;
   const deltaPct = prevValue > 0 ? ((deltaAbs / prevValue) * 100).toFixed(1) : "0";
