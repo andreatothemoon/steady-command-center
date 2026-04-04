@@ -43,7 +43,9 @@ const schema = z.object({
   account_type: z.string().min(1, "Select a type"),
   wrapper_type: z.string().min(1, "Select a wrapper"),
   current_value: z.coerce.number(),
-  owner_name: z.string().trim().min(1, "Owner is required").max(50),
+  owner_name: z.string().trim().min(1, "Owner is required").max(150),
+  interest_rate: z.coerce.number().min(0).max(100).optional().or(z.literal("")),
+  term_remaining_months: z.coerce.number().int().min(0).max(600).optional().or(z.literal("")),
 });
 
 type FormValues = z.infer<typeof schema>;
@@ -89,6 +91,8 @@ export default function EditAccountDialog({ account, open, onOpenChange }: Props
           wrapper_type: account.wrapper_type,
           current_value: Number(account.current_value),
           owner_name: account.owner_name,
+          interest_rate: (account as any).interest_rate ?? "",
+          term_remaining_months: (account as any).term_remaining_months ?? "",
         }
       : undefined,
   });
@@ -104,6 +108,8 @@ export default function EditAccountDialog({ account, open, onOpenChange }: Props
         current_value: values.current_value,
         owner_name: values.owner_name,
         linked_account_id: isMortgage ? linkedAccountId : null,
+        interest_rate: isMortgage && values.interest_rate !== "" ? Number(values.interest_rate) : null,
+        term_remaining_months: isMortgage && values.term_remaining_months !== "" ? Number(values.term_remaining_months) : null,
       } as any);
       toast.success("Account updated");
       onOpenChange(false);
@@ -215,6 +221,20 @@ export default function EditAccountDialog({ account, open, onOpenChange }: Props
                   </SelectContent>
                 </Select>
               )}
+            </div>
+          )}
+
+          {/* Mortgage details */}
+          {showPropertyLink && (
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <Label htmlFor="edit-interest-rate">Interest Rate (%)</Label>
+                <Input id="edit-interest-rate" type="number" step="0.01" min="0" max="100" placeholder="e.g. 4.5" {...form.register("interest_rate")} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-term">Term Remaining (months)</Label>
+                <Input id="edit-term" type="number" step="1" min="0" max="600" placeholder="e.g. 240" {...form.register("term_remaining_months")} />
+              </div>
             </div>
           )}
 

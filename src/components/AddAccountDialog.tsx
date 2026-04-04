@@ -32,7 +32,9 @@ const schema = z.object({
   account_type: z.string().min(1, "Select a type"),
   wrapper_type: z.string().min(1, "Select a wrapper"),
   current_value: z.coerce.number(),
-  owner_name: z.string().trim().min(1, "Owner is required").max(50),
+  owner_name: z.string().trim().min(1, "Owner is required").max(150),
+  interest_rate: z.coerce.number().min(0).max(100).optional().or(z.literal("")),
+  term_remaining_months: z.coerce.number().int().min(0).max(600).optional().or(z.literal("")),
 });
 
 type FormValues = z.infer<typeof schema>;
@@ -64,6 +66,8 @@ export default function AddAccountDialog({ open, onOpenChange }: Props) {
       wrapper_type: "none",
       current_value: 0,
       owner_name: profiles.find((p) => p.is_primary)?.name ?? profiles[0]?.name ?? "You",
+      interest_rate: "",
+      term_remaining_months: "",
     },
   });
 
@@ -79,6 +83,8 @@ export default function AddAccountDialog({ open, onOpenChange }: Props) {
         current_value: values.current_value,
         owner_name: values.owner_name,
         linked_account_id: values.account_type === "mortgage" ? linkedAccountId : null,
+        interest_rate: values.account_type === "mortgage" && values.interest_rate !== "" ? Number(values.interest_rate) : null,
+        term_remaining_months: values.account_type === "mortgage" && values.term_remaining_months !== "" ? Number(values.term_remaining_months) : null,
       } as any);
       toast.success("Account added");
       form.reset();
@@ -181,6 +187,20 @@ export default function AddAccountDialog({ open, onOpenChange }: Props) {
                   </SelectContent>
                 </Select>
               )}
+            </div>
+          )}
+
+          {/* Mortgage details */}
+          {watchedType === "mortgage" && (
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <Label htmlFor="interest_rate">Interest Rate (%)</Label>
+                <Input id="interest_rate" type="number" step="0.01" min="0" max="100" placeholder="e.g. 4.5" {...form.register("interest_rate")} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="term_remaining">Term Remaining (months)</Label>
+                <Input id="term_remaining" type="number" step="1" min="0" max="600" placeholder="e.g. 240" {...form.register("term_remaining_months")} />
+              </div>
             </div>
           )}
 
