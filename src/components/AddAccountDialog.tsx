@@ -107,12 +107,12 @@ export default function AddAccountDialog({ open, onOpenChange }: Props) {
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md bg-card border-border">
-        <DialogHeader>
-          <DialogTitle>Add Account</DialogTitle>
-          <DialogDescription>Track a new financial account.</DialogDescription>
-        </DialogHeader>
+    <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
+      <ResponsiveDialogContent>
+        <ResponsiveDialogHeader>
+          <ResponsiveDialogTitle>Add Account</ResponsiveDialogTitle>
+          <ResponsiveDialogDescription>Track a new financial account.</ResponsiveDialogDescription>
+        </ResponsiveDialogHeader>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 mt-2">
           <div className="space-y-2">
             <Label htmlFor="name">Account Name</Label>
