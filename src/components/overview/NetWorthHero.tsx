@@ -43,6 +43,8 @@ interface Props {
 export default function NetWorthHero({ accounts, adultsCount, childrenCount }: Props) {
   const [timeRange, setTimeRange] = useState<TimeRange>("ALL");
 
+  const { data: historyPoints = [] } = useNetWorthHistory(accounts);
+
   const totalAssets = accounts
     .filter((a) => Number(a.current_value) > 0)
     .reduce((s, a) => s + Number(a.current_value), 0);
@@ -51,7 +53,7 @@ export default function NetWorthHero({ accounts, adultsCount, childrenCount }: P
     .reduce((s, a) => s + Number(a.current_value), 0);
   const netWorth = totalAssets + totalLiabilities;
 
-  const filteredChart = getFilteredChart(timeRange);
+  const filteredChart = getFilteredChart(historyPoints, timeRange);
   const prevValue = filteredChart.length > 1 ? filteredChart[0].value : netWorth;
   const deltaAbs = netWorth - prevValue;
   const deltaPct = prevValue > 0 ? ((deltaAbs / prevValue) * 100).toFixed(1) : "0";
