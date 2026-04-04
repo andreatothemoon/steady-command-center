@@ -143,6 +143,7 @@ export default function EditAccountDialog({ account, open, onOpenChange }: Props
 
   const watchedType = form.watch("account_type");
   const showPropertyLink = watchedType === "mortgage";
+  const showDebtFields = ["mortgage", "loan", "credit_card"].includes(watchedType);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
