@@ -28,9 +28,9 @@ export default function OverviewPage() {
   const ani = 72000;
 
   return (
-    <motion.div className="space-y-5" variants={stagger.container} initial="initial" animate="animate">
+    <motion.div className="flex flex-col gap-5" variants={stagger.container} initial="initial" animate="animate">
       {/* 1. HERO — Net Worth */}
-      <motion.div variants={stagger.item}>
+      <motion.div variants={stagger.item} className="order-1">
         <NetWorthHero
           accounts={accounts}
           adultsCount={adults.length || 1}
@@ -38,21 +38,20 @@ export default function OverviewPage() {
         />
       </motion.div>
 
-      {/* 2. SNAPSHOT ROW — 4 cards */}
-      <motion.div variants={stagger.item}>
+      {/* 4. ACTION CENTER — Mobile: appears 2nd, Desktop: after progress */}
+      <motion.div variants={stagger.item} className="order-2 lg:order-4">
+        <ActionCenter accounts={accounts} ani={ani} isaUsed={isaUsed} isaLimit={isaLimit} />
+      </motion.div>
+
+      {/* 2. SNAPSHOT ROW — Mobile: 3rd, Desktop: 2nd */}
+      <motion.div variants={stagger.item} className="order-3 lg:order-2">
         <SnapshotRow accounts={accounts} />
       </motion.div>
 
-      {/* 3. PROGRESS LAYER — Retirement + Tax side by side (desktop) */}
-      <motion.div variants={stagger.item} className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+      {/* 3. PROGRESS LAYER — Retirement + Tax */}
+      <motion.div variants={stagger.item} className="grid grid-cols-1 gap-4 lg:grid-cols-2 order-4 lg:order-3">
         <RetirementProgress accounts={accounts} />
         <TaxPosition ani={ani} isaUsed={isaUsed} isaLimit={isaLimit} />
-      </motion.div>
-
-      {/* 4. ACTION CENTER */}
-      {/* On mobile: appears high priority (order managed via CSS) */}
-      <motion.div variants={stagger.item} className="order-first lg:order-none">
-        <ActionCenter accounts={accounts} ani={ani} isaUsed={isaUsed} isaLimit={isaLimit} />
       </motion.div>
 
       {/* 5. COLLAPSIBLE INSIGHTS — Asset allocation, property, debt */}
