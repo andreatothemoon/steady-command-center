@@ -25,6 +25,7 @@ import { accountTypeLabels, wrapperLabels } from "@/data/types";
 import type { AccountType, WrapperType } from "@/data/types";
 import { toast } from "sonner";
 import { Link2 } from "lucide-react";
+import OwnerMultiSelect from "@/components/OwnerMultiSelect";
 
 const schema = z.object({
   name: z.string().trim().min(1, "Name is required").max(100),
@@ -140,25 +141,20 @@ export default function AddAccountDialog({ open, onOpenChange }: Props) {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-2">
               <Label htmlFor="current_value">Current Value (£)</Label>
               <Input id="current_value" type="number" step="0.01" {...form.register("current_value")} />
             </div>
             <div className="space-y-2">
-              <Label>Owner</Label>
-              <Select onValueChange={(v) => form.setValue("owner_name", v)} value={form.watch("owner_name")}>
-                <SelectTrigger><SelectValue placeholder="Select owner" /></SelectTrigger>
-                <SelectContent>
-                  {profiles.length > 0 ? (
-                    profiles.map((p) => (
-                      <SelectItem key={p.id} value={p.name}>{p.name}</SelectItem>
-                    ))
-                  ) : (
-                    <SelectItem value="You">You</SelectItem>
-                  )}
-                </SelectContent>
-              </Select>
+              <Label>Owner(s)</Label>
+              <OwnerMultiSelect
+                value={form.watch("owner_name")}
+                onChange={(v) => form.setValue("owner_name", v)}
+              />
+              {form.formState.errors.owner_name && (
+                <p className="text-xs text-destructive">{form.formState.errors.owner_name.message}</p>
+              )}
             </div>
           </div>
 
