@@ -72,6 +72,7 @@ export default function EditAccountDialog({ account, open, onOpenChange }: Props
   const [linkedAccountId, setLinkedAccountId] = useState<string | null>(null);
 
   const isMortgage = account?.account_type === "mortgage";
+  const isDebtType = account ? ["mortgage", "loan", "credit_card"].includes(account.account_type) : false;
   const propertyAccounts = allAccounts.filter(
     (a) => a.account_type === "property" && a.id !== account?.id
   );
@@ -108,8 +109,8 @@ export default function EditAccountDialog({ account, open, onOpenChange }: Props
         current_value: values.current_value,
         owner_name: values.owner_name,
         linked_account_id: isMortgage ? linkedAccountId : null,
-        interest_rate: isMortgage && values.interest_rate !== "" ? Number(values.interest_rate) : null,
-        term_remaining_months: isMortgage && values.term_remaining_months !== "" ? Number(values.term_remaining_months) : null,
+        interest_rate: isDebtType && values.interest_rate !== "" ? Number(values.interest_rate) : null,
+        term_remaining_months: isDebtType && values.term_remaining_months !== "" ? Number(values.term_remaining_months) : null,
       } as any);
       toast.success("Account updated");
       onOpenChange(false);
@@ -142,6 +143,7 @@ export default function EditAccountDialog({ account, open, onOpenChange }: Props
 
   const watchedType = form.watch("account_type");
   const showPropertyLink = watchedType === "mortgage";
+  const showDebtFields = ["mortgage", "loan", "credit_card"].includes(watchedType);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -224,8 +226,8 @@ export default function EditAccountDialog({ account, open, onOpenChange }: Props
             </div>
           )}
 
-          {/* Mortgage details */}
-          {showPropertyLink && (
+          {/* Debt details (mortgage, loan, credit card) */}
+          {showDebtFields && (
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">
                 <Label htmlFor="edit-interest-rate">Interest Rate (%)</Label>

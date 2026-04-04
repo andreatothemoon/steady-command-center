@@ -671,6 +671,8 @@ export type Database = {
         | "crypto"
         | "employer_share_scheme"
         | "property"
+        | "loan"
+        | "credit_card"
       confidence_level: "high" | "medium" | "low"
       document_status: "pending" | "approved" | "rejected"
       document_type:
@@ -829,6 +831,8 @@ export const Constants = {
         "crypto",
         "employer_share_scheme",
         "property",
+        "loan",
+        "credit_card",
       ],
       confidence_level: ["high", "medium", "low"],
       document_status: ["pending", "approved", "rejected"],
