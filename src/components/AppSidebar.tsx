@@ -7,6 +7,7 @@ import {
   FileText,
   Receipt,
   TrendingUp,
+  Building2,
   Settings,
   ChevronLeft,
   ChevronRight,
@@ -25,6 +26,7 @@ const navItems = [
   { to: "/documents", label: "Documents", icon: FileText },
   { to: "/tax", label: "Tax", icon: Receipt },
   { to: "/retirement", label: "Retirement", icon: TrendingUp },
+  { to: "/db-pensions", label: "DB Pensions", icon: Building2 },
 ];
 
 function SidebarContent({ collapsed, toggle, onNavigate }: { collapsed: boolean; toggle: () => void; onNavigate?: () => void }) {

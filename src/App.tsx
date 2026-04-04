@@ -14,6 +14,7 @@ import DocumentsPage from "@/pages/DocumentsPage";
 import TaxPage from "@/pages/TaxPage";
 import RetirementPage from "@/pages/RetirementPage";
 import SettingsPage from "@/pages/SettingsPage";
+import DBPensionsPage from "@/pages/DBPensionsPage";
 import AuthPage from "@/pages/AuthPage";
 import NotFound from "@/pages/NotFound";
 
@@ -44,6 +45,7 @@ function ProtectedRoutes() {
             <Route path="/documents" element={<DocumentsPage />} />
             <Route path="/tax" element={<TaxPage />} />
             <Route path="/retirement" element={<RetirementPage />} />
+            <Route path="/db-pensions" element={<DBPensionsPage />} />
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
