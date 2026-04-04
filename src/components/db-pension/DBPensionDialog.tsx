@@ -154,12 +154,12 @@ export default function DBPensionDialog({ open, onOpenChange, pension, onSave, i
           </div>
         </div>
 
-        <ResponsiveDialogFooter className="mt-4">
+        <div className="flex justify-end gap-2 mt-4">
           <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
           <Button onClick={handleSubmit} disabled={isPending}>
             {pension ? "Update" : "Add"} Scheme
           </Button>
-        </ResponsiveDialogFooter>
+        </div>
       </ResponsiveDialogContent>
     </ResponsiveDialog>
   );

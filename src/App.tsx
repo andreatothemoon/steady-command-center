@@ -45,6 +45,7 @@ function ProtectedRoutes() {
             <Route path="/documents" element={<DocumentsPage />} />
             <Route path="/tax" element={<TaxPage />} />
             <Route path="/retirement" element={<RetirementPage />} />
+            <Route path="/db-pensions" element={<DBPensionsPage />} />
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
