@@ -14,7 +14,7 @@ export function useHouseholdProfiles() {
       if (!householdId) return [];
       const { data, error } = await supabase
         .from("household_profiles")
-        .select("*")
+        .select("id, household_id, name, role, date_of_birth, is_primary, created_at, updated_at")
         .eq("household_id", householdId)
         .order("is_primary", { ascending: false })
         .order("role", { ascending: true })
