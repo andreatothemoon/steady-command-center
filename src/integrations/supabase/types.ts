@@ -703,6 +703,7 @@ export type Database = {
           bonus: number | null
           capital_gains: number | null
           created_at: string
+          dividend_income: number | null
           employer_pension: number | null
           gift_aid: number | null
           gross_income: number | null
@@ -724,6 +725,7 @@ export type Database = {
           bonus?: number | null
           capital_gains?: number | null
           created_at?: string
+          dividend_income?: number | null
           employer_pension?: number | null
           gift_aid?: number | null
           gross_income?: number | null
@@ -745,6 +747,7 @@ export type Database = {
           bonus?: number | null
           capital_gains?: number | null
           created_at?: string
+          dividend_income?: number | null
           employer_pension?: number | null
           gift_aid?: number | null
           gross_income?: number | null
