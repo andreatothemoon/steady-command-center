@@ -25,7 +25,7 @@ import {
 import { mockNetWorthHistory } from "@/data/mockData";
 import { useAccounts } from "@/hooks/useAccounts";
 import { useHouseholdProfiles } from "@/hooks/useHouseholdProfiles";
-import { formatCurrency, staleness, daysAgo } from "@/lib/format";
+import { formatCurrency, staleness, daysAgo, calcMonthlyPayment } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
 import AllocationDonut from "@/components/AllocationDonut";
@@ -254,6 +254,14 @@ export default function OverviewPage() {
                         Mortgage: {formatCurrency(item.mortgageBalance)} · LTV {item.ltv.toFixed(0)}%
                         {(item.mortgage as any).interest_rate != null && ` · ${Number((item.mortgage as any).interest_rate).toFixed(2)}%`}
                         {(item.mortgage as any).term_remaining_months != null && ` · ${Math.floor(Number((item.mortgage as any).term_remaining_months) / 12)}y left`}
+                        {(() => {
+                          const mp = calcMonthlyPayment(
+                            item.mortgageBalance,
+                            Number((item.mortgage as any).interest_rate ?? 0),
+                            Number((item.mortgage as any).term_remaining_months ?? 0)
+                          );
+                          return mp ? ` · ${formatCurrency(Math.round(mp))}/mo` : "";
+                        })()}
                       </span>
                     ) : (
                       <span className="text-success">No mortgage — fully owned</span>

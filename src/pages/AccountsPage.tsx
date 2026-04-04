@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { Plus, ArrowUpDown, Clock, Inbox, Link2 } from "lucide-react";
 import { useAccounts, type Account } from "@/hooks/useAccounts";
 import { accountTypeLabels } from "@/data/types";
-import { formatCurrency, formatDate, staleness, daysAgo } from "@/lib/format";
+import { formatCurrency, formatDate, staleness, daysAgo, calcMonthlyPayment } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -141,6 +141,14 @@ export default function AccountsPage() {
                               {["mortgage", "loan", "credit_card"].includes(account.account_type) && (account as any).term_remaining_months != null && (
                                 <span className="ml-1">· {Math.floor(Number((account as any).term_remaining_months) / 12)}y {Number((account as any).term_remaining_months) % 12}m left</span>
                               )}
+                              {(() => {
+                                const mp = calcMonthlyPayment(
+                                  Math.abs(Number(account.current_value)),
+                                  Number((account as any).interest_rate ?? 0),
+                                  Number((account as any).term_remaining_months ?? 0)
+                                );
+                                return mp ? <span className="ml-1">· {formatCurrency(Math.round(mp))}/mo</span> : null;
+                              })()}
                               {account.account_type === "mortgage" && (account as any).linked_account_id && (() => {
                                 const linked = accounts.find((a) => a.id === (account as any).linked_account_id);
                                 return linked ? (
