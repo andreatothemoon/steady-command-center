@@ -159,6 +159,7 @@ export default function AccountsPage() {
       )}
 
       <AddAccountDialog open={addOpen} onOpenChange={setAddOpen} />
+      <EditAccountDialog account={editAccount} open={!!editAccount} onOpenChange={(o) => { if (!o) setEditAccount(null); }} />
     </motion.div>
   );
 }
