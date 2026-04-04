@@ -224,6 +224,20 @@ export default function EditAccountDialog({ account, open, onOpenChange }: Props
             </div>
           )}
 
+          {/* Mortgage details */}
+          {showPropertyLink && (
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <Label htmlFor="edit-interest-rate">Interest Rate (%)</Label>
+                <Input id="edit-interest-rate" type="number" step="0.01" min="0" max="100" placeholder="e.g. 4.5" {...form.register("interest_rate")} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-term">Term Remaining (months)</Label>
+                <Input id="edit-term" type="number" step="1" min="0" max="600" placeholder="e.g. 240" {...form.register("term_remaining_months")} />
+              </div>
+            </div>
+          )}
+
           <div className="flex items-center justify-between pt-2">
             <AlertDialog>
               <AlertDialogTrigger asChild>
