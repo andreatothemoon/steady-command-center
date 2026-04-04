@@ -226,8 +226,8 @@ export default function EditAccountDialog({ account, open, onOpenChange }: Props
             </div>
           )}
 
-          {/* Mortgage details */}
-          {showPropertyLink && (
+          {/* Debt details (mortgage, loan, credit card) */}
+          {showDebtFields && (
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">
                 <Label htmlFor="edit-interest-rate">Interest Rate (%)</Label>
