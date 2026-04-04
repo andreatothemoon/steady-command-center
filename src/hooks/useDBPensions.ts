@@ -83,7 +83,7 @@ export function useUpsertDBPension() {
             account_type: "db_pension" as any,
             wrapper_type: "db_pension" as any,
             current_value: 0,
-            owner_name: "You",
+            owner_name: values.name,
           })
           .select()
           .single();

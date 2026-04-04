@@ -132,7 +132,7 @@ export function parseCsv(text: string): ParsedRow[] {
     const current_value = parseFloat(rawValue.replace(/[£$,]/g, ""));
     if (isNaN(current_value)) errors.push("Invalid value");
 
-    const owner_name = ownerIdx >= 0 ? cols[ownerIdx] ?? "You" : "You";
+    const owner_name = ownerIdx >= 0 ? cols[ownerIdx] ?? "" : "";
 
     const rawRate = rateIdx >= 0 ? cols[rateIdx] ?? "" : "";
     const interest_rate = rawRate ? parseFloat(rawRate) : null;

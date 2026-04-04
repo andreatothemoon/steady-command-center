@@ -129,7 +129,6 @@ export default function AccountsPage() {
                   <div className="card-surface divide-y divide-border overflow-hidden">
                     {accts.map((account) => {
                       const stale = staleness(account.last_updated);
-                      const provider = account.institutions?.name ?? "—";
                       return (
                         <div
                           key={account.id}
@@ -149,7 +148,7 @@ export default function AccountsPage() {
                               )}
                             </div>
                             <p className="text-[11px] text-muted-foreground mt-0.5">
-                              {provider} · {account.owner_name} · {formatDate(account.last_updated)}
+                              {account.owner_name} · {formatDate(account.last_updated)}
                               {["mortgage", "loan", "credit_card"].includes(account.account_type) && (account as any).interest_rate != null && (
                                 <span className="ml-1.5">{Number((account as any).interest_rate).toFixed(2)}%</span>
                               )}
