@@ -60,7 +60,7 @@ export default function AllocationDonut({ accounts }: Props) {
 
   return (
     <div className="card-surface p-5">
-      <p className="label-muted mb-4">Asset Allocation</p>
+      <p className="label-muted mb-4" style={{ opacity: 1 }}>Asset Allocation</p>
       <div className="flex items-center gap-4">
         {/* Chart */}
         <div className="relative w-[160px] h-[160px] flex-shrink-0">

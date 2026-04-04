@@ -148,9 +148,12 @@ export default function AppSidebar() {
   return (
     <aside
       className={cn(
-        "fixed left-0 top-0 z-40 flex h-screen flex-col bg-sidebar border-r border-sidebar-border transition-all duration-300",
+        "fixed left-0 top-0 z-40 flex h-screen flex-col border-r border-sidebar-border transition-all duration-300",
         collapsed ? "w-[68px]" : "w-56"
       )}
+      style={{
+        background: "linear-gradient(180deg, hsl(230 28% 5%) 0%, hsl(232 26% 4%) 100%)",
+      }}
     >
       <SidebarContent collapsed={collapsed} toggle={toggle} />
     </aside>
