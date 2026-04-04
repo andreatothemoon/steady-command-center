@@ -1,9 +1,13 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import { motion } from "framer-motion";
 import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis, ReferenceDot } from "recharts";
 import { formatCurrency } from "@/lib/format";
 import { Slider } from "@/components/ui/slider";
 import { cn } from "@/lib/utils";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
 
 const stagger = {
   container: { transition: { staggerChildren: 0.06 } },
@@ -14,6 +18,26 @@ const stagger = {
 };
 
 export default function RetirementPage() {
+  const { householdId } = useAuth();
+  const qc = useQueryClient();
+
+  const { data: scenario, isLoading } = useQuery({
+    queryKey: ["retirement_scenario_primary", householdId],
+    queryFn: async () => {
+      if (!householdId) return null;
+      const { data, error } = await supabase
+        .from("retirement_scenarios")
+        .select("*")
+        .eq("household_id", householdId)
+        .order("created_at", { ascending: true })
+        .limit(1)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!householdId,
+  });
+
   const [currentAge, setCurrentAge] = useState(35);
   const [retireAge, setRetireAge] = useState(57);
   const [currentPot, setCurrentPot] = useState(212700);
@@ -23,16 +47,95 @@ export default function RetirementPage() {
   const [inflation, setInflation] = useState(2.5);
   const [targetIncome, setTargetIncome] = useState(30000);
 
+  // Seed local state from DB once loaded
+  const seeded = useRef(false);
+  useEffect(() => {
+    if (scenario && !seeded.current) {
+      seeded.current = true;
+      setCurrentAge(scenario.current_age);
+      setRetireAge(scenario.retirement_age);
+      setCurrentPot(Number(scenario.current_pot));
+      setMonthlyContrib(Number(scenario.monthly_contribution));
+      setEmployerContrib(Number(scenario.employer_contribution));
+      setExpectedReturn(Number(scenario.expected_return));
+      setInflation(Number(scenario.inflation_rate));
+      setTargetIncome(Number(scenario.target_income));
+    }
+  }, [scenario]);
+
+  // Upsert mutation
+  const upsert = useMutation({
+    mutationFn: async (values: {
+      current_age: number;
+      retirement_age: number;
+      current_pot: number;
+      monthly_contribution: number;
+      employer_contribution: number;
+      expected_return: number;
+      inflation_rate: number;
+      target_income: number;
+    }) => {
+      if (!householdId) throw new Error("No household");
+      if (scenario?.id) {
+        const { error } = await supabase
+          .from("retirement_scenarios")
+          .update(values)
+          .eq("id", scenario.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from("retirement_scenarios")
+          .insert({ ...values, household_id: householdId, name: "Default Scenario" });
+        if (error) throw error;
+      }
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["retirement_scenario_primary", householdId] });
+    },
+    onError: (err) => {
+      toast.error("Failed to save scenario");
+      console.error(err);
+    },
+  });
+
+  // Debounced auto-save
+  const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const schedulesSave = useCallback(() => {
+    if (saveTimer.current) clearTimeout(saveTimer.current);
+    saveTimer.current = setTimeout(() => {
+      upsert.mutate({
+        current_age: currentAge,
+        retirement_age: retireAge,
+        current_pot: currentPot,
+        monthly_contribution: monthlyContrib,
+        employer_contribution: employerContrib,
+        expected_return: expectedReturn,
+        inflation_rate: inflation,
+        target_income: targetIncome,
+      });
+    }, 800);
+  }, [currentAge, retireAge, currentPot, monthlyContrib, employerContrib, expectedReturn, inflation, targetIncome]);
+
+  // Trigger save when any value changes (skip initial load)
+  const initialLoad = useRef(true);
+  useEffect(() => {
+    if (isLoading) return;
+    if (initialLoad.current) {
+      initialLoad.current = false;
+      return;
+    }
+    schedulesSave();
+    return () => { if (saveTimer.current) clearTimeout(saveTimer.current); };
+  }, [currentAge, retireAge, currentPot, monthlyContrib, employerContrib, expectedReturn, inflation, targetIncome, isLoading]);
+
   const projection = useMemo(() => {
     const years = retireAge - currentAge;
     const monthlyReturn = expectedReturn / 100 / 12;
     const monthlyInflation = inflation / 100 / 12;
     const totalMonthly = monthlyContrib + employerContrib;
     const data: { age: number; nominal: number; real: number }[] = [];
-
     let nominal = currentPot;
     let real = currentPot;
-
     for (let y = 0; y <= years; y++) {
       data.push({ age: currentAge + y, nominal: Math.round(nominal), real: Math.round(real) });
       for (let m = 0; m < 12; m++) {
@@ -61,11 +164,26 @@ export default function RetirementPage() {
     { label: "Target Income", value: targetIncome, onChange: setTargetIncome, min: 10000, max: 100000, step: 1000, format: formatCurrency },
   ];
 
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[300px]">
+        <div className="h-6 w-6 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+      </div>
+    );
+  }
+
   return (
     <motion.div className="space-y-5" variants={stagger.container} initial="initial" animate="animate">
       <motion.div variants={stagger.item}>
-        <h1 className="text-2xl font-semibold tracking-tight text-foreground">Retirement</h1>
-        <p className="label-subtle mt-1">Project your pension pot and retirement income</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-semibold tracking-tight text-foreground">Retirement</h1>
+            <p className="label-subtle mt-1">Project your pension pot and retirement income</p>
+          </div>
+          {upsert.isPending && (
+            <span className="text-[10px] text-muted-foreground/60 animate-pulse">Saving…</span>
+          )}
+        </div>
       </motion.div>
 
       <motion.div variants={stagger.item} className="grid grid-cols-1 gap-3 sm:grid-cols-3">
