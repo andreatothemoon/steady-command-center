@@ -4,7 +4,7 @@ import { TrendingUp, TrendingDown, Users } from "lucide-react";
 import {
   Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis, ReferenceDot,
 } from "recharts";
-import { mockNetWorthHistory } from "@/data/mockData";
+import { useNetWorthHistory, filterByTimeRange } from "@/hooks/useNetWorthHistory";
 import { formatCurrency } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { Account } from "@/hooks/useAccounts";
