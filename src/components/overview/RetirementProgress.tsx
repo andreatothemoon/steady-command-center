@@ -1,9 +1,12 @@
 import { useMemo } from "react";
 import { motion } from "framer-motion";
-import { Target, ChevronRight } from "lucide-react";
+import { Target, ChevronRight, Plus } from "lucide-react";
 import { formatCurrency } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import type { Account } from "@/hooks/useAccounts";
 
 interface Props {
@@ -12,22 +15,42 @@ interface Props {
 
 export default function RetirementProgress({ accounts }: Props) {
   const navigate = useNavigate();
+  const { householdId } = useAuth();
+
+  const { data: scenario, isLoading } = useQuery({
+    queryKey: ["retirement_scenario_primary", householdId],
+    queryFn: async () => {
+      if (!householdId) return null;
+      const { data, error } = await supabase
+        .from("retirement_scenarios")
+        .select("*")
+        .eq("household_id", householdId)
+        .order("created_at", { ascending: true })
+        .limit(1)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!householdId,
+  });
 
   // Derive pension pot from accounts
-  const currentPot = accounts
+  const pensionPot = accounts
     .filter((a) => ["sipp", "workplace_pension"].includes(a.account_type))
     .reduce((s, a) => s + Number(a.current_value), 0);
 
-  // Simplified projection defaults
-  const currentAge = 35;
-  const retireAge = 57;
-  const monthlyContrib = 1250; // employee + employer
-  const expectedReturn = 0.05;
-  const inflation = 0.025;
-  const targetIncome = 30000;
+  // Use scenario from DB or sensible defaults
+  const currentAge = scenario?.current_age ?? 35;
+  const retireAge = scenario?.retirement_age ?? 57;
+  const monthlyContrib = (scenario?.monthly_contribution ?? 750) + (scenario?.employer_contribution ?? 500);
+  const expectedReturn = (scenario?.expected_return ?? 5) / 100;
+  const inflation = (scenario?.inflation_rate ?? 2.5) / 100;
+  const targetIncome = scenario?.target_income ?? 30000;
+  const currentPot = scenario?.current_pot ?? pensionPot;
 
   const { finalReal, readiness, status } = useMemo(() => {
     const years = retireAge - currentAge;
+    if (years <= 0) return { finalReal: currentPot, readiness: 100, status: "ahead" as const };
     const monthlyReal = (expectedReturn - inflation) / 12;
     let pot = currentPot;
     for (let m = 0; m < years * 12; m++) {
@@ -37,9 +60,47 @@ export default function RetirementProgress({ accounts }: Props) {
     const pct = Math.min(Math.round((income / targetIncome) * 100), 150);
     const st: "on_track" | "ahead" | "behind" = pct >= 100 ? "ahead" : pct >= 80 ? "on_track" : "behind";
     return { finalReal: Math.round(pot), readiness: pct, status: st };
-  }, [currentPot]);
+  }, [currentPot, retireAge, currentAge, monthlyContrib, expectedReturn, inflation, targetIncome]);
 
   const estimatedIncome = Math.round(finalReal * 0.04);
+
+  // Empty state — no scenario created yet
+  if (!isLoading && !scenario) {
+    return (
+      <div className="card-insight p-5 h-full flex flex-col">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <Target className="h-4 w-4 text-muted-foreground/50" />
+            <p className="label-muted" style={{ opacity: 1 }}>Retirement Readiness</p>
+          </div>
+        </div>
+        <div className="flex-1 flex flex-col items-center justify-center text-center gap-3">
+          <p className="text-sm text-muted-foreground">No retirement scenario configured yet</p>
+          <button
+            onClick={() => navigate("/retirement")}
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:text-primary/80 transition-colors"
+          >
+            <Plus className="h-3.5 w-3.5" />
+            Set up projection
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <div className="card-insight p-5 h-full flex flex-col">
+        <div className="flex items-center gap-2 mb-4">
+          <Target className="h-4 w-4 text-muted-foreground/50" />
+          <p className="label-muted" style={{ opacity: 1 }}>Retirement Readiness</p>
+        </div>
+        <div className="flex-1 flex items-center justify-center">
+          <div className="h-5 w-5 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="card-insight p-5 h-full flex flex-col">
@@ -105,6 +166,12 @@ export default function RetirementProgress({ accounts }: Props) {
           <span className="text-muted-foreground">Retire at</span>
           <span className="text-card-foreground font-medium">{retireAge}</span>
         </div>
+        {scenario && (
+          <div className="flex items-center justify-between text-[11px]">
+            <span className="text-muted-foreground">Scenario</span>
+            <span className="text-card-foreground font-medium truncate max-w-[120px]">{scenario.name}</span>
+          </div>
+        )}
       </div>
     </div>
   );
