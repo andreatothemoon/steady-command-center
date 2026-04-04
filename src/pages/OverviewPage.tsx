@@ -12,6 +12,7 @@ import {
   ArrowUpRight,
   Users,
   Home,
+  CreditCard,
 } from "lucide-react";
 import {
   Area,
@@ -26,6 +27,7 @@ import { mockNetWorthHistory } from "@/data/mockData";
 import { useAccounts } from "@/hooks/useAccounts";
 import { useHouseholdProfiles } from "@/hooks/useHouseholdProfiles";
 import { formatCurrency, staleness, daysAgo, calcMonthlyPayment } from "@/lib/format";
+import { accountTypeLabels } from "@/data/types";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
 import AllocationDonut from "@/components/AllocationDonut";
@@ -287,6 +289,99 @@ export default function OverviewPage() {
         );
       })()}
 
+      {/* Debt Summary */}
+      {(() => {
+        const debtTypes = ["mortgage", "loan", "credit_card"];
+        const debtAccounts = accounts.filter((a) => debtTypes.includes(a.account_type));
+        if (debtAccounts.length === 0) return null;
+
+        const totalDebt = debtAccounts.reduce((s, a) => s + Math.abs(Number(a.current_value)), 0);
+        const totalMonthly = debtAccounts.reduce((s, a) => {
+          const mp = calcMonthlyPayment(
+            Math.abs(Number(a.current_value)),
+            Number((a as any).interest_rate ?? 0),
+            Number((a as any).term_remaining_months ?? 0)
+          );
+          return s + (mp ?? 0);
+        }, 0);
+
+        // Group by type
+        const byType = debtTypes.reduce<Record<string, typeof debtAccounts>>((acc, t) => {
+          const items = debtAccounts.filter((a) => a.account_type === t);
+          if (items.length > 0) acc[t] = items;
+          return acc;
+        }, {});
+
+        return (
+          <motion.div variants={stagger.item} className="card-surface p-5">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <CreditCard className="h-4 w-4 text-muted-foreground/60" />
+                <p className="label-muted">Debt Summary</p>
+              </div>
+              <div className="text-right">
+                <span className="text-sm font-semibold tabular-nums text-destructive">
+                  {formatCurrency(totalDebt)}
+                </span>
+                {totalMonthly > 0 && (
+                  <p className="text-[10px] text-muted-foreground">{formatCurrency(Math.round(totalMonthly))}/mo total</p>
+                )}
+              </div>
+            </div>
+            <div className="space-y-3">
+              {Object.entries(byType).map(([type, items]) => {
+                const typeTotal = items.reduce((s, a) => s + Math.abs(Number(a.current_value)), 0);
+                const typeMonthly = items.reduce((s, a) => {
+                  const mp = calcMonthlyPayment(
+                    Math.abs(Number(a.current_value)),
+                    Number((a as any).interest_rate ?? 0),
+                    Number((a as any).term_remaining_months ?? 0)
+                  );
+                  return s + (mp ?? 0);
+                }, 0);
+
+                return (
+                  <div key={type} className="rounded-lg bg-secondary/30 px-4 py-3">
+                    <div className="flex items-center justify-between mb-1.5">
+                      <p className="text-sm font-medium text-card-foreground">
+                        {accountTypeLabels[type as keyof typeof accountTypeLabels] ?? type}
+                        <span className="text-[10px] text-muted-foreground ml-1.5">({items.length})</span>
+                      </p>
+                      <p className="text-sm font-semibold tabular-nums text-destructive">
+                        {formatCurrency(typeTotal)}
+                      </p>
+                    </div>
+                    {items.map((a) => {
+                      const bal = Math.abs(Number(a.current_value));
+                      const mp = calcMonthlyPayment(
+                        bal,
+                        Number((a as any).interest_rate ?? 0),
+                        Number((a as any).term_remaining_months ?? 0)
+                      );
+                      return (
+                        <div key={a.id} className="flex items-center justify-between text-[11px] text-muted-foreground py-0.5">
+                          <span>{a.name}</span>
+                          <span className="tabular-nums">
+                            {formatCurrency(bal)}
+                            {(a as any).interest_rate != null && ` · ${Number((a as any).interest_rate).toFixed(2)}%`}
+                            {mp ? ` · ${formatCurrency(Math.round(mp))}/mo` : ""}
+                          </span>
+                        </div>
+                      );
+                    })}
+                    {typeMonthly > 0 && (
+                      <div className="flex items-center justify-between text-[11px] font-medium text-card-foreground pt-1.5 mt-1.5 border-t border-border/50">
+                        <span>Monthly total</span>
+                        <span className="tabular-nums">{formatCurrency(Math.round(typeMonthly))}/mo</span>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </motion.div>
+        );
+      })()}
 
       <motion.div variants={stagger.item} className="grid grid-cols-1 gap-3 lg:grid-cols-2">
         <AllocationDonut accounts={accounts} />
