@@ -190,6 +190,20 @@ export default function AddAccountDialog({ open, onOpenChange }: Props) {
             </div>
           )}
 
+          {/* Mortgage details */}
+          {watchedType === "mortgage" && (
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <Label htmlFor="interest_rate">Interest Rate (%)</Label>
+                <Input id="interest_rate" type="number" step="0.01" min="0" max="100" placeholder="e.g. 4.5" {...form.register("interest_rate")} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="term_remaining">Term Remaining (months)</Label>
+                <Input id="term_remaining" type="number" step="1" min="0" max="600" placeholder="e.g. 240" {...form.register("term_remaining_months")} />
+              </div>
+            </div>
+          )}
+
           <Button type="submit" className="w-full" disabled={addAccount.isPending}>
             {addAccount.isPending ? "Adding…" : "Add Account"}
           </Button>
