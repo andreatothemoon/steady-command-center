@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
 @layer base {
   :root {
@@ -51,33 +51,33 @@
   }
 
   .dark {
-    --background: 228 25% 7%;
-    --foreground: 210 20% 92%;
-    --card: 228 20% 10%;
-    --card-foreground: 210 20% 92%;
-    --popover: 228 20% 10%;
-    --popover-foreground: 210 20% 92%;
+    --background: 228 25% 6.5%;
+    --foreground: 210 20% 93%;
+    --card: 228 20% 9.5%;
+    --card-foreground: 210 20% 93%;
+    --popover: 228 20% 9.5%;
+    --popover-foreground: 210 20% 93%;
     --primary: 160 60% 45%;
     --primary-foreground: 228 25% 7%;
-    --secondary: 228 15% 14%;
+    --secondary: 228 15% 13%;
     --secondary-foreground: 210 20% 80%;
-    --muted: 228 15% 14%;
-    --muted-foreground: 215 12% 48%;
-    --accent: 228 15% 14%;
+    --muted: 228 15% 13%;
+    --muted-foreground: 215 12% 46%;
+    --accent: 228 15% 13%;
     --accent-foreground: 160 50% 60%;
     --destructive: 0 62% 50%;
     --destructive-foreground: 0 0% 100%;
-    --border: 228 12% 15%;
-    --input: 228 12% 15%;
+    --border: 228 12% 14%;
+    --input: 228 12% 14%;
     --ring: 160 60% 45%;
 
-    --sidebar-background: 230 28% 5%;
-    --sidebar-foreground: 215 12% 48%;
+    --sidebar-background: 230 28% 4.5%;
+    --sidebar-foreground: 215 12% 46%;
     --sidebar-primary: 160 60% 45%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 228 20% 10%;
+    --sidebar-accent: 228 20% 9%;
     --sidebar-accent-foreground: 210 20% 85%;
-    --sidebar-border: 228 15% 11%;
+    --sidebar-border: 228 15% 10%;
     --sidebar-ring: 160 60% 45%;
 
     --success: 145 60% 42%;
@@ -93,7 +93,7 @@
     --chart-4: 38 92% 55%;
     --chart-5: 340 65% 60%;
 
-    /* Premium surface tokens */
+    /* Elevation tokens */
     --surface-elevated: 228 18% 12%;
     --surface-glow: 160 60% 45%;
   }
@@ -112,56 +112,109 @@
 }
 
 @layer components {
-  /* Premium card surfaces */
+  /* ── Level 1: Base background ── */
+  /* Applied via bg-background on body — subtle radial gradient */
+
+  /* ── Level 2: Standard Cards ── */
   .card-surface {
-    @apply rounded-xl border border-border bg-card;
+    @apply rounded-xl border border-border;
     background: linear-gradient(
       165deg,
       hsl(228 20% 11%) 0%,
-      hsl(228 20% 9.5%) 100%
+      hsl(228 20% 9%) 100%
     );
+    box-shadow: 0 1px 3px 0 hsl(0 0% 0% / 0.12),
+                inset 0 1px 0 0 hsl(228 20% 14% / 0.5);
   }
 
   .card-surface-hover {
-    @apply card-surface transition-all duration-300;
+    @apply card-surface transition-all duration-200 cursor-default;
   }
   .card-surface-hover:hover {
     border-color: hsl(228 12% 20%);
-    box-shadow: 0 4px 24px -4px hsl(0 0% 0% / 0.3),
-                0 0 0 1px hsl(228 12% 18%);
-    transform: translateY(-1px);
+    box-shadow: 0 8px 32px -8px hsl(0 0% 0% / 0.4),
+                0 0 0 1px hsl(228 12% 18%),
+                inset 0 1px 0 0 hsl(228 20% 16% / 0.6);
+    transform: translateY(-2px);
+  }
+  .card-surface-hover:active {
+    transform: translateY(0) scale(0.995);
+    transition-duration: 80ms;
   }
 
-  /* Hero gradient surface */
+  /* ── Level 3: Elevated / Hero surfaces ── */
   .hero-surface {
-    @apply rounded-2xl border border-border overflow-hidden;
+    @apply rounded-2xl border overflow-hidden;
+    border-color: hsl(228 12% 16%);
     background: linear-gradient(
       145deg,
       hsl(228 22% 12%) 0%,
-      hsl(225 20% 10%) 40%,
-      hsl(220 18% 9%) 100%
+      hsl(225 20% 9.5%) 40%,
+      hsl(220 18% 8%) 100%
+    );
+    box-shadow: 0 12px 48px -12px hsl(0 0% 0% / 0.5),
+                0 0 0 1px hsl(228 15% 14%),
+                inset 0 1px 0 0 hsl(228 20% 16% / 0.7);
+  }
+  .hero-surface::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      hsl(160 60% 45% / 0.15) 30%,
+      hsl(160 60% 45% / 0.25) 50%,
+      hsl(160 60% 45% / 0.15) 70%,
+      transparent 100%
     );
   }
 
   /* Alert card */
   .card-alert {
     @apply rounded-xl border overflow-hidden;
-    border-color: hsl(38 92% 50% / 0.2);
+    border-color: hsl(38 92% 50% / 0.15);
     background: linear-gradient(
       165deg,
-      hsl(38 30% 12%) 0%,
-      hsl(228 20% 9.5%) 100%
+      hsl(38 25% 11%) 0%,
+      hsl(228 20% 9%) 100%
     );
+    box-shadow: 0 4px 24px -4px hsl(38 92% 50% / 0.08),
+                inset 0 1px 0 0 hsl(38 50% 20% / 0.3);
   }
 
-  /* Insight card */
+  /* Insight card (Level 2.5 — between standard and elevated) */
   .card-insight {
     @apply rounded-xl border border-border overflow-hidden;
     background: linear-gradient(
       165deg,
       hsl(228 20% 11.5%) 0%,
+      hsl(228 20% 8.5%) 100%
+    );
+    box-shadow: 0 2px 8px -2px hsl(0 0% 0% / 0.2),
+                inset 0 1px 0 0 hsl(228 20% 14% / 0.4);
+  }
+
+  /* Action card — elevated with left accent */
+  .card-action {
+    @apply rounded-xl border border-border overflow-hidden relative;
+    background: linear-gradient(
+      165deg,
+      hsl(228 20% 11%) 0%,
       hsl(228 20% 9%) 100%
     );
+    box-shadow: 0 2px 12px -4px hsl(0 0% 0% / 0.3),
+                inset 0 1px 0 0 hsl(228 20% 14% / 0.4);
+    transition: all 180ms ease-out;
+  }
+  .card-action:hover {
+    border-color: hsl(228 12% 20%);
+    box-shadow: 0 8px 32px -8px hsl(0 0% 0% / 0.4),
+                0 0 0 1px hsl(228 12% 18%);
+    transform: translateY(-1px);
   }
 
   /* Sidebar nav item */
@@ -182,6 +235,8 @@
     height: 20px;
     border-radius: 0 4px 4px 0;
     background: hsl(160 60% 45%);
+    box-shadow: 0 0 8px hsl(160 60% 45% / 0.4);
+    animation: accent-bar-in 250ms ease-out;
   }
   .nav-item-inactive {
     @apply nav-item text-sidebar-foreground;
@@ -191,24 +246,66 @@
     background: hsl(228 20% 10% / 0.8);
   }
 
-  /* Number display */
+  /* Number display — enhanced for premium feel */
   .value-hero {
-    @apply text-4xl font-bold tracking-tight tabular-nums text-foreground;
-    letter-spacing: -0.02em;
+    @apply text-4xl font-extrabold tracking-tighter tabular-nums text-foreground;
+    letter-spacing: -0.03em;
   }
   .value-large {
-    @apply text-2xl font-semibold tracking-tight tabular-nums text-card-foreground;
-    letter-spacing: -0.01em;
+    @apply text-2xl font-bold tracking-tight tabular-nums text-card-foreground;
+    letter-spacing: -0.02em;
   }
   .value-compact {
-    @apply text-lg font-semibold tabular-nums text-card-foreground;
+    @apply text-lg font-bold tabular-nums text-card-foreground;
+    letter-spacing: -0.01em;
   }
   .label-muted {
-    @apply text-xs font-medium tracking-wide uppercase text-muted-foreground;
-    letter-spacing: 0.05em;
+    @apply text-[11px] font-semibold tracking-widest uppercase text-muted-foreground;
+    letter-spacing: 0.06em;
   }
   .label-subtle {
     @apply text-sm text-muted-foreground;
+    opacity: 0.7;
+  }
+
+  /* Glow dot for chart latest point */
+  .glow-dot {
+    filter: drop-shadow(0 0 6px hsl(160 60% 45% / 0.6));
+  }
+
+  /* Threshold bar */
+  .threshold-bar {
+    @apply relative h-2.5 rounded-full overflow-hidden;
+    background: hsl(228 15% 12%);
+    box-shadow: inset 0 1px 2px hsl(0 0% 0% / 0.3);
+  }
+  .threshold-bar-fill {
+    @apply h-full rounded-full transition-all duration-700;
+    box-shadow: 0 0 8px hsl(160 60% 45% / 0.3);
+  }
+  .threshold-marker {
+    @apply absolute top-0 bottom-0 w-0.5;
+    background: hsl(0 0% 100% / 0.4);
+  }
+
+  /* Status badge */
+  .status-badge {
+    @apply inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full;
+  }
+  .status-safe {
+    @apply status-badge;
+    background: hsl(145 60% 42% / 0.12);
+    color: hsl(145 60% 50%);
+  }
+  .status-warning {
+    @apply status-badge;
+    background: hsl(38 92% 50% / 0.12);
+    color: hsl(38 92% 55%);
+  }
+  .status-danger {
+    @apply status-badge;
+    background: hsl(0 72% 51% / 0.12);
+    color: hsl(0 72% 58%);
   }
 }
 
@@ -216,5 +313,17 @@
   .text-gradient {
     @apply bg-clip-text text-transparent;
     background-image: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--info)));
+  }
+}
+
+/* Keyframe for sidebar accent bar */
+@keyframes accent-bar-in {
+  from {
+    height: 0;
+    opacity: 0;
+  }
+  to {
+    height: 20px;
+    opacity: 1;
   }
 }
