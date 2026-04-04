@@ -119,6 +119,14 @@ export default function ImportAccountsDialog({ open, onOpenChange }: Props) {
                 <span>Choose File</span>
               </Button>
             </label>
+            <button
+              type="button"
+              onClick={downloadTemplate}
+              className="flex items-center gap-1.5 text-xs text-primary hover:text-primary/80 transition-colors mt-1"
+            >
+              <Download className="h-3.5 w-3.5" />
+              Download sample template
+            </button>
           </div>
         ) : (
           <div className="flex-1 overflow-hidden flex flex-col gap-3">
