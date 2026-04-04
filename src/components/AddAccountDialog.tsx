@@ -66,6 +66,8 @@ export default function AddAccountDialog({ open, onOpenChange }: Props) {
       wrapper_type: "none",
       current_value: 0,
       owner_name: profiles.find((p) => p.is_primary)?.name ?? profiles[0]?.name ?? "You",
+      interest_rate: "",
+      term_remaining_months: "",
     },
   });
 
