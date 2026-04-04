@@ -15,7 +15,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
     <div
       className="min-h-screen bg-background"
       style={{
-        background: "linear-gradient(135deg, hsl(228 25% 6.5%) 0%, hsl(230 22% 7%) 40%, hsl(228 25% 6%) 100%)",
+        background: "linear-gradient(135deg, hsl(220 27% 6%) 0%, hsl(222 28% 7.5%) 50%, hsl(220 27% 6%) 100%)",
       }}
     >
       <main className={cn(
