@@ -657,6 +657,10 @@ export type Database = {
         Args: { _household_id: string; _user_id: string }
         Returns: boolean
       }
+      set_ni_number: {
+        Args: { _ni_number: string; _profile_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       account_type:
