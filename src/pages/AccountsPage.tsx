@@ -40,6 +40,7 @@ function groupAccounts(accounts: Account[], groupBy: GroupBy) {
 export default function AccountsPage() {
   const [groupBy, setGroupBy] = useState<GroupBy>("type");
   const [addOpen, setAddOpen] = useState(false);
+  const [editAccount, setEditAccount] = useState<Account | null>(null);
   const { data: accounts = [], isLoading } = useAccounts();
 
   const grouped = groupAccounts(accounts, groupBy);
