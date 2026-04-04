@@ -590,7 +590,7 @@ function ReadOnlyField({ label, value }: { label: string; value: number }) {
   return (
     <div>
       <p className="text-[11px] text-muted-foreground mb-0.5">{label}</p>
-      <p className="text-sm font-medium tabular-nums">{formatCurrency(value)}</p>
+      <p className="text-sm font-medium tabular-nums text-card-foreground">{formatCurrency(value)}</p>
     </div>
   );
 }
