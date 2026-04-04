@@ -65,6 +65,7 @@ export default function EditAccountDialog({ account, open, onOpenChange }: Props
   const updateAccount = useUpdateAccount();
   const deleteAccount = useDeleteAccount();
   const { data: allAccounts = [] } = useAccounts();
+  const { data: profiles = [] } = useHouseholdProfiles();
   const [linkedAccountId, setLinkedAccountId] = useState<string | null>(null);
 
   const isMortgage = account?.account_type === "mortgage";
