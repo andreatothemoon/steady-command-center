@@ -20,6 +20,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useAddAccount, useAccounts } from "@/hooks/useAccounts";
+import { useHouseholdProfiles } from "@/hooks/useHouseholdProfiles";
 import { accountTypeLabels, wrapperLabels } from "@/data/types";
 import type { AccountType, WrapperType } from "@/data/types";
 import { toast } from "sonner";
@@ -51,6 +52,7 @@ interface Props {
 export default function AddAccountDialog({ open, onOpenChange }: Props) {
   const addAccount = useAddAccount();
   const { data: allAccounts = [] } = useAccounts();
+  const { data: profiles = [] } = useHouseholdProfiles();
   const [linkedAccountId, setLinkedAccountId] = useState<string | null>(null);
 
   const form = useForm<FormValues>({
@@ -60,7 +62,7 @@ export default function AddAccountDialog({ open, onOpenChange }: Props) {
       account_type: "",
       wrapper_type: "none",
       current_value: 0,
-      owner_name: "You",
+      owner_name: profiles.find((p) => p.is_primary)?.name ?? profiles[0]?.name ?? "You",
     },
   });
 
@@ -144,8 +146,19 @@ export default function AddAccountDialog({ open, onOpenChange }: Props) {
               <Input id="current_value" type="number" step="0.01" {...form.register("current_value")} />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="owner_name">Owner</Label>
-              <Input id="owner_name" placeholder="You" {...form.register("owner_name")} />
+              <Label>Owner</Label>
+              <Select onValueChange={(v) => form.setValue("owner_name", v)} value={form.watch("owner_name")}>
+                <SelectTrigger><SelectValue placeholder="Select owner" /></SelectTrigger>
+                <SelectContent>
+                  {profiles.length > 0 ? (
+                    profiles.map((p) => (
+                      <SelectItem key={p.id} value={p.name}>{p.name}</SelectItem>
+                    ))
+                  ) : (
+                    <SelectItem value="You">You</SelectItem>
+                  )}
+                </SelectContent>
+              </Select>
             </div>
           </div>
 
