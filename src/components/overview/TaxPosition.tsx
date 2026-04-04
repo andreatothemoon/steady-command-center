@@ -3,9 +3,10 @@ import { ShieldCheck, AlertTriangle, ChevronRight, TrendingDown } from "lucide-r
 import { formatCurrency } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
+import type { MemberANI } from "@/pages/OverviewPage";
 
 interface Props {
-  ani: number;
+  memberANIs: MemberANI[];
   isaUsed: number;
   isaLimit: number;
   pensionContributions?: number;
@@ -53,13 +54,19 @@ function BarRow({
   );
 }
 
-export default function TaxPosition({ ani, isaUsed, isaLimit, pensionContributions = 0 }: Props) {
+function getAniStatus(ani: number): "safe" | "warning" | "danger" {
+  if (ani >= 100000) return "danger";
+  if (ani > 85000) return "warning";
+  return "safe";
+}
+
+export default function TaxPosition({ memberANIs, isaUsed, isaLimit, pensionContributions = 0 }: Props) {
   const navigate = useNavigate();
-  const threshold = 100000;
-  const buffer = Math.max(0, threshold - ani);
-  const overThreshold = ani >= threshold;
-  const approaching = !overThreshold && buffer < 15000;
-  const aniStatus: "safe" | "warning" | "danger" = overThreshold ? "danger" : approaching ? "warning" : "safe";
+
+  // Find worst-case member
+  const sorted = [...memberANIs].sort((a, b) => b.ani - a.ani);
+  const worst = sorted[0];
+  const worstStatus = worst ? getAniStatus(worst.ani) : "safe";
 
   const isaRemaining = isaLimit - isaUsed;
   const isaStatus: "safe" | "warning" | "danger" = isaRemaining <= 0 ? "danger" : isaRemaining < 5000 ? "warning" : "safe";
@@ -68,12 +75,16 @@ export default function TaxPosition({ ani, isaUsed, isaLimit, pensionContributio
   const pensionStatus: "safe" | "warning" | "danger" =
     pensionContributions >= pensionAA ? "danger" : pensionContributions > pensionAA * 0.85 ? "warning" : "safe";
 
-  // Actionable insight
+  // Actionable insight for the worst-case member
   let insight = "";
-  if (overThreshold) {
-    insight = `Contribute ${formatCurrency(ani - threshold)} more to pension to drop below £100k`;
-  } else if (approaching) {
-    insight = `You can contribute ${formatCurrency(buffer)} to pension and stay below £100k`;
+  if (worst) {
+    const threshold = 100000;
+    const buffer = Math.max(0, threshold - worst.ani);
+    if (worst.ani >= threshold) {
+      insight = `${worst.name}: Contribute ${formatCurrency(worst.ani - threshold)} more to pension to drop below £100k`;
+    } else if (buffer < 15000) {
+      insight = `${worst.name}: Can contribute ${formatCurrency(buffer)} to pension and stay below £100k`;
+    }
   }
 
   return (
@@ -91,26 +102,40 @@ export default function TaxPosition({ ani, isaUsed, isaLimit, pensionContributio
         </button>
       </div>
 
-      {/* ANI headline */}
-      <div className="flex items-start justify-between mb-4">
-        <div>
+      {/* Per-member ANI */}
+      {memberANIs.length === 0 ? (
+        <div className="mb-4">
           <p className="text-[11px] text-muted-foreground mb-0.5">Adjusted Net Income</p>
-          <p className={cn(
-            "text-2xl font-bold tabular-nums tracking-tight",
-            aniStatus === "danger" ? "text-destructive" : aniStatus === "warning" ? "text-warning" : "text-card-foreground"
-          )}>
-            {formatCurrency(ani)}
-          </p>
+          <p className="text-2xl font-bold tabular-nums tracking-tight text-card-foreground">—</p>
         </div>
-        <div className={cn(
-          "text-[10px] font-semibold px-2 py-0.5 rounded-full mt-1",
-          aniStatus === "safe" && "status-safe",
-          aniStatus === "warning" && "status-warning",
-          aniStatus === "danger" && "status-danger",
-        )}>
-          {aniStatus === "safe" ? "Below £100k" : aniStatus === "warning" ? "Approaching" : "Over £100k"}
+      ) : (
+        <div className="space-y-2 mb-4">
+          {sorted.map((m) => {
+            const status = getAniStatus(m.ani);
+            return (
+              <div key={m.name} className="flex items-center justify-between">
+                <div>
+                  <p className="text-[11px] text-muted-foreground mb-0.5">{m.name}</p>
+                  <p className={cn(
+                    "text-lg font-bold tabular-nums tracking-tight",
+                    status === "danger" ? "text-destructive" : status === "warning" ? "text-warning" : "text-card-foreground"
+                  )}>
+                    {formatCurrency(m.ani)}
+                  </p>
+                </div>
+                <div className={cn(
+                  "text-[10px] font-semibold px-2 py-0.5 rounded-full",
+                  status === "safe" && "status-safe",
+                  status === "warning" && "status-warning",
+                  status === "danger" && "status-danger",
+                )}>
+                  {status === "safe" ? "Below £100k" : status === "warning" ? "Approaching" : "Over £100k"}
+                </div>
+              </div>
+            );
+          })}
         </div>
-      </div>
+      )}
 
       {/* Allowance bars */}
       <div className="space-y-4 flex-1">

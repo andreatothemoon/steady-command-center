@@ -26,9 +26,14 @@ interface ActionItem {
   category: "freshness" | "tax" | "optimisation";
 }
 
+interface MemberANI {
+  name: string;
+  ani: number;
+}
+
 interface Props {
   accounts: Account[];
-  ani?: number;
+  memberANIs?: MemberANI[];
   isaUsed?: number;
   isaLimit?: number;
 }
