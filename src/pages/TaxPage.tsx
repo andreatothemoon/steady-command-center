@@ -85,6 +85,8 @@ export default function TaxPage() {
   const getHouseholdANI = () =>
     adults.reduce((sum, p) => sum + getANI(p.id), 0);
 
+  const anyAdultOverThreshold = adults.some((p) => getANI(p.id) >= 100000);
+
   const startEditing = (profile: HouseholdProfile) => {
     const s = getSummaryForProfile(profile.id);
     setEditingProfileId(profile.id);
