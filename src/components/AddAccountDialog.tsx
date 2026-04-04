@@ -73,18 +73,21 @@ export default function AddAccountDialog({ open, onOpenChange }: Props) {
 
   const propertyAccounts = allAccounts.filter((a) => a.account_type === "property");
   const watchedType = form.watch("account_type");
+  const isDebtType = ["mortgage", "loan", "credit_card"].includes(watchedType);
+  const isMortgageType = watchedType === "mortgage";
 
   const onSubmit = async (values: FormValues) => {
     try {
+      const debtType = ["mortgage", "loan", "credit_card"].includes(values.account_type);
       await addAccount.mutateAsync({
         name: values.name,
         account_type: values.account_type as AccountType,
         wrapper_type: values.wrapper_type as WrapperType,
         current_value: values.current_value,
         owner_name: values.owner_name,
-        linked_account_id: values.account_type === "mortgage" ? linkedAccountId : null,
-        interest_rate: values.account_type === "mortgage" && values.interest_rate !== "" ? Number(values.interest_rate) : null,
-        term_remaining_months: values.account_type === "mortgage" && values.term_remaining_months !== "" ? Number(values.term_remaining_months) : null,
+        linked_account_id: isMortgageType ? linkedAccountId : null,
+        interest_rate: debtType && values.interest_rate !== "" ? Number(values.interest_rate) : null,
+        term_remaining_months: debtType && values.term_remaining_months !== "" ? Number(values.term_remaining_months) : null,
       } as any);
       toast.success("Account added");
       form.reset();
