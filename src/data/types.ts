@@ -10,7 +10,9 @@ export type AccountType =
   | "mortgage"
   | "crypto"
   | "employer_share_scheme"
-  | "property";
+  | "property"
+  | "loan"
+  | "credit_card";
 
 export type WrapperType =
   | "none"
@@ -32,6 +34,8 @@ export const accountTypeLabels: Record<AccountType, string> = {
   crypto: "Crypto",
   employer_share_scheme: "Share Scheme",
   property: "Property",
+  loan: "Loan",
+  credit_card: "Credit Card",
 };
 
 export const wrapperLabels: Record<WrapperType, string> = {
