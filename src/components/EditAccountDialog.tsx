@@ -35,6 +35,7 @@ import { accountTypeLabels, wrapperLabels } from "@/data/types";
 import type { AccountType, WrapperType } from "@/data/types";
 import { toast } from "sonner";
 import { Trash2, Link2 } from "lucide-react";
+import OwnerMultiSelect from "@/components/OwnerMultiSelect";
 import { useState, useEffect } from "react";
 
 const schema = z.object({
