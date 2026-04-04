@@ -12,6 +12,7 @@ import {
   ArrowUpRight,
   Users,
   Home,
+  CreditCard,
 } from "lucide-react";
 import {
   Area,
