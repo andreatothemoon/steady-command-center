@@ -56,6 +56,7 @@ export type Database = {
           id: string
           institution_id: string | null
           last_updated: string
+          linked_account_id: string | null
           name: string
           owner_name: string
           source_type: Database["public"]["Enums"]["source_type"]
@@ -71,6 +72,7 @@ export type Database = {
           id?: string
           institution_id?: string | null
           last_updated?: string
+          linked_account_id?: string | null
           name: string
           owner_name?: string
           source_type?: Database["public"]["Enums"]["source_type"]
@@ -86,6 +88,7 @@ export type Database = {
           id?: string
           institution_id?: string | null
           last_updated?: string
+          linked_account_id?: string | null
           name?: string
           owner_name?: string
           source_type?: Database["public"]["Enums"]["source_type"]
@@ -105,6 +108,13 @@ export type Database = {
             columns: ["institution_id"]
             isOneToOne: false
             referencedRelation: "institutions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "accounts_linked_account_id_fkey"
+            columns: ["linked_account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
             referencedColumns: ["id"]
           },
         ]

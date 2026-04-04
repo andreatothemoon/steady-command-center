@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Plus, ArrowUpDown, Clock, Inbox } from "lucide-react";
+import { Plus, ArrowUpDown, Clock, Inbox, Link2 } from "lucide-react";
 import { useAccounts, type Account } from "@/hooks/useAccounts";
 import { accountTypeLabels } from "@/data/types";
 import { formatCurrency, formatDate, staleness, daysAgo } from "@/lib/format";
@@ -135,6 +135,15 @@ export default function AccountsPage() {
                             </div>
                             <p className="text-[11px] text-muted-foreground mt-0.5">
                               {provider} · {account.owner_name} · {formatDate(account.last_updated)}
+                              {account.account_type === "mortgage" && (account as any).linked_account_id && (() => {
+                                const linked = accounts.find((a) => a.id === (account as any).linked_account_id);
+                                return linked ? (
+                                  <span className="inline-flex items-center gap-0.5 ml-1.5 text-primary">
+                                    <Link2 className="h-2.5 w-2.5" />
+                                    {linked.name}
+                                  </span>
+                                ) : null;
+                              })()}
                             </p>
                           </div>
                           <div className="text-right">
