@@ -97,16 +97,16 @@ export default function RetirementPage() {
             <AreaChart data={projection}>
               <defs>
                 <linearGradient id="nomGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="hsl(200, 70%, 50%)" stopOpacity={0.15} />
-                  <stop offset="100%" stopColor="hsl(200, 70%, 50%)" stopOpacity={0} />
+                  <stop offset="0%" stopColor="hsl(217, 91%, 60%)" stopOpacity={0.12} />
+                  <stop offset="100%" stopColor="hsl(217, 91%, 60%)" stopOpacity={0} />
                 </linearGradient>
                 <linearGradient id="realGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="hsl(160, 60%, 45%)" stopOpacity={0.25} />
-                  <stop offset="100%" stopColor="hsl(160, 60%, 45%)" stopOpacity={0} />
+                  <stop offset="0%" stopColor="hsl(142, 71%, 45%)" stopOpacity={0.22} />
+                  <stop offset="100%" stopColor="hsl(142, 71%, 45%)" stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <XAxis dataKey="age" tick={{ fontSize: 11, fill: "hsl(215, 12%, 48%)" }} tickLine={false} axisLine={false} />
-              <YAxis tickFormatter={(v) => `£${(v / 1000).toFixed(0)}k`} tick={{ fontSize: 11, fill: "hsl(215, 12%, 48%)" }} tickLine={false} axisLine={false} width={60} />
+              <XAxis dataKey="age" tick={{ fontSize: 11, fill: "hsl(220, 9%, 46%)" }} tickLine={false} axisLine={false} />
+              <YAxis tickFormatter={(v) => `£${(v / 1000).toFixed(0)}k`} tick={{ fontSize: 11, fill: "hsl(220, 9%, 46%)" }} tickLine={false} axisLine={false} width={60} />
               <Tooltip
                 content={({ active, payload, label }) => {
                   if (!active || !payload?.length) return null;
@@ -119,10 +119,10 @@ export default function RetirementPage() {
                   );
                 }}
               />
-              <Area type="monotone" dataKey="nominal" stroke="hsl(200, 70%, 50%)" strokeWidth={1.5} fill="url(#nomGrad)" animationDuration={1200} />
-              <Area type="monotone" dataKey="real" stroke="hsl(160, 60%, 45%)" strokeWidth={2.5} fill="url(#realGrad)" animationDuration={1500} />
+              <Area type="monotone" dataKey="nominal" stroke="hsl(217, 91%, 60%)" strokeWidth={1.5} fill="url(#nomGrad)" animationDuration={1200} strokeDasharray="6 3" />
+              <Area type="monotone" dataKey="real" stroke="hsl(142, 71%, 45%)" strokeWidth={2.5} fill="url(#realGrad)" animationDuration={1500} />
               {lastPoint && (
-                <ReferenceDot x={lastPoint.age} y={lastPoint.real} r={4} fill="hsl(160, 60%, 45%)" stroke="hsl(228, 20%, 10%)" strokeWidth={2} />
+                <ReferenceDot x={lastPoint.age} y={lastPoint.real} r={4} fill="hsl(142, 71%, 45%)" stroke="hsl(222, 28%, 9%)" strokeWidth={2.5} />
               )}
             </AreaChart>
           </ResponsiveContainer>
