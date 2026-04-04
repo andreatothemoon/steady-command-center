@@ -55,11 +55,13 @@ export type Database = {
           household_id: string
           id: string
           institution_id: string | null
+          interest_rate: number | null
           last_updated: string
           linked_account_id: string | null
           name: string
           owner_name: string
           source_type: Database["public"]["Enums"]["source_type"]
+          term_remaining_months: number | null
           updated_at: string
           wrapper_type: Database["public"]["Enums"]["wrapper_type"]
         }
@@ -71,11 +73,13 @@ export type Database = {
           household_id: string
           id?: string
           institution_id?: string | null
+          interest_rate?: number | null
           last_updated?: string
           linked_account_id?: string | null
           name: string
           owner_name?: string
           source_type?: Database["public"]["Enums"]["source_type"]
+          term_remaining_months?: number | null
           updated_at?: string
           wrapper_type?: Database["public"]["Enums"]["wrapper_type"]
         }
@@ -87,11 +91,13 @@ export type Database = {
           household_id?: string
           id?: string
           institution_id?: string | null
+          interest_rate?: number | null
           last_updated?: string
           linked_account_id?: string | null
           name?: string
           owner_name?: string
           source_type?: Database["public"]["Enums"]["source_type"]
+          term_remaining_months?: number | null
           updated_at?: string
           wrapper_type?: Database["public"]["Enums"]["wrapper_type"]
         }
