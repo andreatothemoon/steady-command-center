@@ -714,6 +714,7 @@ export type Database = {
           other_salary_sacrifice: number | null
           pension_contributions: number | null
           personal_pension_net: number | null
+          rental_income: number | null
           salary: number | null
           salary_sacrifice_pension: number | null
           tax_year: string
@@ -736,6 +737,7 @@ export type Database = {
           other_salary_sacrifice?: number | null
           pension_contributions?: number | null
           personal_pension_net?: number | null
+          rental_income?: number | null
           salary?: number | null
           salary_sacrifice_pension?: number | null
           tax_year: string
@@ -758,6 +760,7 @@ export type Database = {
           other_salary_sacrifice?: number | null
           pension_contributions?: number | null
           personal_pension_net?: number | null
+          rental_income?: number | null
           salary?: number | null
           salary_sacrifice_pension?: number | null
           tax_year?: string

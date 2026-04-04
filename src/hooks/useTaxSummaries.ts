@@ -10,6 +10,7 @@ export interface MemberFormState {
   bonus: number;
   taxable_benefits: number;
   dividend_income: number;
+  rental_income: number;
   salary_sacrifice_pension: number;
   employer_pension: number;
   personal_pension_net: number;
@@ -24,6 +25,7 @@ export const emptyForm: MemberFormState = {
   bonus: 0,
   taxable_benefits: 0,
   dividend_income: 0,
+  rental_income: 0,
   salary_sacrifice_pension: 0,
   employer_pension: 0,
   personal_pension_net: 0,
@@ -32,7 +34,6 @@ export const emptyForm: MemberFormState = {
   isa_contributions: 0,
   capital_gains: 0,
 };
-
 export function summaryToForm(s: TaxYearSummary | undefined): MemberFormState {
   if (!s) return { ...emptyForm };
   return {
@@ -40,6 +41,7 @@ export function summaryToForm(s: TaxYearSummary | undefined): MemberFormState {
     bonus: Number(s.bonus ?? 0),
     taxable_benefits: Number(s.taxable_benefits ?? 0),
     dividend_income: Number(s.dividend_income ?? 0),
+    rental_income: Number(s.rental_income ?? 0),
     salary_sacrifice_pension: Number(s.salary_sacrifice_pension ?? 0),
     employer_pension: Number(s.employer_pension ?? 0),
     personal_pension_net: Number(s.personal_pension_net ?? 0),
@@ -51,7 +53,7 @@ export function summaryToForm(s: TaxYearSummary | undefined): MemberFormState {
 }
 
 export function computeANI(f: MemberFormState) {
-  const gross_income = f.salary + f.bonus + f.taxable_benefits + f.dividend_income;
+  const gross_income = f.salary + f.bonus + f.taxable_benefits + f.dividend_income + f.rental_income;
   const salary_sacrifice_total = f.salary_sacrifice_pension + f.other_salary_sacrifice;
   const grossed_up_personal_pension = f.personal_pension_net * (100 / 80);
   const grossed_up_gift_aid = f.gift_aid * (100 / 80);
@@ -65,6 +67,7 @@ export function computeANI(f: MemberFormState) {
   return {
     gross_income,
     dividend_income: f.dividend_income,
+    rental_income: f.rental_income,
     salary_sacrifice_total,
     grossed_up_personal_pension,
     grossed_up_gift_aid,
@@ -113,6 +116,7 @@ export function useUpsertTaxSummary() {
         bonus: input.bonus,
         taxable_benefits: input.taxable_benefits,
         dividend_income: input.dividend_income,
+        rental_income: input.rental_income,
         salary_sacrifice_pension: input.salary_sacrifice_pension,
         employer_pension: input.employer_pension,
         personal_pension_net: input.personal_pension_net,
