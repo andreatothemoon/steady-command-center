@@ -12,7 +12,7 @@ interface Props {
 export default function OwnerMultiSelect({ value, onChange }: Props) {
   const { data: profiles = [] } = useHouseholdProfiles();
 
-  const selected = value
+  const selected = (value ?? "")
     .split(",")
     .map((s) => s.trim())
     .filter(Boolean);
