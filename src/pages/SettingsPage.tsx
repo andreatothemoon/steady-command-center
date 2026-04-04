@@ -213,6 +213,7 @@ export default function SettingsPage() {
       />
 
       {/* Delete confirmation */}
+
       <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
         <AlertDialogContent className="bg-card border-border">
           <AlertDialogHeader>

@@ -56,7 +56,7 @@ function SidebarContent({ collapsed, toggle, onNavigate }: { collapsed: boolean;
       </div>
 
       <nav className={cn("flex-1 space-y-0.5 pt-3", collapsed ? "px-2" : "px-3")}>
-        {navItems.map(({ to, label, icon: Icon }) => {
+        {navItems.filter(({ key }) => key === null || isPageVisible(key)).map(({ to, label, icon: Icon }) => {
           const isActive = location.pathname === to;
           return (
             <NavLink

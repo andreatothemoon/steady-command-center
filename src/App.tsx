@@ -36,22 +36,24 @@ function ProtectedRoutes() {
 
   return (
     <SidebarProvider>
-      <div className="dark">
-        <AppSidebar />
-        <AppLayout>
-          <Routes>
-            <Route path="/" element={<OverviewPage />} />
-            <Route path="/accounts" element={<AccountsPage />} />
-            <Route path="/contributions" element={<ContributionsPage />} />
-            <Route path="/documents" element={<DocumentsPage />} />
-            <Route path="/tax" element={<TaxPage />} />
-            <Route path="/retirement" element={<RetirementPage />} />
-            <Route path="/db-pensions" element={<DBPensionsPage />} />
-            <Route path="/settings" element={<SettingsPage />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </AppLayout>
-      </div>
+      <PageVisibilityProvider>
+        <div className="dark">
+          <AppSidebar />
+          <AppLayout>
+            <Routes>
+              <Route path="/" element={<OverviewPage />} />
+              <Route path="/accounts" element={<AccountsPage />} />
+              <Route path="/contributions" element={<ContributionsPage />} />
+              <Route path="/documents" element={<DocumentsPage />} />
+              <Route path="/tax" element={<TaxPage />} />
+              <Route path="/retirement" element={<RetirementPage />} />
+              <Route path="/db-pensions" element={<DBPensionsPage />} />
+              <Route path="/settings" element={<SettingsPage />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </AppLayout>
+        </div>
+      </PageVisibilityProvider>
     </SidebarProvider>
   );
 }
