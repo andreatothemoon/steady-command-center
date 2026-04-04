@@ -41,6 +41,32 @@ const getAge = (dob: string | null) => {
   return age;
 };
 
+function PageVisibilitySection() {
+  const { isPageVisible, togglePage } = usePageVisibility();
+  return (
+    <motion.div variants={stagger.item} className="card-surface overflow-hidden">
+      <div className="px-5 py-4 border-b border-border flex items-center gap-3">
+        <LayoutGrid className="h-5 w-5 text-muted-foreground" />
+        <div>
+          <p className="text-sm font-medium text-card-foreground">Visible Pages</p>
+          <p className="text-[11px] text-muted-foreground">Toggle which pages appear in the sidebar</p>
+        </div>
+      </div>
+      <div className="divide-y divide-border">
+        {ALL_TOGGLEABLE_PAGES.map(({ key, label }) => (
+          <div key={key} className="flex items-center justify-between px-5 py-3">
+            <span className="text-sm text-card-foreground">{label}</span>
+            <Switch
+              checked={isPageVisible(key)}
+              onCheckedChange={() => togglePage(key)}
+            />
+          </div>
+        ))}
+      </div>
+    </motion.div>
+  );
+}
+
 export default function SettingsPage() {
   const { signOut } = useAuth();
   const { data: profiles = [], isLoading } = useHouseholdProfiles();
