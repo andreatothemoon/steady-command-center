@@ -9,6 +9,7 @@ export interface MemberFormState {
   salary: number;
   bonus: number;
   taxable_benefits: number;
+  dividend_income: number;
   salary_sacrifice_pension: number;
   employer_pension: number;
   personal_pension_net: number;
@@ -22,6 +23,7 @@ export const emptyForm: MemberFormState = {
   salary: 0,
   bonus: 0,
   taxable_benefits: 0,
+  dividend_income: 0,
   salary_sacrifice_pension: 0,
   employer_pension: 0,
   personal_pension_net: 0,
