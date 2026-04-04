@@ -27,6 +27,7 @@ import { mockNetWorthHistory } from "@/data/mockData";
 import { useAccounts } from "@/hooks/useAccounts";
 import { useHouseholdProfiles } from "@/hooks/useHouseholdProfiles";
 import { formatCurrency, staleness, daysAgo, calcMonthlyPayment } from "@/lib/format";
+import { accountTypeLabels } from "@/data/types";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
 import AllocationDonut from "@/components/AllocationDonut";
