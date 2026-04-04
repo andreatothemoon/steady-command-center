@@ -12,12 +12,17 @@ export default function AppLayout({ children }: AppLayoutProps) {
   const isMobile = useIsMobile();
 
   return (
-    <div className="min-h-screen bg-background">
+    <div
+      className="min-h-screen bg-background"
+      style={{
+        background: "linear-gradient(135deg, hsl(228 25% 6.5%) 0%, hsl(230 22% 7%) 40%, hsl(228 25% 6%) 100%)",
+      }}
+    >
       <main className={cn(
         "transition-all duration-300",
         isMobile ? "pl-0 pt-16" : collapsed ? "pl-[68px]" : "pl-56"
       )}>
-        <div className="mx-auto max-w-[1280px] px-4 py-4 sm:px-6 sm:py-6 lg:px-8">
+        <div className="mx-auto max-w-[1280px] px-4 py-5 sm:px-6 sm:py-6 lg:px-8">
           {children}
         </div>
       </main>
