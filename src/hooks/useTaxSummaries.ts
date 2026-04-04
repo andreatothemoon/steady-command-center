@@ -51,7 +51,7 @@ export function summaryToForm(s: TaxYearSummary | undefined): MemberFormState {
 }
 
 export function computeANI(f: MemberFormState) {
-  const gross_income = f.salary + f.bonus + f.taxable_benefits;
+  const gross_income = f.salary + f.bonus + f.taxable_benefits + f.dividend_income;
   const salary_sacrifice_total = f.salary_sacrifice_pension + f.other_salary_sacrifice;
   const grossed_up_personal_pension = f.personal_pension_net * (100 / 80);
   const grossed_up_gift_aid = f.gift_aid * (100 / 80);
