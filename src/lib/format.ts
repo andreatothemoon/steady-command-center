@@ -35,3 +35,12 @@ export function staleness(dateStr: string): "fresh" | "aging" | "stale" {
   if (days <= 30) return "aging";
   return "stale";
 }
+
+/** Standard amortising mortgage monthly payment: M = P·r(1+r)^n / ((1+r)^n − 1) */
+export function calcMonthlyPayment(balance: number, annualRate: number, months: number): number | null {
+  if (balance <= 0 || annualRate < 0 || months <= 0) return null;
+  if (annualRate === 0) return balance / months;
+  const r = annualRate / 100 / 12;
+  const factor = Math.pow(1 + r, months);
+  return (balance * r * factor) / (factor - 1);
+}
