@@ -10,6 +10,7 @@ export interface MemberFormState {
   bonus: number;
   taxable_benefits: number;
   dividend_income: number;
+  rental_income: number;
   salary_sacrifice_pension: number;
   employer_pension: number;
   personal_pension_net: number;
@@ -24,6 +25,7 @@ export const emptyForm: MemberFormState = {
   bonus: 0,
   taxable_benefits: 0,
   dividend_income: 0,
+  rental_income: 0,
   salary_sacrifice_pension: 0,
   employer_pension: 0,
   personal_pension_net: 0,
@@ -32,7 +34,6 @@ export const emptyForm: MemberFormState = {
   isa_contributions: 0,
   capital_gains: 0,
 };
-
 export function summaryToForm(s: TaxYearSummary | undefined): MemberFormState {
   if (!s) return { ...emptyForm };
   return {
