@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Plus, ArrowUpDown, Clock, Inbox, Link2 } from "lucide-react";
+import { Plus, ArrowUpDown, Clock, Inbox, Link2, Download, Upload } from "lucide-react";
 import { useAccounts, type Account } from "@/hooks/useAccounts";
 import { accountTypeLabels } from "@/data/types";
 import { formatCurrency, formatDate, staleness, daysAgo, calcMonthlyPayment } from "@/lib/format";
@@ -9,6 +9,8 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import AddAccountDialog from "@/components/AddAccountDialog";
 import EditAccountDialog from "@/components/EditAccountDialog";
+import ImportAccountsDialog from "@/components/ImportAccountsDialog";
+import { exportAccountsCsv } from "@/lib/csvAccounts";
 
 type GroupBy = "type" | "owner" | "wrapper";
 
@@ -41,6 +43,7 @@ export default function AccountsPage() {
   const [groupBy, setGroupBy] = useState<GroupBy>("type");
   const [addOpen, setAddOpen] = useState(false);
   const [editAccount, setEditAccount] = useState<Account | null>(null);
+  const [importOpen, setImportOpen] = useState(false);
   const { data: accounts = [], isLoading } = useAccounts();
 
   const grouped = groupAccounts(accounts, groupBy);
@@ -54,10 +57,22 @@ export default function AccountsPage() {
             {isLoading ? "Loading…" : `${accounts.length} account${accounts.length !== 1 ? "s" : ""} tracked`}
           </p>
         </div>
-        <Button size="sm" className="gap-2" onClick={() => setAddOpen(true)}>
-          <Plus className="h-4 w-4" />
-          Add Account
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button size="sm" variant="outline" className="gap-2" onClick={() => setImportOpen(true)}>
+            <Upload className="h-4 w-4" />
+            Import
+          </Button>
+          {accounts.length > 0 && (
+            <Button size="sm" variant="outline" className="gap-2" onClick={() => exportAccountsCsv(accounts)}>
+              <Download className="h-4 w-4" />
+              Export
+            </Button>
+          )}
+          <Button size="sm" className="gap-2" onClick={() => setAddOpen(true)}>
+            <Plus className="h-4 w-4" />
+            Add Account
+          </Button>
+        </div>
       </motion.div>
 
       <motion.div variants={stagger.item} className="flex items-center gap-2">
@@ -183,6 +198,7 @@ export default function AccountsPage() {
 
       <AddAccountDialog open={addOpen} onOpenChange={setAddOpen} />
       <EditAccountDialog account={editAccount} open={!!editAccount} onOpenChange={(o) => { if (!o) setEditAccount(null); }} />
+      <ImportAccountsDialog open={importOpen} onOpenChange={setImportOpen} />
     </motion.div>
   );
 }
