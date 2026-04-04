@@ -220,9 +220,9 @@ export default function OverviewPage() {
                     x={lastPoint.month}
                     y={lastPoint.value}
                     r={5}
-                    fill="hsl(160, 60%, 45%)"
-                    stroke="hsl(228, 20%, 10%)"
-                    strokeWidth={2}
+                    fill="hsl(142, 71%, 45%)"
+                    stroke="hsl(222, 28%, 9%)"
+                    strokeWidth={2.5}
                     filter="url(#glowDot)"
                   />
                 )}
