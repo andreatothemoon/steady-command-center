@@ -64,6 +64,7 @@ export function computeANI(f: MemberFormState) {
 
   return {
     gross_income,
+    dividend_income: f.dividend_income,
     salary_sacrifice_total,
     grossed_up_personal_pension,
     grossed_up_gift_aid,
