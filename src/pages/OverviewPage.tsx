@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { useAccounts } from "@/hooks/useAccounts";
 import { useHouseholdProfiles } from "@/hooks/useHouseholdProfiles";
-import { useTaxSummaries } from "@/hooks/useTaxSummaries";
+import { useTaxSummaries, computeANI, summaryToForm } from "@/hooks/useTaxSummaries";
 import NetWorthHero from "@/components/overview/NetWorthHero";
 import SnapshotRow from "@/components/overview/SnapshotRow";
 import RetirementProgress from "@/components/overview/RetirementProgress";
@@ -19,6 +19,12 @@ const stagger = {
   },
 };
 
+export interface MemberANI {
+  name: string;
+  ani: number;
+  pensionContributions: number;
+}
+
 export default function OverviewPage() {
   const { data: accounts = [] } = useAccounts();
   const { data: profiles = [] } = useHouseholdProfiles();
@@ -27,11 +33,21 @@ export default function OverviewPage() {
   const adults = profiles.filter((p) => p.role === "adult");
   const children = profiles.filter((p) => p.role === "child");
 
-  // Compute real tax figures from saved summaries
+  // Compute per-member ANI values
+  const memberANIs: MemberANI[] = adults.map((p) => {
+    const summary = taxSummaries.find((s) => s.member_profile_id === p.id);
+    const form = summaryToForm(summary);
+    const computed = computeANI(form);
+    return {
+      name: p.name,
+      ani: computed.adjusted_net_income,
+      pensionContributions: computed.pension_contributions,
+    };
+  });
+
+  // Household-level aggregates (ISA & pension remain household-level)
   const householdIsaUsed = taxSummaries.reduce((sum, s) => sum + Number(s.isa_contributions ?? 0), 0);
   const householdPensionContributions = taxSummaries.reduce((sum, s) => sum + Number(s.pension_contributions ?? 0), 0);
-  const householdGrossIncome = taxSummaries.reduce((sum, s) => sum + Number(s.gross_income ?? 0), 0);
-  const ani = Math.max(0, householdGrossIncome - householdPensionContributions);
   const isaLimit = adults.length > 0 ? adults.length * 20000 : 20000;
 
   return (
@@ -47,7 +63,7 @@ export default function OverviewPage() {
 
       {/* 4. ACTION CENTER — Mobile: appears 2nd, Desktop: after progress */}
       <motion.div variants={stagger.item} className="order-2 lg:order-4">
-        <ActionCenter accounts={accounts} ani={ani} isaUsed={householdIsaUsed} isaLimit={isaLimit} />
+        <ActionCenter accounts={accounts} memberANIs={memberANIs} isaUsed={householdIsaUsed} isaLimit={isaLimit} />
       </motion.div>
 
       {/* 2. SNAPSHOT ROW — Mobile: 3rd, Desktop: 2nd */}
@@ -58,7 +74,7 @@ export default function OverviewPage() {
       {/* 3. PROGRESS LAYER — Retirement + Tax */}
       <motion.div variants={stagger.item} className="grid grid-cols-1 gap-4 lg:grid-cols-2 order-4 lg:order-3">
         <RetirementProgress accounts={accounts} />
-        <TaxPosition ani={ani} isaUsed={householdIsaUsed} isaLimit={isaLimit} pensionContributions={householdPensionContributions} />
+        <TaxPosition memberANIs={memberANIs} isaUsed={householdIsaUsed} isaLimit={isaLimit} pensionContributions={householdPensionContributions} />
       </motion.div>
 
       {/* 5. COLLAPSIBLE INSIGHTS */}
