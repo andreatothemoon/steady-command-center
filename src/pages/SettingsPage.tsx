@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Users, User, Baby, Shield, Database, Plus, Pencil, Trash2 } from "lucide-react";
+import { Users, User, Baby, Shield, Database, Plus, Pencil, Trash2, LayoutGrid } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import {
