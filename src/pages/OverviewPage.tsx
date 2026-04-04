@@ -416,18 +416,6 @@ export default function OverviewPage() {
         );
       })()}
 
-      {/* ═══ Allocation + Tax Status ═══ */}
-      <motion.div variants={stagger.item} className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <AllocationDonut accounts={accounts} />
-        <TaxStatusCard
-          ani={ani}
-          isaUsed={isaUsed}
-          isaLimit={isaLimit}
-          adults={adults.length || 1}
-          children={children.length}
-        />
-      </motion.div>
-
       {/* ═══ Action Center ═══ */}
       <motion.div variants={stagger.item}>
         <ActionCenter
