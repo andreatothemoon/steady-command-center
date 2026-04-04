@@ -20,6 +20,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useAddAccount, useAccounts } from "@/hooks/useAccounts";
+import { useHouseholdProfiles } from "@/hooks/useHouseholdProfiles";
 import { accountTypeLabels, wrapperLabels } from "@/data/types";
 import type { AccountType, WrapperType } from "@/data/types";
 import { toast } from "sonner";
