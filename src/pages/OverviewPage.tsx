@@ -209,7 +209,73 @@ export default function OverviewPage() {
         />
       </motion.div>
 
-      {/* Allocation + Tax Position */}
+      {/* Property Equity */}
+      {(() => {
+        const properties = accounts.filter((a) => a.account_type === "property");
+        if (properties.length === 0) return null;
+
+        const mortgages = accounts.filter((a) => a.account_type === "mortgage");
+
+        const equityItems = properties.map((prop) => {
+          const linkedMortgage = mortgages.find((m) => (m as any).linked_account_id === prop.id);
+          const propertyValue = Number(prop.current_value);
+          const mortgageBalance = linkedMortgage ? Math.abs(Number(linkedMortgage.current_value)) : 0;
+          const equity = propertyValue - mortgageBalance;
+          const ltv = propertyValue > 0 ? (mortgageBalance / propertyValue) * 100 : 0;
+          return { property: prop, mortgage: linkedMortgage, propertyValue, mortgageBalance, equity, ltv };
+        });
+
+        const totalEquity = equityItems.reduce((s, e) => s + e.equity, 0);
+
+        return (
+          <motion.div variants={stagger.item} className="card-surface p-5">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <Home className="h-4 w-4 text-muted-foreground/60" />
+                <p className="label-muted">Property Equity</p>
+              </div>
+              <span className="text-sm font-semibold tabular-nums text-card-foreground">
+                {formatCurrency(totalEquity)}
+              </span>
+            </div>
+            <div className="space-y-3">
+              {equityItems.map((item) => (
+                <div key={item.property.id} className="rounded-lg bg-secondary/30 px-4 py-3">
+                  <div className="flex items-center justify-between mb-1.5">
+                    <p className="text-sm font-medium text-card-foreground">{item.property.name}</p>
+                    <p className="text-sm font-semibold tabular-nums text-success">
+                      {formatCurrency(item.equity)}
+                    </p>
+                  </div>
+                  <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+                    <span>Value: {formatCurrency(item.propertyValue)}</span>
+                    {item.mortgage ? (
+                      <span>Mortgage: {formatCurrency(item.mortgageBalance)} · LTV {item.ltv.toFixed(0)}%</span>
+                    ) : (
+                      <span className="text-success">No mortgage — fully owned</span>
+                    )}
+                  </div>
+                  {item.mortgage && (
+                    <div className="mt-2 h-1.5 rounded-full bg-secondary/60 overflow-hidden">
+                      <motion.div
+                        className={cn(
+                          "h-full rounded-full",
+                          item.ltv > 80 ? "bg-warning" : "bg-primary"
+                        )}
+                        initial={{ width: 0 }}
+                        animate={{ width: `${Math.min(item.ltv, 100)}%` }}
+                        transition={{ duration: 0.8, ease: "easeOut", delay: 0.3 }}
+                      />
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        );
+      })()}
+
+
       <motion.div variants={stagger.item} className="grid grid-cols-1 gap-3 lg:grid-cols-2">
         <AllocationDonut accounts={accounts} />
 
