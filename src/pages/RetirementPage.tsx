@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import { motion } from "framer-motion";
-import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis, ReferenceDot } from "recharts";
+import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis, ReferenceDot, Legend } from "recharts";
 import { formatCurrency } from "@/lib/format";
 import { Slider } from "@/components/ui/slider";
 import { cn } from "@/lib/utils";
@@ -8,6 +8,10 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { useDBPensions } from "@/hooks/useDBPensions";
+import { projectDBPension } from "@/lib/dbPensionEngine";
+
+const UK_STATE_PENSION_FULL = 11502; // 2024/25 full new state pension £/yr
 
 const stagger = {
   container: { transition: { staggerChildren: 0.06 } },
@@ -38,6 +42,8 @@ export default function RetirementPage() {
     enabled: !!householdId,
   });
 
+  const { data: dbPensions = [] } = useDBPensions();
+
   const [currentAge, setCurrentAge] = useState(35);
   const [retireAge, setRetireAge] = useState(57);
   const [currentPot, setCurrentPot] = useState(212700);
@@ -46,8 +52,8 @@ export default function RetirementPage() {
   const [expectedReturn, setExpectedReturn] = useState(5);
   const [inflation, setInflation] = useState(2.5);
   const [targetIncome, setTargetIncome] = useState(30000);
+  const [statePensionPct, setStatePensionPct] = useState(100);
 
-  // Seed local state from DB once loaded
   const seeded = useRef(false);
   useEffect(() => {
     if (scenario && !seeded.current) {
@@ -63,7 +69,6 @@ export default function RetirementPage() {
     }
   }, [scenario]);
 
-  // Upsert mutation
   const upsert = useMutation({
     mutationFn: async (values: {
       current_age: number;
@@ -98,7 +103,6 @@ export default function RetirementPage() {
     },
   });
 
-  // Debounced auto-save
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const schedulesSave = useCallback(() => {
     if (saveTimer.current) clearTimeout(saveTimer.current);
@@ -116,7 +120,6 @@ export default function RetirementPage() {
     }, 800);
   }, [currentAge, retireAge, currentPot, monthlyContrib, employerContrib, expectedReturn, inflation, targetIncome]);
 
-  // Trigger save when any value changes (skip initial load)
   const initialLoad = useRef(true);
   useEffect(() => {
     if (isLoading) return;
@@ -128,29 +131,77 @@ export default function RetirementPage() {
     return () => { if (saveTimer.current) clearTimeout(saveTimer.current); };
   }, [currentAge, retireAge, currentPot, monthlyContrib, employerContrib, expectedReturn, inflation, targetIncome, isLoading]);
 
+  // DB pension projections (sum of all schemes)
+  const dbPensionProjections = useMemo(() => {
+    if (!dbPensions.length) return [];
+    return dbPensions.map((p) =>
+      projectDBPension({
+        current_age: p.current_age,
+        retirement_age: p.retirement_age,
+        current_salary: Number(p.current_salary),
+        salary_growth_rate: Number(p.salary_growth_rate),
+        accrual_rate: Number(p.accrual_rate),
+        is_active_member: p.is_active_member,
+        revaluation_type: p.revaluation_type,
+        revaluation_rate: Number(p.revaluation_rate),
+        revaluation_uplift: Number(p.revaluation_uplift),
+        existing_income: Number(p.existing_income),
+      })
+    );
+  }, [dbPensions]);
+
+  const totalDBIncome = useMemo(() => {
+    return dbPensionProjections.reduce((sum, p) => sum + p.projected_annual_income, 0);
+  }, [dbPensionProjections]);
+
+  const statePensionIncome = Math.round(UK_STATE_PENSION_FULL * (statePensionPct / 100));
+
+  // DC pot projection
   const projection = useMemo(() => {
     const years = retireAge - currentAge;
     const monthlyReturn = expectedReturn / 100 / 12;
     const monthlyInflation = inflation / 100 / 12;
     const totalMonthly = monthlyContrib + employerContrib;
-    const data: { age: number; nominal: number; real: number }[] = [];
+    const data: { age: number; nominal: number; real: number; dcIncome: number; dbIncome: number; stateIncome: number; totalIncome: number }[] = [];
     let nominal = currentPot;
     let real = currentPot;
+
+    // Build a lookup of DB total income by age
+    const dbByAge: Record<number, number> = {};
+    for (const proj of dbPensionProjections) {
+      for (const pt of proj.yearly_projection) {
+        dbByAge[pt.age] = (dbByAge[pt.age] ?? 0) + pt.total_income;
+      }
+    }
+
     for (let y = 0; y <= years; y++) {
-      data.push({ age: currentAge + y, nominal: Math.round(nominal), real: Math.round(real) });
+      const age = currentAge + y;
+      const drawdownIncome = y === years ? Math.round(real * 0.04) : 0;
+      // DB income at retirement age (use final value for all)
+      const dbAtAge = y === years ? totalDBIncome : (dbByAge[age] ?? 0);
+      const stateAtAge = y === years && age >= 67 ? statePensionIncome : 0;
+      data.push({
+        age,
+        nominal: Math.round(nominal),
+        real: Math.round(real),
+        dcIncome: drawdownIncome,
+        dbIncome: dbAtAge,
+        stateIncome: stateAtAge,
+        totalIncome: drawdownIncome + (y === years ? totalDBIncome : 0) + stateAtAge,
+      });
       for (let m = 0; m < 12; m++) {
         nominal = nominal * (1 + monthlyReturn) + totalMonthly;
         real = real * (1 + monthlyReturn - monthlyInflation) + totalMonthly;
       }
     }
     return data;
-  }, [currentAge, retireAge, currentPot, monthlyContrib, employerContrib, expectedReturn, inflation]);
+  }, [currentAge, retireAge, currentPot, monthlyContrib, employerContrib, expectedReturn, inflation, dbPensionProjections, totalDBIncome, statePensionIncome]);
 
   const finalNominal = projection[projection.length - 1]?.nominal ?? 0;
   const finalReal = projection[projection.length - 1]?.real ?? 0;
-  const drawdownRate = 0.04;
-  const estimatedIncome = Math.round(finalReal * drawdownRate);
-  const gap = targetIncome - estimatedIncome;
+  const dcIncome = Math.round(finalReal * 0.04);
+  const totalRetirementIncome = dcIncome + totalDBIncome + (retireAge >= 67 ? statePensionIncome : 0);
+  const gap = targetIncome - totalRetirementIncome;
   const lastPoint = projection[projection.length - 1];
 
   const sliders = [
@@ -162,6 +213,7 @@ export default function RetirementPage() {
     { label: "Expected Return", value: expectedReturn, onChange: setExpectedReturn, min: 1, max: 10, step: 0.5, format: (v: number) => `${v}%` },
     { label: "Inflation", value: inflation, onChange: setInflation, min: 0, max: 6, step: 0.5, format: (v: number) => `${v}%` },
     { label: "Target Income", value: targetIncome, onChange: setTargetIncome, min: 10000, max: 100000, step: 1000, format: formatCurrency },
+    { label: "State Pension %", value: statePensionPct, onChange: setStatePensionPct, min: 0, max: 100, step: 5, format: (v: number) => `${v}%` },
   ];
 
   if (isLoading) {
@@ -186,31 +238,74 @@ export default function RetirementPage() {
         </div>
       </motion.div>
 
-      <motion.div variants={stagger.item} className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+      {/* Income breakdown cards */}
+      <motion.div variants={stagger.item} className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <div className="card-surface p-4">
-          <p className="label-muted">Projected Pot (Real)</p>
-          <p className="value-large mt-1.5">{formatCurrency(finalReal)}</p>
-          <p className="text-[11px] text-muted-foreground mt-1">Nominal: {formatCurrency(finalNominal)}</p>
+          <p className="label-muted">DC Drawdown</p>
+          <p className="value-large mt-1.5">{formatCurrency(dcIncome)}</p>
+          <p className="text-[11px] text-muted-foreground mt-1">4% of {formatCurrency(finalReal)}</p>
         </div>
         <div className="card-surface p-4">
-          <p className="label-muted">Est. Annual Income</p>
-          <p className="value-large mt-1.5">{formatCurrency(estimatedIncome)}</p>
-          <p className="text-[11px] text-muted-foreground mt-1">4% drawdown rate</p>
-        </div>
-        <div className={cn("card-surface p-4", gap > 0 ? "border-warning/20" : "border-success/20")}>
-          <p className="label-muted">Income Gap</p>
-          <p className={cn("value-large mt-1.5", gap > 0 ? "text-warning" : "text-success")}>
-            {gap > 0 ? `-${formatCurrency(gap)}` : `+${formatCurrency(Math.abs(gap))}`}
-          </p>
+          <p className="label-muted">DB Pensions</p>
+          <p className="value-large mt-1.5">{formatCurrency(totalDBIncome)}</p>
           <p className="text-[11px] text-muted-foreground mt-1">
-            {gap > 0 ? "Below target — increase contributions" : "On track to meet target"}
+            {dbPensions.length} scheme{dbPensions.length !== 1 ? "s" : ""}
+          </p>
+        </div>
+        <div className="card-surface p-4">
+          <p className="label-muted">State Pension</p>
+          <p className="value-large mt-1.5">{formatCurrency(statePensionIncome)}</p>
+          <p className="text-[11px] text-muted-foreground mt-1">
+            {statePensionPct}% of full ({formatCurrency(UK_STATE_PENSION_FULL)})
+          </p>
+        </div>
+        <div className={cn("card-surface p-4 border", gap > 0 ? "border-warning/30" : "border-success/30")}>
+          <p className="label-muted">Total vs Target</p>
+          <p className="value-large mt-1.5">{formatCurrency(totalRetirementIncome)}</p>
+          <p className={cn("text-[11px] mt-1 font-medium", gap > 0 ? "text-warning" : "text-success")}>
+            {gap > 0 ? `${formatCurrency(gap)} shortfall` : `${formatCurrency(Math.abs(gap))} surplus`}
           </p>
         </div>
       </motion.div>
 
+      {/* DB pension detail (if any) */}
+      {dbPensions.length > 0 && (
+        <motion.div variants={stagger.item} className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {dbPensions.map((p, i) => {
+            const proj = dbPensionProjections[i];
+            if (!proj) return null;
+            return (
+              <div key={p.id} className="card-surface p-4">
+                <p className="text-xs font-semibold text-card-foreground">{p.name}</p>
+                <p className="text-[11px] text-muted-foreground mt-0.5">{p.scheme_type} · 1/{p.accrual_rate}</p>
+                <div className="mt-2 space-y-1">
+                  <div className="flex justify-between text-[11px]">
+                    <span className="text-muted-foreground">Current entitlement</span>
+                    <span className="text-card-foreground font-medium">{formatCurrency(proj.current_annual_income)}/yr</span>
+                  </div>
+                  <div className="flex justify-between text-[11px]">
+                    <span className="text-muted-foreground">Projected at {p.retirement_age}</span>
+                    <span className="text-card-foreground font-semibold">{formatCurrency(proj.projected_annual_income)}/yr</span>
+                  </div>
+                  <div className="flex justify-between text-[11px]">
+                    <span className="text-muted-foreground">Existing (revalued)</span>
+                    <span className="text-muted-foreground">{formatCurrency(proj.breakdown.existing_entitlement)}</span>
+                  </div>
+                  <div className="flex justify-between text-[11px]">
+                    <span className="text-muted-foreground">Future accrual</span>
+                    <span className="text-muted-foreground">{formatCurrency(proj.breakdown.future_accrual)}</span>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </motion.div>
+      )}
+
+      {/* Chart + sliders */}
       <motion.div variants={stagger.item} className="grid grid-cols-1 gap-4 lg:grid-cols-3">
         <div className="lg:col-span-2 hero-surface p-5">
-          <p className="label-muted mb-4">Pension Projection</p>
+          <p className="label-muted mb-4">DC Pension Projection</p>
           <ResponsiveContainer width="100%" height={320}>
             <AreaChart data={projection}>
               <defs>
