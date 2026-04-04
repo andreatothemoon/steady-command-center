@@ -118,7 +118,7 @@ export default function OverviewPage() {
         <div
           className="absolute inset-0 pointer-events-none"
           style={{
-            background: "radial-gradient(ellipse 60% 80% at 70% 80%, hsl(160 60% 45% / 0.04) 0%, transparent 70%)",
+            background: "radial-gradient(ellipse 60% 80% at 70% 80%, hsl(142 71% 45% / 0.04) 0%, transparent 70%)",
           }}
         />
         <div className="relative z-10">
@@ -180,9 +180,9 @@ export default function OverviewPage() {
               <AreaChart data={filteredChart}>
                 <defs>
                   <linearGradient id="heroGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="hsl(160, 60%, 45%)" stopOpacity={0.3} />
-                    <stop offset="50%" stopColor="hsl(160, 60%, 45%)" stopOpacity={0.08} />
-                    <stop offset="100%" stopColor="hsl(160, 60%, 45%)" stopOpacity={0} />
+                    <stop offset="0%" stopColor="hsl(142, 71%, 45%)" stopOpacity={0.25} />
+                    <stop offset="50%" stopColor="hsl(142, 71%, 45%)" stopOpacity={0.06} />
+                    <stop offset="100%" stopColor="hsl(142, 71%, 45%)" stopOpacity={0} />
                   </linearGradient>
                   <filter id="glowDot">
                     <feGaussianBlur stdDeviation="3" result="blur" />
@@ -192,7 +192,7 @@ export default function OverviewPage() {
                     </feMerge>
                   </filter>
                 </defs>
-                <XAxis dataKey="month" tick={{ fontSize: 10, fill: "hsl(215, 12%, 40%)" }} tickLine={false} axisLine={false} />
+                <XAxis dataKey="month" tick={{ fontSize: 10, fill: "hsl(220, 9%, 46%)" }} tickLine={false} axisLine={false} />
                 <YAxis hide domain={["dataMin - 5000", "dataMax + 5000"]} />
                 <Tooltip
                   content={({ active, payload, label }) => {
@@ -209,7 +209,7 @@ export default function OverviewPage() {
                 <Area
                   type="monotone"
                   dataKey="value"
-                  stroke="hsl(160, 60%, 45%)"
+                  stroke="hsl(142, 71%, 45%)"
                   strokeWidth={2.5}
                   fill="url(#heroGrad)"
                   animationDuration={1500}
@@ -220,9 +220,9 @@ export default function OverviewPage() {
                     x={lastPoint.month}
                     y={lastPoint.value}
                     r={5}
-                    fill="hsl(160, 60%, 45%)"
-                    stroke="hsl(228, 20%, 10%)"
-                    strokeWidth={2}
+                    fill="hsl(142, 71%, 45%)"
+                    stroke="hsl(222, 28%, 9%)"
+                    strokeWidth={2.5}
                     filter="url(#glowDot)"
                   />
                 )}

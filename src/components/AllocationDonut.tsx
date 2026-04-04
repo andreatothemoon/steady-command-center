@@ -5,12 +5,11 @@ import { cn } from "@/lib/utils";
 import type { Account } from "@/hooks/useAccounts";
 
 const ASSET_CLASSES: { key: string; label: string; color: string; types: string[] }[] = [
-  { key: "cash", label: "Cash", color: "hsl(210, 50%, 55%)", types: ["current_account", "savings", "cash_isa"] },
-  { key: "equities", label: "Equities", color: "hsl(160, 60%, 45%)", types: ["stocks_and_shares_isa", "gia", "employer_share_scheme"] },
-  { key: "property", label: "Property", color: "hsl(35, 70%, 55%)", types: ["property"] },
-  { key: "pension", label: "Pension", color: "hsl(270, 45%, 55%)", types: ["sipp", "workplace_pension", "db_pension"] },
-  { key: "crypto", label: "Crypto", color: "hsl(45, 85%, 55%)", types: ["crypto"] },
-  
+  { key: "cash", label: "Cash", color: "hsl(174, 58%, 39%)", types: ["current_account", "savings", "cash_isa"] },
+  { key: "equities", label: "Equities", color: "hsl(142, 71%, 45%)", types: ["stocks_and_shares_isa", "gia", "employer_share_scheme"] },
+  { key: "property", label: "Property", color: "hsl(38, 80%, 50%)", types: ["property"] },
+  { key: "pension", label: "Pension", color: "hsl(258, 52%, 55%)", types: ["sipp", "workplace_pension", "db_pension"] },
+  { key: "crypto", label: "Crypto", color: "hsl(48, 88%, 50%)", types: ["crypto"] },
 ];
 
 interface Props {

@@ -165,11 +165,11 @@ export default function ActionCenter({ accounts, ani = 0, isaUsed = 0, isaLimit 
       highCount > 0 ? "border-destructive/20" : "border-border"
     )} style={{
       background: highCount > 0
-        ? "linear-gradient(165deg, hsl(0 20% 10%) 0%, hsl(228 20% 9%) 100%)"
-        : "linear-gradient(165deg, hsl(228 20% 11%) 0%, hsl(228 20% 9%) 100%)",
+        ? "linear-gradient(165deg, hsl(0 18% 9%) 0%, hsl(222 28% 8%) 100%)"
+        : "linear-gradient(165deg, hsl(222 28% 10%) 0%, hsl(222 28% 8%) 100%)",
       boxShadow: highCount > 0
-        ? "0 4px 24px -4px hsl(0 72% 51% / 0.08), inset 0 1px 0 0 hsl(0 30% 18% / 0.3)"
-        : "0 2px 12px -4px hsl(0 0% 0% / 0.2), inset 0 1px 0 0 hsl(228 20% 14% / 0.4)"
+        ? "0 4px 24px -4px hsl(0 84% 60% / 0.06), inset 0 1px 0 0 hsl(0 0% 100% / 0.02)"
+        : "0 2px 12px -4px hsl(0 0% 0% / 0.2), inset 0 1px 0 0 hsl(0 0% 100% / 0.03)"
     }}>
       {/* Header */}
       <div className="px-5 py-3.5 border-b border-border/60 flex items-center justify-between">
