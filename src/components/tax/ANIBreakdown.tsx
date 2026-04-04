@@ -4,6 +4,7 @@ import { TrendingDown } from "lucide-react";
 
 interface ANIResult {
   gross_income: number;
+  dividend_income?: number;
   salary_sacrifice_total: number;
   grossed_up_personal_pension: number;
   grossed_up_gift_aid: number;
