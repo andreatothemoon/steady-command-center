@@ -115,7 +115,8 @@ export default function ActionCenter({ accounts, memberANIs = [], isaUsed = 0, i
         route: "/tax",
         category: "tax",
     });
-  }
+    }
+  });
 
   // ISA deadline
   const isaRemaining = isaLimit - isaUsed;
