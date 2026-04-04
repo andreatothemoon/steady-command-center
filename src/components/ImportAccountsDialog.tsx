@@ -24,6 +24,22 @@ export default function ImportAccountsDialog({ open, onOpenChange }: Props) {
   const [importing, setImporting] = useState(false);
   const addAccount = useAddAccount();
 
+  const downloadTemplate = () => {
+    const csv = [
+      "Name,Account Type,Wrapper,Current Value,Owner,Interest Rate (%),Term Remaining (months)",
+      "Vanguard ISA,Stocks & Shares ISA,ISA,25000,Andrea,,",
+      "Easy Access Saver,Savings,Unwrapped,10000,Giulia,,",
+      "Home Mortgage,Mortgage,Unwrapped,-180000,Andrea,4.50,240",
+    ].join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "accounts_template.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   const handleFile = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
