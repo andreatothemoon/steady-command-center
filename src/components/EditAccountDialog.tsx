@@ -272,7 +272,7 @@ export default function EditAccountDialog({ account, open, onOpenChange }: Props
             </Button>
           </div>
         </form>
-      </DialogContent>
-    </Dialog>
+      </ResponsiveDialogContent>
+    </ResponsiveDialog>
   );
 }

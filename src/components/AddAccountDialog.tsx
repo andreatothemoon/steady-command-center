@@ -211,7 +211,7 @@ export default function AddAccountDialog({ open, onOpenChange }: Props) {
             {addAccount.isPending ? "Adding…" : "Add Account"}
           </Button>
         </form>
-      </DialogContent>
-    </Dialog>
+      </ResponsiveDialogContent>
+    </ResponsiveDialog>
   );
 }
