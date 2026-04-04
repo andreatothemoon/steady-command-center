@@ -126,7 +126,7 @@ export default function TaxPage() {
       { label: "ISA Allowance", used: Number(s?.isa_contributions ?? 0), limit: 20000 },
       { label: "Pension Annual Allowance", used: computed.pension_contributions, limit: 60000 },
       { label: "Capital Gains Allowance", used: Number(s?.capital_gains ?? 0), limit: 3000 },
-      { label: "Dividend Allowance", used: 0, limit: 500 },
+      { label: "Dividend Allowance", used: form.dividend_income, limit: 500 },
     ];
   };
 
