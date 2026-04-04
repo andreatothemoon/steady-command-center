@@ -19,10 +19,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useAddAccount } from "@/hooks/useAccounts";
+import { useAddAccount, useAccounts } from "@/hooks/useAccounts";
 import { accountTypeLabels, wrapperLabels } from "@/data/types";
 import type { AccountType, WrapperType } from "@/data/types";
 import { toast } from "sonner";
+import { Link2 } from "lucide-react";
 
 const schema = z.object({
   name: z.string().trim().min(1, "Name is required").max(100),
@@ -49,6 +50,9 @@ interface Props {
 
 export default function AddAccountDialog({ open, onOpenChange }: Props) {
   const addAccount = useAddAccount();
+  const { data: allAccounts = [] } = useAccounts();
+  const [linkedAccountId, setLinkedAccountId] = useState<string | null>(null);
+
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
@@ -60,6 +64,9 @@ export default function AddAccountDialog({ open, onOpenChange }: Props) {
     },
   });
 
+  const propertyAccounts = allAccounts.filter((a) => a.account_type === "property");
+  const watchedType = form.watch("account_type");
+
   const onSubmit = async (values: FormValues) => {
     try {
       await addAccount.mutateAsync({
@@ -68,9 +75,11 @@ export default function AddAccountDialog({ open, onOpenChange }: Props) {
         wrapper_type: values.wrapper_type as WrapperType,
         current_value: values.current_value,
         owner_name: values.owner_name,
-      });
+        linked_account_id: values.account_type === "mortgage" ? linkedAccountId : null,
+      } as any);
       toast.success("Account added");
       form.reset();
+      setLinkedAccountId(null);
       onOpenChange(false);
     } catch (e: any) {
       toast.error(e.message || "Failed to add account");
@@ -82,6 +91,7 @@ export default function AddAccountDialog({ open, onOpenChange }: Props) {
     const autoWrapper = typeToWrapper[val as AccountType];
     if (autoWrapper) form.setValue("wrapper_type", autoWrapper);
     else form.setValue("wrapper_type", "none");
+    if (val !== "mortgage") setLinkedAccountId(null);
   };
 
   return (
@@ -138,6 +148,32 @@ export default function AddAccountDialog({ open, onOpenChange }: Props) {
               <Input id="owner_name" placeholder="You" {...form.register("owner_name")} />
             </div>
           </div>
+
+          {/* Linked Property selector for mortgages */}
+          {watchedType === "mortgage" && (
+            <div className="space-y-2">
+              <Label className="flex items-center gap-1.5">
+                <Link2 className="h-3.5 w-3.5 text-muted-foreground" />
+                Linked Property
+              </Label>
+              {propertyAccounts.length === 0 ? (
+                <p className="text-xs text-muted-foreground">No property accounts to link. You can link it later.</p>
+              ) : (
+                <Select
+                  value={linkedAccountId ?? "_none"}
+                  onValueChange={(v) => setLinkedAccountId(v === "_none" ? null : v)}
+                >
+                  <SelectTrigger><SelectValue placeholder="Select property" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="_none">No linked property</SelectItem>
+                    {propertyAccounts.map((p) => (
+                      <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            </div>
+          )}
 
           <Button type="submit" className="w-full" disabled={addAccount.isPending}>
             {addAccount.isPending ? "Adding…" : "Add Account"}
