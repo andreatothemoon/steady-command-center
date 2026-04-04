@@ -7,6 +7,7 @@ import {
   FileText,
   Receipt,
   TrendingUp,
+  Building2,
   Settings,
   ChevronLeft,
   ChevronRight,
