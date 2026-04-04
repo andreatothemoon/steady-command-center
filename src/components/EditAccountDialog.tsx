@@ -109,8 +109,8 @@ export default function EditAccountDialog({ account, open, onOpenChange }: Props
         current_value: values.current_value,
         owner_name: values.owner_name,
         linked_account_id: isMortgage ? linkedAccountId : null,
-        interest_rate: isMortgage && values.interest_rate !== "" ? Number(values.interest_rate) : null,
-        term_remaining_months: isMortgage && values.term_remaining_months !== "" ? Number(values.term_remaining_months) : null,
+        interest_rate: isDebtType && values.interest_rate !== "" ? Number(values.interest_rate) : null,
+        term_remaining_months: isDebtType && values.term_remaining_months !== "" ? Number(values.term_remaining_months) : null,
       } as any);
       toast.success("Account updated");
       onOpenChange(false);
