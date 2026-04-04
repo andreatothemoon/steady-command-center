@@ -39,6 +39,7 @@ export function summaryToForm(s: TaxYearSummary | undefined): MemberFormState {
     salary: Number(s.salary ?? 0),
     bonus: Number(s.bonus ?? 0),
     taxable_benefits: Number(s.taxable_benefits ?? 0),
+    dividend_income: Number(s.dividend_income ?? 0),
     salary_sacrifice_pension: Number(s.salary_sacrifice_pension ?? 0),
     employer_pension: Number(s.employer_pension ?? 0),
     personal_pension_net: Number(s.personal_pension_net ?? 0),
