@@ -54,8 +54,8 @@ export default function OverviewPage() {
         <TaxPosition ani={ani} isaUsed={isaUsed} isaLimit={isaLimit} />
       </motion.div>
 
-      {/* 5. COLLAPSIBLE INSIGHTS — Asset allocation, property, debt */}
-      <motion.div variants={stagger.item}>
+      {/* 5. COLLAPSIBLE INSIGHTS */}
+      <motion.div variants={stagger.item} className="order-5">
         <CollapsibleInsights accounts={accounts} />
       </motion.div>
     </motion.div>
