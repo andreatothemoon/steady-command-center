@@ -250,7 +250,11 @@ export default function OverviewPage() {
                   <div className="flex items-center justify-between text-[11px] text-muted-foreground">
                     <span>Value: {formatCurrency(item.propertyValue)}</span>
                     {item.mortgage ? (
-                      <span>Mortgage: {formatCurrency(item.mortgageBalance)} · LTV {item.ltv.toFixed(0)}%</span>
+                      <span>
+                        Mortgage: {formatCurrency(item.mortgageBalance)} · LTV {item.ltv.toFixed(0)}%
+                        {(item.mortgage as any).interest_rate != null && ` · ${Number((item.mortgage as any).interest_rate).toFixed(2)}%`}
+                        {(item.mortgage as any).term_remaining_months != null && ` · ${Math.floor(Number((item.mortgage as any).term_remaining_months) / 12)}y left`}
+                      </span>
                     ) : (
                       <span className="text-success">No mortgage — fully owned</span>
                     )}
