@@ -43,7 +43,9 @@ const schema = z.object({
   account_type: z.string().min(1, "Select a type"),
   wrapper_type: z.string().min(1, "Select a wrapper"),
   current_value: z.coerce.number(),
-  owner_name: z.string().trim().min(1, "Owner is required").max(50),
+  owner_name: z.string().trim().min(1, "Owner is required").max(150),
+  interest_rate: z.coerce.number().min(0).max(100).optional().or(z.literal("")),
+  term_remaining_months: z.coerce.number().int().min(0).max(600).optional().or(z.literal("")),
 });
 
 type FormValues = z.infer<typeof schema>;
