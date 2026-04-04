@@ -183,8 +183,19 @@ export default function EditAccountDialog({ account, open, onOpenChange }: Props
               <Input id="edit-value" type="number" step="0.01" {...form.register("current_value")} />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="edit-owner">Owner</Label>
-              <Input id="edit-owner" placeholder="You" {...form.register("owner_name")} />
+              <Label>Owner</Label>
+              <Select onValueChange={(v) => form.setValue("owner_name", v)} value={form.watch("owner_name")}>
+                <SelectTrigger><SelectValue placeholder="Select owner" /></SelectTrigger>
+                <SelectContent>
+                  {profiles.length > 0 ? (
+                    profiles.map((p) => (
+                      <SelectItem key={p.id} value={p.name}>{p.name}</SelectItem>
+                    ))
+                  ) : (
+                    <SelectItem value="You">You</SelectItem>
+                  )}
+                </SelectContent>
+              </Select>
             </div>
           </div>
 

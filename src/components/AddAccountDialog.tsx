@@ -146,8 +146,19 @@ export default function AddAccountDialog({ open, onOpenChange }: Props) {
               <Input id="current_value" type="number" step="0.01" {...form.register("current_value")} />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="owner_name">Owner</Label>
-              <Input id="owner_name" placeholder="You" {...form.register("owner_name")} />
+              <Label>Owner</Label>
+              <Select onValueChange={(v) => form.setValue("owner_name", v)} value={form.watch("owner_name")}>
+                <SelectTrigger><SelectValue placeholder="Select owner" /></SelectTrigger>
+                <SelectContent>
+                  {profiles.length > 0 ? (
+                    profiles.map((p) => (
+                      <SelectItem key={p.id} value={p.name}>{p.name}</SelectItem>
+                    ))
+                  ) : (
+                    <SelectItem value="You">You</SelectItem>
+                  )}
+                </SelectContent>
+              </Select>
             </div>
           </div>
 
