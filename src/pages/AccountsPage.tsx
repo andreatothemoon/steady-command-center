@@ -135,10 +135,10 @@ export default function AccountsPage() {
                             </div>
                             <p className="text-[11px] text-muted-foreground mt-0.5">
                               {provider} · {account.owner_name} · {formatDate(account.last_updated)}
-                              {account.account_type === "mortgage" && (account as any).interest_rate != null && (
+                              {["mortgage", "loan", "credit_card"].includes(account.account_type) && (account as any).interest_rate != null && (
                                 <span className="ml-1.5">{Number((account as any).interest_rate).toFixed(2)}%</span>
                               )}
-                              {account.account_type === "mortgage" && (account as any).term_remaining_months != null && (
+                              {["mortgage", "loan", "credit_card"].includes(account.account_type) && (account as any).term_remaining_months != null && (
                                 <span className="ml-1">· {Math.floor(Number((account as any).term_remaining_months) / 12)}y {Number((account as any).term_remaining_months) % 12}m left</span>
                               )}
                               {account.account_type === "mortgage" && (account as any).linked_account_id && (() => {
