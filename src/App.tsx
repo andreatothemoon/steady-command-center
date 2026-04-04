@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { SidebarProvider } from "@/contexts/SidebarContext";
+import { PageVisibilityProvider } from "@/contexts/PageVisibilityContext";
 import AppSidebar from "@/components/AppSidebar";
 import AppLayout from "@/components/AppLayout";
 import OverviewPage from "@/pages/OverviewPage";
@@ -35,22 +36,24 @@ function ProtectedRoutes() {
 
   return (
     <SidebarProvider>
-      <div className="dark">
-        <AppSidebar />
-        <AppLayout>
-          <Routes>
-            <Route path="/" element={<OverviewPage />} />
-            <Route path="/accounts" element={<AccountsPage />} />
-            <Route path="/contributions" element={<ContributionsPage />} />
-            <Route path="/documents" element={<DocumentsPage />} />
-            <Route path="/tax" element={<TaxPage />} />
-            <Route path="/retirement" element={<RetirementPage />} />
-            <Route path="/db-pensions" element={<DBPensionsPage />} />
-            <Route path="/settings" element={<SettingsPage />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </AppLayout>
-      </div>
+      <PageVisibilityProvider>
+        <div className="dark">
+          <AppSidebar />
+          <AppLayout>
+            <Routes>
+              <Route path="/" element={<OverviewPage />} />
+              <Route path="/accounts" element={<AccountsPage />} />
+              <Route path="/contributions" element={<ContributionsPage />} />
+              <Route path="/documents" element={<DocumentsPage />} />
+              <Route path="/tax" element={<TaxPage />} />
+              <Route path="/retirement" element={<RetirementPage />} />
+              <Route path="/db-pensions" element={<DBPensionsPage />} />
+              <Route path="/settings" element={<SettingsPage />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </AppLayout>
+        </div>
+      </PageVisibilityProvider>
     </SidebarProvider>
   );
 }

@@ -15,22 +15,24 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useSidebarCollapse } from "@/contexts/SidebarContext";
+import { usePageVisibility } from "@/contexts/PageVisibilityContext";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { useState } from "react";
 
 const navItems = [
-  { to: "/", label: "Overview", icon: LayoutDashboard },
-  { to: "/accounts", label: "Accounts", icon: Wallet },
-  { to: "/contributions", label: "Contributions", icon: ArrowUpDown },
-  { to: "/documents", label: "Documents", icon: FileText },
-  { to: "/tax", label: "Tax", icon: Receipt },
-  { to: "/retirement", label: "Retirement", icon: TrendingUp },
-  { to: "/db-pensions", label: "DB Pensions", icon: Building2 },
+  { to: "/", label: "Overview", icon: LayoutDashboard, key: null },
+  { to: "/accounts", label: "Accounts", icon: Wallet, key: "accounts" as const },
+  { to: "/contributions", label: "Contributions", icon: ArrowUpDown, key: "contributions" as const },
+  { to: "/documents", label: "Documents", icon: FileText, key: "documents" as const },
+  { to: "/tax", label: "Tax", icon: Receipt, key: "tax" as const },
+  { to: "/retirement", label: "Retirement", icon: TrendingUp, key: "retirement" as const },
+  { to: "/db-pensions", label: "DB Pensions", icon: Building2, key: "db-pensions" as const },
 ];
 
 function SidebarContent({ collapsed, toggle, onNavigate }: { collapsed: boolean; toggle: () => void; onNavigate?: () => void }) {
   const location = useLocation();
+  const { isPageVisible } = usePageVisibility();
   const { data: profiles = [] } = useHouseholdProfiles();
   const adults = profiles.filter((p) => p.role === "adult");
   const initials = adults.length > 0
@@ -54,7 +56,7 @@ function SidebarContent({ collapsed, toggle, onNavigate }: { collapsed: boolean;
       </div>
 
       <nav className={cn("flex-1 space-y-0.5 pt-3", collapsed ? "px-2" : "px-3")}>
-        {navItems.map(({ to, label, icon: Icon }) => {
+        {navItems.filter(({ key }) => key === null || isPageVisible(key)).map(({ to, label, icon: Icon }) => {
           const isActive = location.pathname === to;
           return (
             <NavLink
