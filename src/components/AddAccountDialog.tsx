@@ -25,6 +25,7 @@ import { accountTypeLabels, wrapperLabels } from "@/data/types";
 import type { AccountType, WrapperType } from "@/data/types";
 import { toast } from "sonner";
 import { Link2 } from "lucide-react";
+import OwnerMultiSelect from "@/components/OwnerMultiSelect";
 
 const schema = z.object({
   name: z.string().trim().min(1, "Name is required").max(100),
