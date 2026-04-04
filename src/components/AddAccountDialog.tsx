@@ -128,7 +128,7 @@ export default function AddAccountDialog({ open, onOpenChange }: Props) {
               <Select onValueChange={handleTypeChange} value={form.watch("account_type")}>
                 <SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
                 <SelectContent>
-                  {Object.entries(accountTypeLabels).map(([key, label]) => (
+                  {Object.entries(accountTypeLabels).sort(([, a], [, b]) => a.localeCompare(b)).map(([key, label]) => (
                     <SelectItem key={key} value={key}>{label}</SelectItem>
                   ))}
                 </SelectContent>
