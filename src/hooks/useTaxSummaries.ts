@@ -115,6 +115,7 @@ export function useUpsertTaxSummary() {
         bonus: input.bonus,
         taxable_benefits: input.taxable_benefits,
         dividend_income: input.dividend_income,
+        rental_income: input.rental_income,
         salary_sacrifice_pension: input.salary_sacrifice_pension,
         employer_pension: input.employer_pension,
         personal_pension_net: input.personal_pension_net,
