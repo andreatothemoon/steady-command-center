@@ -29,11 +29,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useUpdateAccount, useDeleteAccount, type Account } from "@/hooks/useAccounts";
+import { useUpdateAccount, useDeleteAccount, useAccounts, type Account } from "@/hooks/useAccounts";
 import { accountTypeLabels, wrapperLabels } from "@/data/types";
 import type { AccountType, WrapperType } from "@/data/types";
 import { toast } from "sonner";
-import { Trash2 } from "lucide-react";
+import { Trash2, Link2 } from "lucide-react";
+import { useState, useEffect } from "react";
 
 const schema = z.object({
   name: z.string().trim().min(1, "Name is required").max(100),
@@ -62,6 +63,19 @@ interface Props {
 export default function EditAccountDialog({ account, open, onOpenChange }: Props) {
   const updateAccount = useUpdateAccount();
   const deleteAccount = useDeleteAccount();
+  const { data: allAccounts = [] } = useAccounts();
+  const [linkedAccountId, setLinkedAccountId] = useState<string | null>(null);
+
+  const isMortgage = account?.account_type === "mortgage";
+  const propertyAccounts = allAccounts.filter(
+    (a) => a.account_type === "property" && a.id !== account?.id
+  );
+
+  useEffect(() => {
+    if (account) {
+      setLinkedAccountId((account as any).linked_account_id ?? null);
+    }
+  }, [account]);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
@@ -86,7 +100,8 @@ export default function EditAccountDialog({ account, open, onOpenChange }: Props
         wrapper_type: values.wrapper_type as WrapperType,
         current_value: values.current_value,
         owner_name: values.owner_name,
-      });
+        linked_account_id: isMortgage ? linkedAccountId : null,
+      } as any);
       toast.success("Account updated");
       onOpenChange(false);
     } catch (e: any) {
@@ -110,9 +125,14 @@ export default function EditAccountDialog({ account, open, onOpenChange }: Props
     const autoWrapper = typeToWrapper[val as AccountType];
     if (autoWrapper) form.setValue("wrapper_type", autoWrapper);
     else form.setValue("wrapper_type", "none");
+    // Clear link if switching away from mortgage
+    if (val !== "mortgage") setLinkedAccountId(null);
   };
 
   if (!account) return null;
+
+  const watchedType = form.watch("account_type");
+  const showPropertyLink = watchedType === "mortgage";
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -165,6 +185,32 @@ export default function EditAccountDialog({ account, open, onOpenChange }: Props
               <Input id="edit-owner" placeholder="You" {...form.register("owner_name")} />
             </div>
           </div>
+
+          {/* Linked Property selector for mortgages */}
+          {showPropertyLink && (
+            <div className="space-y-2">
+              <Label className="flex items-center gap-1.5">
+                <Link2 className="h-3.5 w-3.5 text-muted-foreground" />
+                Linked Property
+              </Label>
+              {propertyAccounts.length === 0 ? (
+                <p className="text-xs text-muted-foreground">No property accounts to link. Add a property account first.</p>
+              ) : (
+                <Select
+                  value={linkedAccountId ?? "_none"}
+                  onValueChange={(v) => setLinkedAccountId(v === "_none" ? null : v)}
+                >
+                  <SelectTrigger><SelectValue placeholder="Select property" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="_none">No linked property</SelectItem>
+                    {propertyAccounts.map((p) => (
+                      <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            </div>
+          )}
 
           <div className="flex items-center justify-between pt-2">
             <AlertDialog>
