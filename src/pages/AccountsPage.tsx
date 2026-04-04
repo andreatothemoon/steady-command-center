@@ -43,6 +43,7 @@ export default function AccountsPage() {
   const [groupBy, setGroupBy] = useState<GroupBy>("type");
   const [addOpen, setAddOpen] = useState(false);
   const [editAccount, setEditAccount] = useState<Account | null>(null);
+  const [importOpen, setImportOpen] = useState(false);
   const { data: accounts = [], isLoading } = useAccounts();
 
   const grouped = groupAccounts(accounts, groupBy);
