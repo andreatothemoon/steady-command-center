@@ -588,41 +588,65 @@ export type Database = {
       tax_year_summaries: {
         Row: {
           adjusted_net_income: number | null
+          bonus: number | null
           capital_gains: number | null
           created_at: string
+          employer_pension: number | null
+          gift_aid: number | null
           gross_income: number | null
           household_id: string
           id: string
           isa_contributions: number | null
           member_profile_id: string | null
+          other_salary_sacrifice: number | null
           pension_contributions: number | null
+          personal_pension_net: number | null
+          salary: number | null
+          salary_sacrifice_pension: number | null
           tax_year: string
+          taxable_benefits: number | null
           updated_at: string
         }
         Insert: {
           adjusted_net_income?: number | null
+          bonus?: number | null
           capital_gains?: number | null
           created_at?: string
+          employer_pension?: number | null
+          gift_aid?: number | null
           gross_income?: number | null
           household_id: string
           id?: string
           isa_contributions?: number | null
           member_profile_id?: string | null
+          other_salary_sacrifice?: number | null
           pension_contributions?: number | null
+          personal_pension_net?: number | null
+          salary?: number | null
+          salary_sacrifice_pension?: number | null
           tax_year: string
+          taxable_benefits?: number | null
           updated_at?: string
         }
         Update: {
           adjusted_net_income?: number | null
+          bonus?: number | null
           capital_gains?: number | null
           created_at?: string
+          employer_pension?: number | null
+          gift_aid?: number | null
           gross_income?: number | null
           household_id?: string
           id?: string
           isa_contributions?: number | null
           member_profile_id?: string | null
+          other_salary_sacrifice?: number | null
           pension_contributions?: number | null
+          personal_pension_net?: number | null
+          salary?: number | null
+          salary_sacrifice_pension?: number | null
           tax_year?: string
+          taxable_benefits?: number | null
           updated_at?: string
         }
         Relationships: [

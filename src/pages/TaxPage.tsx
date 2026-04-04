@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { motion } from "framer-motion";
 import {
   ShieldCheck,
@@ -9,26 +9,27 @@ import {
   Plus,
   Save,
   Pencil,
+  TrendingDown,
 } from "lucide-react";
 import { formatCurrency } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { useHouseholdProfiles, type HouseholdProfile } from "@/hooks/useHouseholdProfiles";
 import { useAccounts } from "@/hooks/useAccounts";
-import { useTaxSummaries, useUpsertTaxSummary } from "@/hooks/useTaxSummaries";
+import {
+  useTaxSummaries,
+  useUpsertTaxSummary,
+  computeANI,
+  summaryToForm,
+  emptyForm,
+  type MemberFormState,
+} from "@/hooks/useTaxSummaries";
 import AddMemberDialog from "@/components/AddMemberDialog";
 import { toast } from "sonner";
+import { CurrencyField } from "@/components/tax/CurrencyField";
+import { ANIBreakdown } from "@/components/tax/ANIBreakdown";
 
 const TAX_YEAR = "2025/26";
-
-interface Allowance {
-  label: string;
-  used: number;
-  limit: number;
-  warning?: string;
-}
 
 const stagger = {
   container: { transition: { staggerChildren: 0.06 } },
@@ -40,74 +41,11 @@ const stagger = {
 
 type ViewMode = "household" | string;
 
-// Currency input helper — strips non-numeric chars for controlled input
-function parseCurrencyInput(val: string): number {
-  const cleaned = val.replace(/[^0-9.]/g, "");
-  const n = parseFloat(cleaned);
-  return isNaN(n) ? 0 : Math.max(0, n);
-}
-
-function CurrencyField({
-  label,
-  value,
-  onChange,
-  disabled,
-}: {
+interface Allowance {
   label: string;
-  value: number;
-  onChange: (v: number) => void;
-  disabled?: boolean;
-}) {
-  const [raw, setRaw] = useState(value > 0 ? String(value) : "");
-
-  useEffect(() => {
-    setRaw(value > 0 ? String(value) : "");
-  }, [value]);
-
-  return (
-    <div className="space-y-1.5">
-      <Label className="text-xs text-muted-foreground">{label}</Label>
-      <div className="relative">
-        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">£</span>
-        <Input
-          type="text"
-          inputMode="decimal"
-          disabled={disabled}
-          className="pl-7 tabular-nums text-sm bg-background border-border text-foreground"
-          placeholder="0"
-          value={raw}
-          onChange={(e) => {
-            const v = e.target.value;
-            // Allow only digits, one dot, max 2 decimals, max 10 digits
-            if (/^[0-9]*\.?[0-9]{0,2}$/.test(v) && v.length <= 12) {
-              setRaw(v);
-              onChange(parseCurrencyInput(v));
-            }
-          }}
-          onBlur={() => {
-            const n = parseCurrencyInput(raw);
-            setRaw(n > 0 ? String(n) : "");
-            onChange(n);
-          }}
-        />
-      </div>
-    </div>
-  );
+  used: number;
+  limit: number;
 }
-
-interface MemberFormState {
-  gross_income: number;
-  pension_contributions: number;
-  isa_contributions: number;
-  capital_gains: number;
-}
-
-const emptyForm: MemberFormState = {
-  gross_income: 0,
-  pension_contributions: 0,
-  isa_contributions: 0,
-  capital_gains: 0,
-};
 
 export default function TaxPage() {
   const { data: profiles = [], isLoading } = useHouseholdProfiles();
@@ -141,7 +79,7 @@ export default function TaxPage() {
   const getANI = (profileId: string) => {
     const s = getSummaryForProfile(profileId);
     if (!s) return 0;
-    return Math.max(0, Number(s.gross_income ?? 0) - Number(s.pension_contributions ?? 0));
+    return computeANI(summaryToForm(s)).adjusted_net_income;
   };
 
   const getHouseholdANI = () =>
@@ -150,12 +88,7 @@ export default function TaxPage() {
   const startEditing = (profile: HouseholdProfile) => {
     const s = getSummaryForProfile(profile.id);
     setEditingProfileId(profile.id);
-    setFormState({
-      gross_income: Number(s?.gross_income ?? 0),
-      pension_contributions: Number(s?.pension_contributions ?? 0),
-      isa_contributions: Number(s?.isa_contributions ?? 0),
-      capital_gains: Number(s?.capital_gains ?? 0),
-    });
+    setFormState(summaryToForm(s));
   };
 
   const cancelEditing = () => {
@@ -179,16 +112,19 @@ export default function TaxPage() {
     }
   };
 
+  const updateField = (field: keyof MemberFormState) => (v: number) =>
+    setFormState((s) => ({ ...s, [field]: v }));
+
   const getAllowances = (profile: HouseholdProfile): Allowance[] => {
     const s = getSummaryForProfile(profile.id);
+    const form = summaryToForm(s);
+    const computed = computeANI(form);
     if (profile.role === "child") {
-      return [
-        { label: "Junior ISA Allowance", used: Number(s?.isa_contributions ?? 0), limit: 9000 },
-      ];
+      return [{ label: "Junior ISA Allowance", used: Number(s?.isa_contributions ?? 0), limit: 9000 }];
     }
     return [
       { label: "ISA Allowance", used: Number(s?.isa_contributions ?? 0), limit: 20000 },
-      { label: "Pension Annual Allowance", used: Number(s?.pension_contributions ?? 0), limit: 60000 },
+      { label: "Pension Annual Allowance", used: computed.pension_contributions, limit: 60000 },
       { label: "Capital Gains Allowance", used: Number(s?.capital_gains ?? 0), limit: 3000 },
       { label: "Dividend Allowance", used: 0, limit: 500 },
     ];
@@ -199,6 +135,123 @@ export default function TaxPage() {
 
   const ani = selectedProfile ? getANI(selectedProfile.id) : getHouseholdANI();
   const aniWarning = ani >= 100000;
+
+  const liveComputed = computeANI(formState);
+
+  // Inline form for editing
+  const renderEditForm = (profile: HouseholdProfile, inline = false) => {
+    const isChild = profile.role === "child";
+    return (
+      <div className={cn("space-y-4", inline ? "px-5 py-4 border-b border-border bg-secondary/20" : "px-5 py-4")}>
+        {/* Income section */}
+        {!isChild && (
+          <div>
+            <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2.5">Income</p>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              <CurrencyField label="Salary" value={formState.salary} onChange={updateField("salary")} />
+              <CurrencyField label="Bonus" value={formState.bonus} onChange={updateField("bonus")} />
+              <CurrencyField label="Taxable Benefits (BIK)" value={formState.taxable_benefits} onChange={updateField("taxable_benefits")} />
+            </div>
+          </div>
+        )}
+
+        {/* Pension section */}
+        {!isChild && (
+          <div>
+            <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2.5">Pension Contributions</p>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              <CurrencyField label="Salary Sacrifice" value={formState.salary_sacrifice_pension} onChange={updateField("salary_sacrifice_pension")} />
+              <CurrencyField label="Employer" value={formState.employer_pension} onChange={updateField("employer_pension")} />
+              <CurrencyField label="Personal (net)" value={formState.personal_pension_net} onChange={updateField("personal_pension_net")} />
+            </div>
+          </div>
+        )}
+
+        {/* Other deductions */}
+        {!isChild && (
+          <div>
+            <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2.5">Other Deductions</p>
+            <div className="grid grid-cols-2 gap-3">
+              <CurrencyField label="Gift Aid (net)" value={formState.gift_aid} onChange={updateField("gift_aid")} />
+              <CurrencyField label="Other Salary Sacrifice" value={formState.other_salary_sacrifice} onChange={updateField("other_salary_sacrifice")} />
+            </div>
+          </div>
+        )}
+
+        {/* Allowances */}
+        <div>
+          <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2.5">Allowances</p>
+          <div className="grid grid-cols-2 gap-3">
+            <CurrencyField label={isChild ? "Junior ISA" : "ISA Contributions"} value={formState.isa_contributions} onChange={updateField("isa_contributions")} />
+            {!isChild && (
+              <CurrencyField label="Capital Gains" value={formState.capital_gains} onChange={updateField("capital_gains")} />
+            )}
+          </div>
+        </div>
+
+        {/* Live ANI breakdown */}
+        {!isChild && <ANIBreakdown computed={liveComputed} />}
+      </div>
+    );
+  };
+
+  // Read-only display of data
+  const renderReadOnlyData = (profile: HouseholdProfile) => {
+    const s = getSummaryForProfile(profile.id);
+    if (!s) {
+      return (
+        <p className="text-sm text-muted-foreground px-5 py-4">
+          No income data entered yet.{" "}
+          <button onClick={() => startEditing(profile)} className="text-primary hover:underline">
+            Add now →
+          </button>
+        </p>
+      );
+    }
+    const form = summaryToForm(s);
+    const computed = computeANI(form);
+    const isChild = profile.role === "child";
+
+    return (
+      <div className="px-5 py-4 space-y-4">
+        {!isChild && (
+          <>
+            <div>
+              <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">Income</p>
+              <div className="grid grid-cols-3 gap-3">
+                <ReadOnlyField label="Salary" value={form.salary} />
+                <ReadOnlyField label="Bonus" value={form.bonus} />
+                <ReadOnlyField label="Taxable BIK" value={form.taxable_benefits} />
+              </div>
+            </div>
+            <div>
+              <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">Pension</p>
+              <div className="grid grid-cols-3 gap-3">
+                <ReadOnlyField label="Salary Sacrifice" value={form.salary_sacrifice_pension} />
+                <ReadOnlyField label="Employer" value={form.employer_pension} />
+                <ReadOnlyField label="Personal (net)" value={form.personal_pension_net} />
+              </div>
+            </div>
+            <div>
+              <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">Deductions</p>
+              <div className="grid grid-cols-2 gap-3">
+                <ReadOnlyField label="Gift Aid" value={form.gift_aid} />
+                <ReadOnlyField label="Other Sacrifice" value={form.other_salary_sacrifice} />
+              </div>
+            </div>
+          </>
+        )}
+        <div>
+          <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">Allowances</p>
+          <div className="grid grid-cols-2 gap-3">
+            <ReadOnlyField label={isChild ? "Junior ISA" : "ISA"} value={form.isa_contributions} />
+            {!isChild && <ReadOnlyField label="Capital Gains" value={form.capital_gains} />}
+          </div>
+        </div>
+        {!isChild && <ANIBreakdown computed={computed} />}
+      </div>
+    );
+  };
 
   return (
     <motion.div className="space-y-5" variants={stagger.container} initial="initial" animate="animate">
@@ -343,50 +396,7 @@ export default function TaxPage() {
                     </div>
 
                     {/* Income form (inline edit) */}
-                    {isEditing && (
-                      <div className="px-5 py-4 border-b border-border bg-secondary/20">
-                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                          <CurrencyField
-                            label="Gross Income"
-                            value={formState.gross_income}
-                            onChange={(v) => setFormState((s) => ({ ...s, gross_income: v }))}
-                          />
-                          <CurrencyField
-                            label="Pension Contributions"
-                            value={formState.pension_contributions}
-                            onChange={(v) => setFormState((s) => ({ ...s, pension_contributions: v }))}
-                          />
-                          <CurrencyField
-                            label={isChild ? "Junior ISA" : "ISA Contributions"}
-                            value={formState.isa_contributions}
-                            onChange={(v) => setFormState((s) => ({ ...s, isa_contributions: v }))}
-                          />
-                          {!isChild && (
-                            <CurrencyField
-                              label="Capital Gains"
-                              value={formState.capital_gains}
-                              onChange={(v) => setFormState((s) => ({ ...s, capital_gains: v }))}
-                            />
-                          )}
-                        </div>
-                        {!isChild && (
-                          <div className="mt-3 flex items-center gap-2">
-                            <span className="text-[11px] text-muted-foreground">Estimated ANI:</span>
-                            <span className={cn(
-                              "text-sm font-semibold tabular-nums",
-                              (formState.gross_income - formState.pension_contributions) >= 100000
-                                ? "text-destructive"
-                                : "text-foreground"
-                            )}>
-                              {formatCurrency(Math.max(0, formState.gross_income - formState.pension_contributions))}
-                            </span>
-                            {(formState.gross_income - formState.pension_contributions) >= 100000 && (
-                              <span className="text-[10px] text-destructive">⚠ above £100k</span>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    )}
+                    {isEditing && renderEditForm(profile, true)}
 
                     {/* Allowance bars */}
                     <div className="px-5 py-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -442,16 +452,17 @@ export default function TaxPage() {
                     <p className="label-muted">{selectedProfile.name}'s Adjusted Net Income</p>
                   </div>
                   <p className="value-hero text-3xl">{formatCurrency(ani)}</p>
-                  {aniWarning ? (
+                  {ani >= 125140 ? (
+                    <p className="text-sm text-destructive mt-1">
+                      Above £125,140 — full personal allowance lost
+                    </p>
+                  ) : aniWarning ? (
                     <p className="text-sm text-destructive mt-1">
                       Above £100k — personal allowance tapering applies
                     </p>
                   ) : (
                     <p className="label-subtle mt-1">Below £100k — no tapering</p>
                   )}
-                  <p className="text-[11px] text-muted-foreground mt-2">
-                    ANI = Gross Income − Pension Contributions
-                  </p>
                 </motion.div>
               )}
 
@@ -485,71 +496,9 @@ export default function TaxPage() {
                   )}
                 </div>
 
-                {editingProfileId === selectedProfile.id ? (
-                  <div className="px-5 py-4">
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                      <CurrencyField
-                        label="Gross Income"
-                        value={formState.gross_income}
-                        onChange={(v) => setFormState((s) => ({ ...s, gross_income: v }))}
-                      />
-                      <CurrencyField
-                        label="Pension Contributions"
-                        value={formState.pension_contributions}
-                        onChange={(v) => setFormState((s) => ({ ...s, pension_contributions: v }))}
-                      />
-                      <CurrencyField
-                        label={selectedProfile.role === "child" ? "Junior ISA" : "ISA Contributions"}
-                        value={formState.isa_contributions}
-                        onChange={(v) => setFormState((s) => ({ ...s, isa_contributions: v }))}
-                      />
-                      {selectedProfile.role !== "child" && (
-                        <CurrencyField
-                          label="Capital Gains"
-                          value={formState.capital_gains}
-                          onChange={(v) => setFormState((s) => ({ ...s, capital_gains: v }))}
-                        />
-                      )}
-                    </div>
-                  </div>
-                ) : (
-                  <div className="px-5 py-4">
-                    {(() => {
-                      const s = getSummaryForProfile(selectedProfile.id);
-                      if (!s) {
-                        return (
-                          <p className="text-sm text-muted-foreground">
-                            No income data entered yet.{" "}
-                            <button
-                              onClick={() => startEditing(selectedProfile)}
-                              className="text-primary hover:underline"
-                            >
-                              Add now →
-                            </button>
-                          </p>
-                        );
-                      }
-                      const items = [
-                        { label: "Gross Income", value: Number(s.gross_income ?? 0) },
-                        { label: "Pension Contributions", value: Number(s.pension_contributions ?? 0) },
-                        { label: "ISA Contributions", value: Number(s.isa_contributions ?? 0) },
-                        ...(selectedProfile.role !== "child"
-                          ? [{ label: "Capital Gains", value: Number(s.capital_gains ?? 0) }]
-                          : []),
-                      ];
-                      return (
-                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                          {items.map((item) => (
-                            <div key={item.label}>
-                              <p className="text-[11px] text-muted-foreground mb-0.5">{item.label}</p>
-                              <p className="text-sm font-medium tabular-nums">{formatCurrency(item.value)}</p>
-                            </div>
-                          ))}
-                        </div>
-                      );
-                    })()}
-                  </div>
-                )}
+                {editingProfileId === selectedProfile.id
+                  ? renderEditForm(selectedProfile)
+                  : renderReadOnlyData(selectedProfile)}
               </motion.div>
 
               {/* Allowance cards */}
@@ -595,5 +544,14 @@ export default function TaxPage() {
 
       <AddMemberDialog open={addMemberOpen} onOpenChange={setAddMemberOpen} />
     </motion.div>
+  );
+}
+
+function ReadOnlyField({ label, value }: { label: string; value: number }) {
+  return (
+    <div>
+      <p className="text-[11px] text-muted-foreground mb-0.5">{label}</p>
+      <p className="text-sm font-medium tabular-nums">{formatCurrency(value)}</p>
+    </div>
   );
 }
