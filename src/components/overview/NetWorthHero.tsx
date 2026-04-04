@@ -30,13 +30,8 @@ function useAnimatedValue(target: number, duration = 1200) {
   return value;
 }
 
-function getFilteredChart(timeRange: TimeRange) {
-  switch (timeRange) {
-    case "3M": return mockNetWorthHistory.slice(-3);
-    case "6M": return mockNetWorthHistory.slice(-6);
-    case "12M": return mockNetWorthHistory.slice(-12);
-    default: return mockNetWorthHistory;
-  }
+function getFilteredChart(allPoints: { month: string; value: number }[], timeRange: TimeRange) {
+  return filterByTimeRange(allPoints, timeRange);
 }
 
 interface Props {
