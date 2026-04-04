@@ -72,6 +72,7 @@ export default function EditAccountDialog({ account, open, onOpenChange }: Props
   const [linkedAccountId, setLinkedAccountId] = useState<string | null>(null);
 
   const isMortgage = account?.account_type === "mortgage";
+  const isDebtType = account ? ["mortgage", "loan", "credit_card"].includes(account.account_type) : false;
   const propertyAccounts = allAccounts.filter(
     (a) => a.account_type === "property" && a.id !== account?.id
   );
