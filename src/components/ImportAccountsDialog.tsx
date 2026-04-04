@@ -11,7 +11,7 @@ import { parseCsv, type ParsedRow } from "@/lib/csvAccounts";
 import { accountTypeLabels, wrapperLabels } from "@/data/types";
 import { useAddAccount } from "@/hooks/useAccounts";
 import { toast } from "sonner";
-import { Upload, AlertCircle, CheckCircle2 } from "lucide-react";
+import { Upload, AlertCircle, CheckCircle2, Download } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface Props {
@@ -23,6 +23,22 @@ export default function ImportAccountsDialog({ open, onOpenChange }: Props) {
   const [rows, setRows] = useState<ParsedRow[]>([]);
   const [importing, setImporting] = useState(false);
   const addAccount = useAddAccount();
+
+  const downloadTemplate = () => {
+    const csv = [
+      "Name,Account Type,Wrapper,Current Value,Owner,Interest Rate (%),Term Remaining (months)",
+      "Vanguard ISA,Stocks & Shares ISA,ISA,25000,Andrea,,",
+      "Easy Access Saver,Savings,Unwrapped,10000,Giulia,,",
+      "Home Mortgage,Mortgage,Unwrapped,-180000,Andrea,4.50,240",
+    ].join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "accounts_template.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
   const handleFile = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -103,6 +119,14 @@ export default function ImportAccountsDialog({ open, onOpenChange }: Props) {
                 <span>Choose File</span>
               </Button>
             </label>
+            <button
+              type="button"
+              onClick={downloadTemplate}
+              className="flex items-center gap-1.5 text-xs text-primary hover:text-primary/80 transition-colors mt-1"
+            >
+              <Download className="h-3.5 w-3.5" />
+              Download sample template
+            </button>
           </div>
         ) : (
           <div className="flex-1 overflow-hidden flex flex-col gap-3">
