@@ -62,7 +62,7 @@ export default function AddAccountDialog({ open, onOpenChange }: Props) {
       account_type: "",
       wrapper_type: "none",
       current_value: 0,
-      owner_name: "You",
+      owner_name: profiles.find((p) => p.is_primary)?.name ?? profiles[0]?.name ?? "You",
     },
   });
 
