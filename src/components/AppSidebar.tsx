@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useSidebarCollapse } from "@/contexts/SidebarContext";
+import { usePageVisibility } from "@/contexts/PageVisibilityContext";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { useState } from "react";
