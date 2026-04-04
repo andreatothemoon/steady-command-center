@@ -180,9 +180,9 @@ export default function OverviewPage() {
               <AreaChart data={filteredChart}>
                 <defs>
                   <linearGradient id="heroGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="hsl(160, 60%, 45%)" stopOpacity={0.3} />
-                    <stop offset="50%" stopColor="hsl(160, 60%, 45%)" stopOpacity={0.08} />
-                    <stop offset="100%" stopColor="hsl(160, 60%, 45%)" stopOpacity={0} />
+                    <stop offset="0%" stopColor="hsl(142, 71%, 45%)" stopOpacity={0.25} />
+                    <stop offset="50%" stopColor="hsl(142, 71%, 45%)" stopOpacity={0.06} />
+                    <stop offset="100%" stopColor="hsl(142, 71%, 45%)" stopOpacity={0} />
                   </linearGradient>
                   <filter id="glowDot">
                     <feGaussianBlur stdDeviation="3" result="blur" />
