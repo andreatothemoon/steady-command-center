@@ -314,23 +314,54 @@ export default function TaxPage() {
       {/* ─── Household view ─── */}
       {viewMode === "household" ? (
         <>
-          {/* Combined ANI hero */}
+          {/* Per-member ANI summary */}
           <motion.div
             variants={stagger.item}
             className={cn("p-5 rounded-xl border", aniWarning ? "card-alert" : "hero-surface")}
           >
-            <div className="flex items-center gap-2 mb-2">
+            <div className="flex items-center gap-2 mb-3">
               {aniWarning ? (
                 <AlertTriangle className="h-5 w-5 text-destructive" />
               ) : (
                 <ShieldCheck className="h-5 w-5 text-success" />
               )}
-              <p className="label-muted">Combined Household ANI</p>
+              <p className="label-muted">Adjusted Net Income (per person)</p>
             </div>
-            <p className="value-hero text-3xl">{formatCurrency(ani)}</p>
-            <p className="label-subtle mt-1">
+            {adults.length === 0 ? (
+              <p className="text-sm text-muted-foreground">No adults in household</p>
+            ) : (
+              <div className="space-y-3">
+                {adults.map((p) => {
+                  const memberANI = getANI(p.id);
+                  const status = memberANI >= 100000 ? "danger" : memberANI > 85000 ? "warning" : "safe";
+                  return (
+                    <div key={p.id} className="flex items-center justify-between">
+                      <div>
+                        <p className="text-[11px] text-muted-foreground">{p.name}</p>
+                        <p className={cn(
+                          "text-xl font-bold tabular-nums tracking-tight",
+                          status === "danger" ? "text-destructive" : status === "warning" ? "text-warning" : "text-card-foreground"
+                        )}>
+                          {formatCurrency(memberANI)}
+                        </p>
+                      </div>
+                      <div className={cn(
+                        "text-[10px] font-semibold px-2 py-0.5 rounded-full",
+                        status === "safe" && "status-safe",
+                        status === "warning" && "status-warning",
+                        status === "danger" && "status-danger",
+                      )}>
+                        {status === "safe" ? "Below £100k" : status === "warning" ? "Approaching" : "Over £100k"}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+            <p className="label-subtle mt-2">
               {adults.length} adult{adults.length !== 1 ? "s" : ""}
               {children.length > 0 && ` · ${children.length} child${children.length !== 1 ? "ren" : ""}`}
+              {" · £100k threshold per person"}
             </p>
           </motion.div>
 
