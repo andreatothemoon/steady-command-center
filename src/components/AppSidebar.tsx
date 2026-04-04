@@ -21,13 +21,13 @@ import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { useState } from "react";
 
 const navItems = [
-  { to: "/", label: "Overview", icon: LayoutDashboard },
-  { to: "/accounts", label: "Accounts", icon: Wallet },
-  { to: "/contributions", label: "Contributions", icon: ArrowUpDown },
-  { to: "/documents", label: "Documents", icon: FileText },
-  { to: "/tax", label: "Tax", icon: Receipt },
-  { to: "/retirement", label: "Retirement", icon: TrendingUp },
-  { to: "/db-pensions", label: "DB Pensions", icon: Building2 },
+  { to: "/", label: "Overview", icon: LayoutDashboard, key: null },
+  { to: "/accounts", label: "Accounts", icon: Wallet, key: "accounts" as const },
+  { to: "/contributions", label: "Contributions", icon: ArrowUpDown, key: "contributions" as const },
+  { to: "/documents", label: "Documents", icon: FileText, key: "documents" as const },
+  { to: "/tax", label: "Tax", icon: Receipt, key: "tax" as const },
+  { to: "/retirement", label: "Retirement", icon: TrendingUp, key: "retirement" as const },
+  { to: "/db-pensions", label: "DB Pensions", icon: Building2, key: "db-pensions" as const },
 ];
 
 function SidebarContent({ collapsed, toggle, onNavigate }: { collapsed: boolean; toggle: () => void; onNavigate?: () => void }) {
