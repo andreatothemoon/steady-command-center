@@ -135,8 +135,10 @@ export default function TaxPage() {
   const selectedProfile =
     viewMode !== "household" ? profiles.find((p) => p.id === viewMode) : null;
 
-  const ani = selectedProfile ? getANI(selectedProfile.id) : getHouseholdANI();
-  const aniWarning = ani >= 100000;
+  const ani = selectedProfile ? getANI(selectedProfile.id) : 0;
+  const aniWarning = selectedProfile
+    ? ani >= 100000
+    : anyAdultOverThreshold;
 
   const liveComputed = computeANI(formState);
 
