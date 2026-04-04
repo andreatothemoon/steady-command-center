@@ -11,7 +11,7 @@ import { parseCsv, type ParsedRow } from "@/lib/csvAccounts";
 import { accountTypeLabels, wrapperLabels } from "@/data/types";
 import { useAddAccount } from "@/hooks/useAccounts";
 import { toast } from "sonner";
-import { Upload, AlertCircle, CheckCircle2 } from "lucide-react";
+import { Upload, AlertCircle, CheckCircle2, Download } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface Props {
