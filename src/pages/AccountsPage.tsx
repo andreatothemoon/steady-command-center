@@ -57,10 +57,22 @@ export default function AccountsPage() {
             {isLoading ? "Loading…" : `${accounts.length} account${accounts.length !== 1 ? "s" : ""} tracked`}
           </p>
         </div>
-        <Button size="sm" className="gap-2" onClick={() => setAddOpen(true)}>
-          <Plus className="h-4 w-4" />
-          Add Account
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button size="sm" variant="outline" className="gap-2" onClick={() => setImportOpen(true)}>
+            <Upload className="h-4 w-4" />
+            Import
+          </Button>
+          {accounts.length > 0 && (
+            <Button size="sm" variant="outline" className="gap-2" onClick={() => exportAccountsCsv(accounts)}>
+              <Download className="h-4 w-4" />
+              Export
+            </Button>
+          )}
+          <Button size="sm" className="gap-2" onClick={() => setAddOpen(true)}>
+            <Plus className="h-4 w-4" />
+            Add Account
+          </Button>
+        </div>
       </motion.div>
 
       <motion.div variants={stagger.item} className="flex items-center gap-2">
