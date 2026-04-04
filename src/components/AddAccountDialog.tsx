@@ -168,7 +168,7 @@ export default function AddAccountDialog({ open, onOpenChange }: Props) {
           </div>
 
           {/* Linked Property selector for mortgages */}
-          {watchedType === "mortgage" && (
+          {isMortgageType && (
             <div className="space-y-2">
               <Label className="flex items-center gap-1.5">
                 <Link2 className="h-3.5 w-3.5 text-muted-foreground" />
@@ -193,8 +193,8 @@ export default function AddAccountDialog({ open, onOpenChange }: Props) {
             </div>
           )}
 
-          {/* Mortgage details */}
-          {watchedType === "mortgage" && (
+          {/* Debt details (mortgage, loan, credit card) */}
+          {isDebtType && (
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">
                 <Label htmlFor="interest_rate">Interest Rate (%)</Label>
