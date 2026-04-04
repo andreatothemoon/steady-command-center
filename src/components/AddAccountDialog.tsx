@@ -52,6 +52,7 @@ interface Props {
 export default function AddAccountDialog({ open, onOpenChange }: Props) {
   const addAccount = useAddAccount();
   const { data: allAccounts = [] } = useAccounts();
+  const { data: profiles = [] } = useHouseholdProfiles();
   const [linkedAccountId, setLinkedAccountId] = useState<string | null>(null);
 
   const form = useForm<FormValues>({
