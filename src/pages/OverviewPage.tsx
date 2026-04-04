@@ -209,7 +209,7 @@ export default function OverviewPage() {
                 <Area
                   type="monotone"
                   dataKey="value"
-                  stroke="hsl(160, 60%, 45%)"
+                  stroke="hsl(142, 71%, 45%)"
                   strokeWidth={2.5}
                   fill="url(#heroGrad)"
                   animationDuration={1500}
