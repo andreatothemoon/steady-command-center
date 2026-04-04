@@ -147,10 +147,11 @@ export default function TaxPage() {
         {!isChild && (
           <div>
             <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2.5">Income</p>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               <CurrencyField label="Salary" value={formState.salary} onChange={updateField("salary")} />
               <CurrencyField label="Bonus" value={formState.bonus} onChange={updateField("bonus")} />
               <CurrencyField label="Taxable Benefits (BIK)" value={formState.taxable_benefits} onChange={updateField("taxable_benefits")} />
+              <CurrencyField label="Dividend Income" value={formState.dividend_income} onChange={updateField("dividend_income")} />
             </div>
           </div>
         )}
