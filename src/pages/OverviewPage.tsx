@@ -118,7 +118,7 @@ export default function OverviewPage() {
         <div
           className="absolute inset-0 pointer-events-none"
           style={{
-            background: "radial-gradient(ellipse 60% 80% at 70% 80%, hsl(160 60% 45% / 0.04) 0%, transparent 70%)",
+            background: "radial-gradient(ellipse 60% 80% at 70% 80%, hsl(142 71% 45% / 0.04) 0%, transparent 70%)",
           }}
         />
         <div className="relative z-10">
