@@ -58,7 +58,7 @@ export default function OverviewPage() {
       {/* 3. PROGRESS LAYER — Retirement + Tax */}
       <motion.div variants={stagger.item} className="grid grid-cols-1 gap-4 lg:grid-cols-2 order-4 lg:order-3">
         <RetirementProgress accounts={accounts} />
-        <TaxPosition ani={ani} isaUsed={isaUsed} isaLimit={isaLimit} />
+        <TaxPosition ani={ani} isaUsed={householdIsaUsed} isaLimit={isaLimit} pensionContributions={householdPensionContributions} />
       </motion.div>
 
       {/* 5. COLLAPSIBLE INSIGHTS */}
