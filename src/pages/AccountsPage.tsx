@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import AddAccountDialog from "@/components/AddAccountDialog";
+import EditAccountDialog from "@/components/EditAccountDialog";
 
 type GroupBy = "type" | "owner" | "wrapper";
 
@@ -39,6 +40,7 @@ function groupAccounts(accounts: Account[], groupBy: GroupBy) {
 export default function AccountsPage() {
   const [groupBy, setGroupBy] = useState<GroupBy>("type");
   const [addOpen, setAddOpen] = useState(false);
+  const [editAccount, setEditAccount] = useState<Account | null>(null);
   const { data: accounts = [], isLoading } = useAccounts();
 
   const grouped = groupAccounts(accounts, groupBy);
@@ -117,6 +119,7 @@ export default function AccountsPage() {
                         <div
                           key={account.id}
                           className="flex items-center justify-between px-5 py-3.5 hover:bg-secondary/30 transition-colors cursor-pointer"
+                          onClick={() => setEditAccount(account)}
                         >
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2">
@@ -156,6 +159,7 @@ export default function AccountsPage() {
       )}
 
       <AddAccountDialog open={addOpen} onOpenChange={setAddOpen} />
+      <EditAccountDialog account={editAccount} open={!!editAccount} onOpenChange={(o) => { if (!o) setEditAccount(null); }} />
     </motion.div>
   );
 }
