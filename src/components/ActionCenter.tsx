@@ -67,7 +67,7 @@ const stagger = {
   },
 };
 
-export default function ActionCenter({ accounts, ani = 0, isaUsed = 0, isaLimit = 20000 }: Props) {
+export default function ActionCenter({ accounts, memberANIs = [], isaUsed = 0, isaLimit = 20000 }: Props) {
   const navigate = useNavigate();
 
   const actions: ActionItem[] = [];
@@ -88,31 +88,32 @@ export default function ActionCenter({ accounts, ani = 0, isaUsed = 0, isaLimit 
     });
   });
 
-  // Tax optimisation actions
-  if (ani > 0 && ani < 100000) {
-    const buffer = 100000 - ani;
-    if (buffer < 15000) {
+  // Per-member ANI alerts
+  memberANIs.forEach((m) => {
+    if (m.ani > 0 && m.ani < 100000) {
+      const buffer = 100000 - m.ani;
+      if (buffer < 15000) {
+        actions.push({
+          id: `ani-approaching-${m.name}`,
+          title: `${m.name}'s ANI approaching £100k`,
+          context: `${formatCurrency(buffer)} buffer remaining`,
+          impact: "Risk of losing personal allowance (£12,570)",
+          severity: buffer < 5000 ? "high" : "medium",
+          cta: "Review tax position",
+          route: "/tax",
+          category: "tax",
+        });
+      }
+    } else if (m.ani >= 100000) {
       actions.push({
-        id: "ani-approaching",
-        title: "ANI approaching £100k threshold",
-        context: `${formatCurrency(buffer)} buffer remaining`,
-        impact: "Risk of losing personal allowance (£12,570)",
-        severity: buffer < 5000 ? "high" : "medium",
-        cta: "Review tax position",
+        id: `ani-exceeded-${m.name}`,
+        title: `${m.name}'s ANI exceeds £100k`,
+        context: `Currently ${formatCurrency(m.ani)}`,
+        impact: "Personal allowance tapering in effect",
+        severity: "high",
+        cta: "Review options",
         route: "/tax",
         category: "tax",
-      });
-    }
-  } else if (ani >= 100000) {
-    actions.push({
-      id: "ani-exceeded",
-      title: "ANI exceeds £100k threshold",
-      context: `Currently ${formatCurrency(ani)}`,
-      impact: "Personal allowance tapering in effect",
-      severity: "high",
-      cta: "Review options",
-      route: "/tax",
-      category: "tax",
     });
   }
 
