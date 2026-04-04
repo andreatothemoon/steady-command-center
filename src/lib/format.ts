@@ -31,8 +31,8 @@ export function daysAgo(dateStr: string): number {
 
 export function staleness(dateStr: string): "fresh" | "aging" | "stale" {
   const days = daysAgo(dateStr);
-  if (days <= 7) return "fresh";
-  if (days <= 30) return "aging";
+  if (days <= 30) return "fresh";
+  if (days <= 91) return "aging";
   return "stale";
 }
 
