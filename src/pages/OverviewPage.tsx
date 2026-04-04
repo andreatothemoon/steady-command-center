@@ -1,12 +1,15 @@
 import { motion } from "framer-motion";
 import { useAccounts } from "@/hooks/useAccounts";
 import { useHouseholdProfiles } from "@/hooks/useHouseholdProfiles";
+import { useTaxSummaries } from "@/hooks/useTaxSummaries";
 import NetWorthHero from "@/components/overview/NetWorthHero";
 import SnapshotRow from "@/components/overview/SnapshotRow";
 import RetirementProgress from "@/components/overview/RetirementProgress";
 import TaxPosition from "@/components/overview/TaxPosition";
 import ActionCenter from "@/components/ActionCenter";
 import CollapsibleInsights from "@/components/overview/CollapsibleInsights";
+
+const TAX_YEAR = "2025/26";
 
 const stagger = {
   container: { transition: { staggerChildren: 0.08 } },
@@ -19,13 +22,17 @@ const stagger = {
 export default function OverviewPage() {
   const { data: accounts = [] } = useAccounts();
   const { data: profiles = [] } = useHouseholdProfiles();
+  const { data: taxSummaries = [] } = useTaxSummaries(TAX_YEAR);
 
   const adults = profiles.filter((p) => p.role === "adult");
   const children = profiles.filter((p) => p.role === "child");
 
+  // Compute real tax figures from saved summaries
+  const householdIsaUsed = taxSummaries.reduce((sum, s) => sum + Number(s.isa_contributions ?? 0), 0);
+  const householdPensionContributions = taxSummaries.reduce((sum, s) => sum + Number(s.pension_contributions ?? 0), 0);
+  const householdGrossIncome = taxSummaries.reduce((sum, s) => sum + Number(s.gross_income ?? 0), 0);
+  const ani = Math.max(0, householdGrossIncome - householdPensionContributions);
   const isaLimit = adults.length > 0 ? adults.length * 20000 : 20000;
-  const isaUsed = 18000;
-  const ani = 72000;
 
   return (
     <motion.div className="flex flex-col gap-5" variants={stagger.container} initial="initial" animate="animate">
