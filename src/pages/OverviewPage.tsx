@@ -47,7 +47,7 @@ export default function OverviewPage() {
 
       {/* 4. ACTION CENTER — Mobile: appears 2nd, Desktop: after progress */}
       <motion.div variants={stagger.item} className="order-2 lg:order-4">
-        <ActionCenter accounts={accounts} ani={ani} isaUsed={isaUsed} isaLimit={isaLimit} />
+        <ActionCenter accounts={accounts} ani={ani} isaUsed={householdIsaUsed} isaLimit={isaLimit} />
       </motion.div>
 
       {/* 2. SNAPSHOT ROW — Mobile: 3rd, Desktop: 2nd */}
