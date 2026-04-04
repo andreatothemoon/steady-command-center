@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { SidebarProvider } from "@/contexts/SidebarContext";
+import { PageVisibilityProvider } from "@/contexts/PageVisibilityContext";
 import AppSidebar from "@/components/AppSidebar";
 import AppLayout from "@/components/AppLayout";
 import OverviewPage from "@/pages/OverviewPage";
