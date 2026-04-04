@@ -118,6 +118,10 @@ export default {
           from: { opacity: "0.4" },
           to: { opacity: "1" },
         },
+        "glow-pulse": {
+          "0%, 100%": { opacity: "0.6" },
+          "50%": { opacity: "1" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -127,6 +131,7 @@ export default {
         "scale-in": "scale-in 0.4s ease-out forwards",
         "slide-up": "slide-up 0.6s ease-out forwards",
         "count-up": "count-up 0.6s ease-out forwards",
+        "glow-pulse": "glow-pulse 2s ease-in-out infinite",
       },
     },
   },

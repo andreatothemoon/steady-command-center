@@ -6,10 +6,7 @@ import {
   Wallet,
   PiggyBank,
   ShieldCheck,
-  AlertTriangle,
-  Clock,
   ChevronRight,
-  ArrowUpRight,
   Users,
   Home,
   CreditCard,
@@ -31,6 +28,8 @@ import { accountTypeLabels } from "@/data/types";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
 import AllocationDonut from "@/components/AllocationDonut";
+import ActionCenter from "@/components/ActionCenter";
+import TaxStatusCard from "@/components/TaxStatusCard";
 
 function useAnimatedValue(target: number, duration = 1200) {
   const [value, setValue] = useState(0);
@@ -81,24 +80,21 @@ export default function OverviewPage() {
     )
     .reduce((s, a) => s + Number(a.current_value), 0);
 
-  // ISA allowance: £20k per adult in household
   const isaLimit = adults.length > 0 ? adults.length * 20000 : 20000;
-  const isaUsed = 18000; // placeholder — would come from tax_year_summaries
+  const isaUsed = 18000;
   const ani = 72000;
 
-  const staleAccounts = accounts.filter((a) => staleness(a.last_updated) === "stale");
-
   const animatedNetWorth = useAnimatedValue(netWorth);
+  const animatedDelta = useAnimatedValue(
+    (() => {
+      const fc = getFilteredChart(timeRange);
+      const prev = fc.length > 1 ? fc[0].value : netWorth;
+      return netWorth - prev;
+    })(),
+    800
+  );
 
-  const filteredChart = (() => {
-    const len = mockNetWorthHistory.length;
-    switch (timeRange) {
-      case "3M": return mockNetWorthHistory.slice(-3);
-      case "6M": return mockNetWorthHistory.slice(-6);
-      case "12M": return mockNetWorthHistory.slice(-12);
-      default: return mockNetWorthHistory;
-    }
-  })();
+  const filteredChart = getFilteredChart(timeRange);
 
   const prevValue = filteredChart.length > 1 ? filteredChart[0].value : netWorth;
   const deltaAbs = netWorth - prevValue;
@@ -109,109 +105,147 @@ export default function OverviewPage() {
   const stagger = {
     container: { transition: { staggerChildren: 0.08 } },
     item: {
-      initial: { opacity: 0, y: 12 },
-      animate: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] } },
+      initial: { opacity: 0, y: 14 },
+      animate: { opacity: 1, y: 0, transition: { duration: 0.45, ease: [0.25, 0.46, 0.45, 0.94] } },
     },
   };
 
   return (
-    <motion.div className="space-y-5" variants={stagger.container} initial="initial" animate="animate">
-      {/* Hero Net Worth */}
-      <motion.div variants={stagger.item} className="hero-surface p-6 lg:p-8">
-        <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2 mb-2">
-              <p className="label-muted">Household Net Worth</p>
-              {profiles.length > 0 && (
-                <span className="inline-flex items-center gap-1 text-[10px] text-muted-foreground bg-secondary/50 px-2 py-0.5 rounded-full">
-                  <Users className="h-3 w-3" />
-                  {adults.length} adult{adults.length !== 1 ? "s" : ""}
-                  {children.length > 0 && ` · ${children.length} child${children.length !== 1 ? "ren" : ""}`}
+    <motion.div className="space-y-6" variants={stagger.container} initial="initial" animate="animate">
+      {/* ═══ HERO: Net Worth ═══ */}
+      <motion.div variants={stagger.item} className="hero-surface p-6 lg:p-8 relative">
+        {/* Radial glow behind chart */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background: "radial-gradient(ellipse 60% 80% at 70% 80%, hsl(160 60% 45% / 0.04) 0%, transparent 70%)",
+          }}
+        />
+        <div className="relative z-10">
+          <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <p className="label-muted" style={{ opacity: 1 }}>Household Net Worth</p>
+                {profiles.length > 0 && (
+                  <span className="inline-flex items-center gap-1 text-[10px] text-muted-foreground bg-secondary/40 px-2 py-0.5 rounded-full">
+                    <Users className="h-3 w-3" />
+                    {adults.length} adult{adults.length !== 1 ? "s" : ""}
+                    {children.length > 0 && ` · ${children.length} child${children.length !== 1 ? "ren" : ""}`}
+                  </span>
+                )}
+              </div>
+              <h1 className="value-hero text-5xl lg:text-[3.5rem] leading-none">
+                {formatCurrency(animatedNetWorth)}
+              </h1>
+              <motion.div
+                className="flex items-center gap-3 mt-3"
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.5, delay: 0.8 }}
+              >
+                <span
+                  className={cn(
+                    "inline-flex items-center gap-1 text-sm font-bold",
+                    deltaPositive ? "text-success" : "text-destructive"
+                  )}
+                >
+                  {deltaPositive ? <TrendingUp className="h-4 w-4" /> : <TrendingDown className="h-4 w-4" />}
+                  {deltaPositive ? "+" : ""}{formatCurrency(animatedDelta)}
                 </span>
-              )}
+                <span className="text-muted-foreground/60 text-sm">
+                  {deltaPositive ? "+" : ""}{deltaPct}% this period
+                </span>
+              </motion.div>
             </div>
-            <h1 className="value-hero text-5xl lg:text-[3.5rem] leading-none">
-              {formatCurrency(animatedNetWorth)}
-            </h1>
-            <div className="flex items-center gap-3 mt-3">
-              <span
-                className={cn(
-                  "inline-flex items-center gap-1 text-sm font-semibold",
-                  deltaPositive ? "text-success" : "text-destructive"
-                )}
-              >
-                {deltaPositive ? <TrendingUp className="h-4 w-4" /> : <TrendingDown className="h-4 w-4" />}
-                {deltaPositive ? "+" : ""}{formatCurrency(deltaAbs)}
-              </span>
-              <span className="text-muted-foreground text-sm">
-                {deltaPositive ? "+" : ""}{deltaPct}% this period
-              </span>
+            <div className="flex items-center gap-1 bg-secondary/30 rounded-lg p-0.5 backdrop-blur-sm">
+              {(["3M", "6M", "12M", "ALL"] as TimeRange[]).map((range) => (
+                <button
+                  key={range}
+                  onClick={() => setTimeRange(range)}
+                  className={cn(
+                    "px-3.5 py-1.5 rounded-md text-xs font-semibold transition-all duration-200",
+                    timeRange === range
+                      ? "bg-primary text-primary-foreground shadow-md shadow-primary/20"
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  {range}
+                </button>
+              ))}
             </div>
           </div>
-          <div className="flex items-center gap-1.5 bg-secondary/50 rounded-lg p-0.5">
-            {(["3M", "6M", "12M", "ALL"] as TimeRange[]).map((range) => (
-              <button
-                key={range}
-                onClick={() => setTimeRange(range)}
-                className={cn(
-                  "px-3 py-1.5 rounded-md text-xs font-medium transition-all duration-200",
-                  timeRange === range
-                    ? "bg-primary text-primary-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                {range}
-              </button>
-            ))}
-          </div>
-        </div>
 
-        <div className="mt-5 -mx-2">
-          <ResponsiveContainer width="100%" height={180}>
-            <AreaChart data={filteredChart}>
-              <defs>
-                <linearGradient id="heroGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="hsl(160, 60%, 45%)" stopOpacity={0.25} />
-                  <stop offset="100%" stopColor="hsl(160, 60%, 45%)" stopOpacity={0} />
-                </linearGradient>
-              </defs>
-              <XAxis dataKey="month" tick={{ fontSize: 11, fill: "hsl(215, 12%, 48%)" }} tickLine={false} axisLine={false} />
-              <YAxis hide domain={["dataMin - 5000", "dataMax + 5000"]} />
-              <Tooltip
-                content={({ active, payload, label }) => {
-                  if (!active || !payload?.length) return null;
-                  const val = payload[0].value as number;
-                  return (
-                    <div className="card-surface px-3 py-2 shadow-xl border border-border">
-                      <p className="text-xs text-muted-foreground">{label}</p>
-                      <p className="text-sm font-semibold text-foreground">{formatCurrency(val)}</p>
-                    </div>
-                  );
-                }}
-              />
-              <Area type="monotone" dataKey="value" stroke="hsl(160, 60%, 45%)" strokeWidth={2.5} fill="url(#heroGrad)" animationDuration={1500} animationEasing="ease-out" />
-              {lastPoint && (
-                <ReferenceDot x={lastPoint.month} y={lastPoint.value} r={4} fill="hsl(160, 60%, 45%)" stroke="hsl(228, 20%, 10%)" strokeWidth={2} />
-              )}
-            </AreaChart>
-          </ResponsiveContainer>
+          <div className="mt-6 -mx-2">
+            <ResponsiveContainer width="100%" height={180}>
+              <AreaChart data={filteredChart}>
+                <defs>
+                  <linearGradient id="heroGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="hsl(160, 60%, 45%)" stopOpacity={0.3} />
+                    <stop offset="50%" stopColor="hsl(160, 60%, 45%)" stopOpacity={0.08} />
+                    <stop offset="100%" stopColor="hsl(160, 60%, 45%)" stopOpacity={0} />
+                  </linearGradient>
+                  <filter id="glowDot">
+                    <feGaussianBlur stdDeviation="3" result="blur" />
+                    <feMerge>
+                      <feMergeNode in="blur" />
+                      <feMergeNode in="SourceGraphic" />
+                    </feMerge>
+                  </filter>
+                </defs>
+                <XAxis dataKey="month" tick={{ fontSize: 10, fill: "hsl(215, 12%, 40%)" }} tickLine={false} axisLine={false} />
+                <YAxis hide domain={["dataMin - 5000", "dataMax + 5000"]} />
+                <Tooltip
+                  content={({ active, payload, label }) => {
+                    if (!active || !payload?.length) return null;
+                    const val = payload[0].value as number;
+                    return (
+                      <div className="card-surface px-3 py-2 shadow-2xl border border-border/60">
+                        <p className="text-[10px] text-muted-foreground">{label}</p>
+                        <p className="text-sm font-bold text-foreground tabular-nums">{formatCurrency(val)}</p>
+                      </div>
+                    );
+                  }}
+                />
+                <Area
+                  type="monotone"
+                  dataKey="value"
+                  stroke="hsl(160, 60%, 45%)"
+                  strokeWidth={2.5}
+                  fill="url(#heroGrad)"
+                  animationDuration={1500}
+                  animationEasing="ease-out"
+                />
+                {lastPoint && (
+                  <ReferenceDot
+                    x={lastPoint.month}
+                    y={lastPoint.value}
+                    r={5}
+                    fill="hsl(160, 60%, 45%)"
+                    stroke="hsl(228, 20%, 10%)"
+                    strokeWidth={2}
+                    filter="url(#glowDot)"
+                  />
+                )}
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
         </div>
       </motion.div>
 
-      {/* KPI Row */}
-      <motion.div variants={stagger.item} className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+      {/* ═══ KPI Row ═══ */}
+      <motion.div variants={stagger.item} className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <KPICard label="Investable Assets" value={formatCurrency(investable)} sub="ISA + Pension + GIA + Crypto" icon={<Wallet className="h-4 w-4" />} />
         <KPICard label="Pensions" value={formatCurrency(pensions)} sub="SIPP + Workplace" icon={<PiggyBank className="h-4 w-4" />} />
         <KPICard
           label="Household ISA Allowance"
           value={formatCurrency(isaUsed)}
-          sub={`${formatCurrency(isaLimit - isaUsed)} of ${formatCurrency(isaLimit)} remaining (${adults.length || 1} adult${(adults.length || 1) !== 1 ? "s" : ""})`}
+          sub={`${formatCurrency(isaLimit - isaUsed)} of ${formatCurrency(isaLimit)} remaining`}
           icon={<ShieldCheck className="h-4 w-4" />}
           progress={(isaUsed / isaLimit) * 100}
         />
       </motion.div>
 
-      {/* Property Equity */}
+      {/* ═══ Property Equity ═══ */}
       {(() => {
         const properties = accounts.filter((a) => a.account_type === "property");
         if (properties.length === 0) return null;
@@ -233,23 +267,23 @@ export default function OverviewPage() {
           <motion.div variants={stagger.item} className="card-surface p-5">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
-                <Home className="h-4 w-4 text-muted-foreground/60" />
-                <p className="label-muted">Property Equity</p>
+                <Home className="h-4 w-4 text-muted-foreground/50" />
+                <p className="label-muted" style={{ opacity: 1 }}>Property Equity</p>
               </div>
-              <span className="text-sm font-semibold tabular-nums text-card-foreground">
+              <span className="text-sm font-bold tabular-nums text-card-foreground">
                 {formatCurrency(totalEquity)}
               </span>
             </div>
             <div className="space-y-3">
               {equityItems.map((item) => (
-                <div key={item.property.id} className="rounded-lg bg-secondary/30 px-4 py-3">
+                <div key={item.property.id} className="rounded-lg bg-secondary/20 px-4 py-3">
                   <div className="flex items-center justify-between mb-1.5">
                     <p className="text-sm font-medium text-card-foreground">{item.property.name}</p>
-                    <p className="text-sm font-semibold tabular-nums text-success">
+                    <p className="text-sm font-bold tabular-nums text-success">
                       {formatCurrency(item.equity)}
                     </p>
                   </div>
-                  <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+                  <div className="flex items-center justify-between text-[11px] text-muted-foreground/70">
                     <span>Value: {formatCurrency(item.propertyValue)}</span>
                     {item.mortgage ? (
                       <span>
@@ -270,7 +304,7 @@ export default function OverviewPage() {
                     )}
                   </div>
                   {item.mortgage && (
-                    <div className="mt-2 h-1.5 rounded-full bg-secondary/60 overflow-hidden">
+                    <div className="mt-2 h-1.5 rounded-full bg-secondary/40 overflow-hidden">
                       <motion.div
                         className={cn(
                           "h-full rounded-full",
@@ -289,7 +323,7 @@ export default function OverviewPage() {
         );
       })()}
 
-      {/* Debt Summary */}
+      {/* ═══ Debt Summary ═══ */}
       {(() => {
         const debtTypes = ["mortgage", "loan", "credit_card"];
         const debtAccounts = accounts.filter((a) => debtTypes.includes(a.account_type));
@@ -305,7 +339,6 @@ export default function OverviewPage() {
           return s + (mp ?? 0);
         }, 0);
 
-        // Group by type
         const byType = debtTypes.reduce<Record<string, typeof debtAccounts>>((acc, t) => {
           const items = debtAccounts.filter((a) => a.account_type === t);
           if (items.length > 0) acc[t] = items;
@@ -316,15 +349,15 @@ export default function OverviewPage() {
           <motion.div variants={stagger.item} className="card-surface p-5">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
-                <CreditCard className="h-4 w-4 text-muted-foreground/60" />
-                <p className="label-muted">Debt Summary</p>
+                <CreditCard className="h-4 w-4 text-muted-foreground/50" />
+                <p className="label-muted" style={{ opacity: 1 }}>Debt Summary</p>
               </div>
               <div className="text-right">
-                <span className="text-sm font-semibold tabular-nums text-destructive">
+                <span className="text-sm font-bold tabular-nums text-destructive">
                   {formatCurrency(totalDebt)}
                 </span>
                 {totalMonthly > 0 && (
-                  <p className="text-[10px] text-muted-foreground">{formatCurrency(Math.round(totalMonthly))}/mo total</p>
+                  <p className="text-[10px] text-muted-foreground/60">{formatCurrency(Math.round(totalMonthly))}/mo total</p>
                 )}
               </div>
             </div>
@@ -341,13 +374,13 @@ export default function OverviewPage() {
                 }, 0);
 
                 return (
-                  <div key={type} className="rounded-lg bg-secondary/30 px-4 py-3">
+                  <div key={type} className="rounded-lg bg-secondary/20 px-4 py-3">
                     <div className="flex items-center justify-between mb-1.5">
                       <p className="text-sm font-medium text-card-foreground">
                         {accountTypeLabels[type as keyof typeof accountTypeLabels] ?? type}
-                        <span className="text-[10px] text-muted-foreground ml-1.5">({items.length})</span>
+                        <span className="text-[10px] text-muted-foreground/60 ml-1.5">({items.length})</span>
                       </p>
-                      <p className="text-sm font-semibold tabular-nums text-destructive">
+                      <p className="text-sm font-bold tabular-nums text-destructive">
                         {formatCurrency(typeTotal)}
                       </p>
                     </div>
@@ -359,7 +392,7 @@ export default function OverviewPage() {
                         Number((a as any).term_remaining_months ?? 0)
                       );
                       return (
-                        <div key={a.id} className="flex items-center justify-between text-[11px] text-muted-foreground py-0.5">
+                        <div key={a.id} className="flex items-center justify-between text-[11px] text-muted-foreground/70 py-0.5">
                           <span>{a.name}</span>
                           <span className="tabular-nums">
                             {formatCurrency(bal)}
@@ -370,7 +403,7 @@ export default function OverviewPage() {
                       );
                     })}
                     {typeMonthly > 0 && (
-                      <div className="flex items-center justify-between text-[11px] font-medium text-card-foreground pt-1.5 mt-1.5 border-t border-border/50">
+                      <div className="flex items-center justify-between text-[11px] font-medium text-card-foreground pt-1.5 mt-1.5 border-t border-border/40">
                         <span>Monthly total</span>
                         <span className="tabular-nums">{formatCurrency(Math.round(typeMonthly))}/mo</span>
                       </div>
@@ -383,69 +416,38 @@ export default function OverviewPage() {
         );
       })()}
 
-      <motion.div variants={stagger.item} className="grid grid-cols-1 gap-3 lg:grid-cols-2">
+      {/* ═══ Allocation + Tax Status ═══ */}
+      <motion.div variants={stagger.item} className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <AllocationDonut accounts={accounts} />
-
-        <div className="card-insight p-5">
-          <div className="flex items-center justify-between mb-4">
-            <p className="label-muted">Tax Position</p>
-            <button onClick={() => navigate("/tax")} className="text-xs text-muted-foreground hover:text-primary transition-colors flex items-center gap-0.5">
-              View all <ChevronRight className="h-3 w-3" />
-            </button>
-          </div>
-          <div className="space-y-3">
-            <TaxRow label="Est. ANI" value={formatCurrency(ani)} status={ani >= 100000 ? "danger" : "ok"} />
-            <TaxRow label="Tax Band" value="Higher (40%)" status="neutral" />
-            <TaxRow
-              label="Family Members"
-              value={`${adults.length} adult${adults.length !== 1 ? "s" : ""}${children.length > 0 ? `, ${children.length} child${children.length !== 1 ? "ren" : ""}` : ""}`}
-              status="neutral"
-            />
-          </div>
-        </div>
+        <TaxStatusCard
+          ani={ani}
+          isaUsed={isaUsed}
+          isaLimit={isaLimit}
+          adults={adults.length || 1}
+          children={children.length}
+        />
       </motion.div>
 
-      {/* Stale Data */}
+      {/* ═══ Action Center ═══ */}
       <motion.div variants={stagger.item}>
-        {staleAccounts.length > 0 ? (
-          <div className="card-alert p-5">
-            <div className="flex items-center gap-2 mb-4">
-              <AlertTriangle className="h-4 w-4 text-warning" />
-              <p className="label-muted text-warning">
-                {staleAccounts.length} account{staleAccounts.length > 1 ? "s" : ""} need updating
-              </p>
-            </div>
-            <div className="space-y-1">
-              {staleAccounts.map((a) => (
-                <button
-                  key={a.id}
-                  onClick={() => navigate("/accounts")}
-                  className="w-full flex items-center justify-between rounded-lg px-3 py-2.5 -mx-1 hover:bg-warning/5 transition-colors group"
-                >
-                  <div className="flex items-center gap-2.5">
-                    <Clock className="h-3.5 w-3.5 text-warning/70" />
-                    <div className="text-left">
-                      <p className="text-sm font-medium text-card-foreground">{a.name}</p>
-                      <p className="text-[11px] text-muted-foreground">
-                        {a.institutions?.name ?? "—"} · {daysAgo(a.last_updated)} days ago
-                      </p>
-                    </div>
-                  </div>
-                  <span className="text-xs font-medium text-warning opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
-                    Update <ArrowUpRight className="h-3 w-3" />
-                  </span>
-                </button>
-              ))}
-            </div>
-          </div>
-        ) : (
-          <div className="card-insight p-5 flex items-center justify-center">
-            <p className="text-sm text-muted-foreground">All accounts up to date ✓</p>
-          </div>
-        )}
+        <ActionCenter
+          accounts={accounts}
+          ani={ani}
+          isaUsed={isaUsed}
+          isaLimit={isaLimit}
+        />
       </motion.div>
     </motion.div>
   );
+}
+
+function getFilteredChart(timeRange: TimeRange) {
+  switch (timeRange) {
+    case "3M": return mockNetWorthHistory.slice(-3);
+    case "6M": return mockNetWorthHistory.slice(-6);
+    case "12M": return mockNetWorthHistory.slice(-12);
+    default: return mockNetWorthHistory;
+  }
 }
 
 /* ─── Sub-components ─── */
@@ -454,12 +456,12 @@ function KPICard({ label, value, sub, icon, progress }: { label: string; value: 
   return (
     <div className="card-surface-hover p-4">
       <div className="flex items-center justify-between mb-2">
-        <p className="label-muted">{label}</p>
-        <div className="text-muted-foreground/60">{icon}</div>
+        <p className="label-muted" style={{ opacity: 1 }}>{label}</p>
+        <div className="text-muted-foreground/40">{icon}</div>
       </div>
       <p className="value-compact">{value}</p>
       {progress !== undefined && (
-        <div className="mt-2 h-1.5 rounded-full bg-secondary/60 overflow-hidden">
+        <div className="mt-2.5 h-1.5 rounded-full bg-secondary/40 overflow-hidden">
           <motion.div
             className={cn("h-full rounded-full", progress > 90 ? "bg-warning" : "bg-primary")}
             initial={{ width: 0 }}
@@ -468,17 +470,7 @@ function KPICard({ label, value, sub, icon, progress }: { label: string; value: 
           />
         </div>
       )}
-      <p className="text-[11px] text-muted-foreground mt-1.5">{sub}</p>
-    </div>
-  );
-}
-
-function TaxRow({ label, value, status }: { label: string; value: string; status: "ok" | "warning" | "danger" | "neutral" }) {
-  const colors = { ok: "text-success", warning: "text-warning", danger: "text-destructive", neutral: "text-card-foreground" };
-  return (
-    <div className="flex items-center justify-between">
-      <span className="text-sm text-muted-foreground">{label}</span>
-      <span className={cn("text-sm font-semibold tabular-nums", colors[status])}>{value}</span>
+      <p className="text-[11px] text-muted-foreground/60 mt-1.5">{sub}</p>
     </div>
   );
 }
