@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { Plus, ArrowUpDown, Clock, Inbox, Link2 } from "lucide-react";
 import { useAccounts, type Account } from "@/hooks/useAccounts";
 import { accountTypeLabels } from "@/data/types";
-import { formatCurrency, formatDate, staleness, daysAgo } from "@/lib/format";
+import { formatCurrency, formatDate, staleness, daysAgo, calcMonthlyPayment } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
