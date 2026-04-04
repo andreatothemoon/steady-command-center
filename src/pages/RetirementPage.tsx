@@ -119,10 +119,10 @@ export default function RetirementPage() {
                   );
                 }}
               />
-              <Area type="monotone" dataKey="nominal" stroke="hsl(200, 70%, 50%)" strokeWidth={1.5} fill="url(#nomGrad)" animationDuration={1200} />
-              <Area type="monotone" dataKey="real" stroke="hsl(160, 60%, 45%)" strokeWidth={2.5} fill="url(#realGrad)" animationDuration={1500} />
+              <Area type="monotone" dataKey="nominal" stroke="hsl(217, 91%, 60%)" strokeWidth={1.5} fill="url(#nomGrad)" animationDuration={1200} strokeDasharray="6 3" />
+              <Area type="monotone" dataKey="real" stroke="hsl(142, 71%, 45%)" strokeWidth={2.5} fill="url(#realGrad)" animationDuration={1500} />
               {lastPoint && (
-                <ReferenceDot x={lastPoint.age} y={lastPoint.real} r={4} fill="hsl(160, 60%, 45%)" stroke="hsl(228, 20%, 10%)" strokeWidth={2} />
+                <ReferenceDot x={lastPoint.age} y={lastPoint.real} r={4} fill="hsl(142, 71%, 45%)" stroke="hsl(222, 28%, 9%)" strokeWidth={2.5} />
               )}
             </AreaChart>
           </ResponsiveContainer>
