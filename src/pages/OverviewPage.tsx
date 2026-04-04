@@ -11,6 +11,7 @@ import {
   ChevronRight,
   ArrowUpRight,
   Users,
+  Home,
 } from "lucide-react";
 import {
   Area,
