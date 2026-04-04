@@ -14,6 +14,7 @@ import DocumentsPage from "@/pages/DocumentsPage";
 import TaxPage from "@/pages/TaxPage";
 import RetirementPage from "@/pages/RetirementPage";
 import SettingsPage from "@/pages/SettingsPage";
+import DBPensionsPage from "@/pages/DBPensionsPage";
 import AuthPage from "@/pages/AuthPage";
 import NotFound from "@/pages/NotFound";
 
