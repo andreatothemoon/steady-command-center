@@ -2,12 +2,12 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
+  ResponsiveDialog,
+  ResponsiveDialogContent,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+  ResponsiveDialogDescription,
+} from "@/components/ui/responsive-dialog";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -146,12 +146,12 @@ export default function EditAccountDialog({ account, open, onOpenChange }: Props
   const showDebtFields = ["mortgage", "loan", "credit_card"].includes(watchedType);
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md bg-card border-border">
-        <DialogHeader>
-          <DialogTitle>Edit Account</DialogTitle>
-          <DialogDescription>Update account details or remove it.</DialogDescription>
-        </DialogHeader>
+    <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
+      <ResponsiveDialogContent>
+        <ResponsiveDialogHeader>
+          <ResponsiveDialogTitle>Edit Account</ResponsiveDialogTitle>
+          <ResponsiveDialogDescription>Update account details or remove it.</ResponsiveDialogDescription>
+        </ResponsiveDialogHeader>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 mt-2">
           <div className="space-y-2">
             <Label htmlFor="edit-name">Account Name</Label>
@@ -272,7 +272,7 @@ export default function EditAccountDialog({ account, open, onOpenChange }: Props
             </Button>
           </div>
         </form>
-      </DialogContent>
-    </Dialog>
+      </ResponsiveDialogContent>
+    </ResponsiveDialog>
   );
 }
