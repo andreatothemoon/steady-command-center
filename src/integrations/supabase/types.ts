@@ -222,6 +222,7 @@ export type Database = {
       }
       db_pensions: {
         Row: {
+          account_id: string | null
           accrual_rate: number
           created_at: string
           current_age: number
@@ -242,6 +243,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          account_id?: string | null
           accrual_rate?: number
           created_at?: string
           current_age?: number
@@ -262,6 +264,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          account_id?: string | null
           accrual_rate?: number
           created_at?: string
           current_age?: number
@@ -282,6 +285,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "db_pensions_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "db_pensions_household_id_fkey"
             columns: ["household_id"]
