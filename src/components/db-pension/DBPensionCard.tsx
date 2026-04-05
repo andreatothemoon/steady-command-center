@@ -1,6 +1,7 @@
 import { Pencil, Trash2, TrendingUp, Shield, Building2 } from "lucide-react";
 import { formatCurrency } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { denormalizeRateForDisplay } from "@/lib/dbPensionRates";
 import type { DBPension } from "@/hooks/useDBPensions";
 import type { DBProjectionResult } from "@/lib/dbPensionEngine";
 
@@ -82,7 +83,9 @@ export default function DBPensionCard({ pension, projection, onEdit, onDelete }:
           <div className="flex items-start gap-2">
             <Shield className="h-3.5 w-3.5 text-info mt-0.5 flex-shrink-0" />
             <p className="text-[11px] text-muted-foreground">
-              Revaluation: {pension.revaluation_type === "CPI" ? `CPI + ${(Number(pension.revaluation_uplift) * 100).toFixed(1)}%` : `${(Number(pension.revaluation_rate) * 100).toFixed(1)}% fixed`}
+              Revaluation: {pension.revaluation_type === "CPI"
+                ? `CPI + ${denormalizeRateForDisplay(Number(pension.revaluation_uplift)).toFixed(1)}%`
+                : `${denormalizeRateForDisplay(Number(pension.revaluation_rate)).toFixed(1)}% fixed`}
             </p>
           </div>
         </div>

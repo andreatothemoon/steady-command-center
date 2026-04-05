@@ -1,4 +1,5 @@
 import type { DBPension, DBPensionInput } from "@/hooks/useDBPensions";
+import { denormalizeRateForDisplay, normalizeRate } from "@/lib/dbPensionRates";
 
 export interface DBPensionFormValues {
   name: string;
@@ -41,14 +42,14 @@ export function toDbPensionFormValues(pension: DBPension): DBPensionFormValues {
     current_age: pension.current_age,
     retirement_age: pension.retirement_age,
     current_salary: Number(pension.current_salary),
-    salary_growth_rate: Number(pension.salary_growth_rate) * 100,
+    salary_growth_rate: denormalizeRateForDisplay(Number(pension.salary_growth_rate)),
     accrual_rate: Number(pension.accrual_rate),
     is_active_member: pension.is_active_member,
     revaluation_type: pension.revaluation_type,
-    revaluation_rate: Number(pension.revaluation_rate) * 100,
-    revaluation_uplift: Number(pension.revaluation_uplift) * 100,
+    revaluation_rate: denormalizeRateForDisplay(Number(pension.revaluation_rate)),
+    revaluation_uplift: denormalizeRateForDisplay(Number(pension.revaluation_uplift)),
     indexation_type: pension.indexation_type,
-    indexation_cap: Number(pension.indexation_cap) * 100,
+    indexation_cap: denormalizeRateForDisplay(Number(pension.indexation_cap)),
     existing_income: Number(pension.existing_income),
   };
 }
@@ -56,9 +57,9 @@ export function toDbPensionFormValues(pension: DBPension): DBPensionFormValues {
 export function toDbPensionPayload(form: DBPensionFormValues): DBPensionInput {
   return {
     ...form,
-    salary_growth_rate: form.salary_growth_rate / 100,
-    revaluation_rate: form.revaluation_rate / 100,
-    revaluation_uplift: form.revaluation_uplift / 100,
-    indexation_cap: form.indexation_cap / 100,
+    salary_growth_rate: normalizeRate(form.salary_growth_rate),
+    revaluation_rate: normalizeRate(form.revaluation_rate),
+    revaluation_uplift: normalizeRate(form.revaluation_uplift),
+    indexation_cap: normalizeRate(form.indexation_cap),
   };
 }
