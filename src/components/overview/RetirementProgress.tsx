@@ -73,12 +73,12 @@ export default function RetirementProgress({ accounts }: Props) {
   const targetIncome = scenario?.target_income ?? 30000;
   const currentPot = scenario?.current_pot ?? pensionPot;
 
-  const { finalReal, readiness, status, estimatedIncome } = useMemo(() => {
+  const { finalReal, readiness, status, estimatedIncome, dcIncome: dcDrawdown } = useMemo(() => {
     const years = retireAge - currentAge;
     if (years <= 0) {
       const dcIncome = Math.round(currentPot * 0.04);
       const total = dcIncome + totalDBIncome + UK_STATE_PENSION;
-      return { finalReal: currentPot, readiness: Math.min(Math.round((total / targetIncome) * 100), 150), status: "ahead" as const, estimatedIncome: total };
+      return { finalReal: currentPot, readiness: Math.min(Math.round((total / targetIncome) * 100), 150), status: "ahead" as const, estimatedIncome: total, dcIncome };
     }
     const monthlyReal = (expectedReturn - inflation) / 12;
     let pot = currentPot;
@@ -89,7 +89,7 @@ export default function RetirementProgress({ accounts }: Props) {
     const totalIncome = dcIncome + totalDBIncome + UK_STATE_PENSION;
     const pct = Math.min(Math.round((totalIncome / targetIncome) * 100), 150);
     const st: "on_track" | "ahead" | "behind" = pct >= 100 ? "ahead" : pct >= 80 ? "on_track" : "behind";
-    return { finalReal: Math.round(pot), readiness: pct, status: st, estimatedIncome: totalIncome };
+    return { finalReal: Math.round(pot), readiness: pct, status: st, estimatedIncome: totalIncome, dcIncome };
   }, [currentPot, retireAge, currentAge, monthlyContrib, expectedReturn, inflation, targetIncome, totalDBIncome]);
 
   // Empty state — no scenario created yet
