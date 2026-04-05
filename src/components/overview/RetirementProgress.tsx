@@ -179,16 +179,32 @@ export default function RetirementProgress({ accounts }: Props) {
       {/* Key stats */}
       <div className="space-y-2 mt-auto">
         <div className="flex items-center justify-between text-[11px]">
-          <span className="text-muted-foreground">Projected pot (real)</span>
-          <span className="text-card-foreground font-medium tabular-nums">{formatCurrency(finalReal)}</span>
-        </div>
-        <div className="flex items-center justify-between text-[11px]">
           <span className="text-muted-foreground">Est. annual income</span>
-          <span className="text-card-foreground font-medium tabular-nums">{formatCurrency(estimatedIncome)}</span>
+          <span className="text-card-foreground font-semibold tabular-nums">{formatCurrency(estimatedIncome)}</span>
+        </div>
+        <div className="pl-3 space-y-1.5 border-l-2 border-secondary/60">
+          <div className="flex items-center justify-between text-[11px]">
+            <span className="text-muted-foreground">DC drawdown (4%)</span>
+            <span className="text-card-foreground font-medium tabular-nums">{formatCurrency(dcDrawdown)}</span>
+          </div>
+          {totalDBIncome > 0 && (
+            <div className="flex items-center justify-between text-[11px]">
+              <span className="text-muted-foreground">DB pension income</span>
+              <span className="text-card-foreground font-medium tabular-nums">{formatCurrency(totalDBIncome)}</span>
+            </div>
+          )}
+          <div className="flex items-center justify-between text-[11px]">
+            <span className="text-muted-foreground">State pension</span>
+            <span className="text-card-foreground font-medium tabular-nums">{formatCurrency(UK_STATE_PENSION)}</span>
+          </div>
         </div>
         <div className="flex items-center justify-between text-[11px]">
           <span className="text-muted-foreground">Target income</span>
           <span className="text-card-foreground font-medium tabular-nums">{formatCurrency(targetIncome)}</span>
+        </div>
+        <div className="flex items-center justify-between text-[11px]">
+          <span className="text-muted-foreground">Projected DC pot (real)</span>
+          <span className="text-card-foreground font-medium tabular-nums">{formatCurrency(finalReal)}</span>
         </div>
         <div className="flex items-center justify-between text-[11px]">
           <span className="text-muted-foreground">Retire at</span>
