@@ -18,6 +18,7 @@ interface Props {
 export default function RetirementProgress({ accounts }: Props) {
   const navigate = useNavigate();
   const { householdId } = useAuth();
+  const { data: dbPensions = [] } = useDBPensions();
 
   const { data: scenario, isLoading } = useQuery({
     queryKey: ["retirement_scenario_primary", householdId],
