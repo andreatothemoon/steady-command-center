@@ -1,30 +1,10 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import type { Tables, TablesInsert, TablesUpdate } from "@/integrations/supabase/types";
 
-export type DBPension = {
-  id: string;
-  household_id: string;
-  account_id: string | null;
-  name: string;
-  scheme_type: "CARE" | "FINAL_SALARY";
-  current_age: number;
-  retirement_age: number;
-  current_salary: number;
-  salary_growth_rate: number;
-  accrual_rate: number;
-  is_active_member: boolean;
-  revaluation_type: "CPI" | "fixed";
-  revaluation_rate: number;
-  revaluation_uplift: number;
-  indexation_type: "CPI" | "capped";
-  indexation_cap: number;
-  existing_income: number;
-  created_at: string;
-  updated_at: string;
-};
-
-export type DBPensionInput = Omit<DBPension, "id" | "household_id" | "account_id" | "created_at" | "updated_at">;
+export type DBPension = Tables<"db_pensions">;
+export type DBPensionInput = Omit<TablesInsert<"db_pensions">, "household_id" | "account_id">;
 
 const KEY = "db_pensions";
 
@@ -56,44 +36,52 @@ export function useUpsertDBPension() {
       const { id, ...values } = input;
 
       if (id) {
-        // Update pension
-        const { error } = await supabase.from("db_pensions").update(values).eq("id", id);
+        const { error } = await supabase
+          .from("db_pensions")
+          .update(values as TablesUpdate<"db_pensions">)
+          .eq("id", id);
         if (error) throw error;
 
-        // Also update the linked account name if it exists
-        const { data: pension } = await supabase
+        const { data: pension, error: pensionError } = await supabase
           .from("db_pensions")
           .select("account_id")
           .eq("id", id)
           .single();
+        if (pensionError) throw pensionError;
 
         if (pension?.account_id) {
-          await supabase
+          const { error: accountError } = await supabase
             .from("accounts")
             .update({ name: values.name })
             .eq("id", pension.account_id);
+          if (accountError) throw accountError;
         }
-      } else {
-        // Create a linked account first
-        const { data: account, error: accErr } = await supabase
-          .from("accounts")
-          .insert({
-            household_id: householdId,
-            name: values.name,
-            account_type: "db_pension" as any,
-            wrapper_type: "db_pension" as any,
-            current_value: 0,
-            owner_name: values.name,
-          })
-          .select()
-          .single();
-        if (accErr) throw accErr;
 
-        // Then create the pension linked to that account
-        const { error } = await supabase
-          .from("db_pensions")
-          .insert({ ...values, household_id: householdId, account_id: account.id });
-        if (error) throw error;
+        return;
+      }
+
+      const { data: account, error: accountCreateError } = await supabase
+        .from("accounts")
+        .insert({
+          household_id: householdId,
+          name: values.name ?? "DB Pension",
+          account_type: "db_pension",
+          wrapper_type: "db_pension",
+          source_type: "manual",
+          current_value: 0,
+          owner_name: values.name ?? "DB Pension",
+        })
+        .select("id")
+        .single();
+      if (accountCreateError) throw accountCreateError;
+
+      const { error: pensionCreateError } = await supabase
+        .from("db_pensions")
+        .insert({ ...values, household_id: householdId, account_id: account.id });
+
+      if (pensionCreateError) {
+        await supabase.from("accounts").delete().eq("id", account.id);
+        throw pensionCreateError;
       }
     },
     onSuccess: () => {
@@ -109,19 +97,19 @@ export function useDeleteDBPension() {
 
   return useMutation({
     mutationFn: async (id: string) => {
-      // Get linked account_id before deleting
-      const { data: pension } = await supabase
+      const { data: pension, error: pensionError } = await supabase
         .from("db_pensions")
         .select("account_id")
         .eq("id", id)
         .single();
+      if (pensionError) throw pensionError;
 
       const { error } = await supabase.from("db_pensions").delete().eq("id", id);
       if (error) throw error;
 
-      // Delete linked account if it exists
       if (pension?.account_id) {
-        await supabase.from("accounts").delete().eq("id", pension.account_id);
+        const { error: accountError } = await supabase.from("accounts").delete().eq("id", pension.account_id);
+        if (accountError) throw accountError;
       }
     },
     onSuccess: () => {

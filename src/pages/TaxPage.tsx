@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { formatCurrency } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { accountHasOwner } from "@/lib/accountOwners";
 import { Button } from "@/components/ui/button";
 import { useHouseholdProfiles, type HouseholdProfile } from "@/hooks/useHouseholdProfiles";
 import { useAccounts } from "@/hooks/useAccounts";
@@ -71,7 +72,7 @@ export default function TaxPage() {
   };
 
   const getMemberAccounts = (profile: HouseholdProfile) =>
-    accounts.filter((a) => a.owner_name.toLowerCase() === profile.name.toLowerCase());
+    accounts.filter((a) => accountHasOwner(a.owner_name, profile.name));
 
   const getSummaryForProfile = (profileId: string) =>
     taxSummaries.find((s) => s.member_profile_id === profileId);

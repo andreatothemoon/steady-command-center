@@ -6,6 +6,12 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import type { DBPension, DBPensionInput } from "@/hooks/useDBPensions";
+import {
+  defaultDBPensionForm,
+  toDbPensionFormValues,
+  toDbPensionPayload,
+  type DBPensionFormValues,
+} from "@/lib/dbPensionForm";
 
 interface Props {
   open: boolean;
@@ -15,53 +21,21 @@ interface Props {
   isPending: boolean;
 }
 
-const defaults: DBPensionInput = {
-  name: "NHS Pension",
-  scheme_type: "CARE",
-  current_age: 35,
-  retirement_age: 67,
-  current_salary: 45000,
-  salary_growth_rate: 0.03,
-  accrual_rate: 54,
-  is_active_member: true,
-  revaluation_type: "CPI",
-  revaluation_rate: 0.02,
-  revaluation_uplift: 0.015,
-  indexation_type: "CPI",
-  indexation_cap: 0.05,
-  existing_income: 0,
-};
-
 export default function DBPensionDialog({ open, onOpenChange, pension, onSave, isPending }: Props) {
-  const [form, setForm] = useState<DBPensionInput>(defaults);
+  const [form, setForm] = useState<DBPensionFormValues>(defaultDBPensionForm);
 
   useEffect(() => {
     if (pension) {
-      setForm({
-        name: pension.name,
-        scheme_type: pension.scheme_type as "CARE" | "FINAL_SALARY",
-        current_age: pension.current_age,
-        retirement_age: pension.retirement_age,
-        current_salary: Number(pension.current_salary),
-        salary_growth_rate: Number(pension.salary_growth_rate),
-        accrual_rate: Number(pension.accrual_rate),
-        is_active_member: pension.is_active_member,
-        revaluation_type: pension.revaluation_type as "CPI" | "fixed",
-        revaluation_rate: Number(pension.revaluation_rate),
-        revaluation_uplift: Number(pension.revaluation_uplift),
-        indexation_type: pension.indexation_type as "CPI" | "capped",
-        indexation_cap: Number(pension.indexation_cap),
-        existing_income: Number(pension.existing_income),
-      });
+      setForm(toDbPensionFormValues(pension));
     } else {
-      setForm(defaults);
+      setForm(defaultDBPensionForm);
     }
   }, [pension, open]);
 
-  const update = <K extends keyof DBPensionInput>(key: K, val: DBPensionInput[K]) =>
+  const update = <K extends keyof DBPensionFormValues>(key: K, val: DBPensionFormValues[K]) =>
     setForm((f) => ({ ...f, [key]: val }));
 
-  const numField = (key: keyof DBPensionInput, label: string, opts?: { prefix?: string; suffix?: string; step?: string }) => (
+  const numField = (key: keyof DBPensionFormValues, label: string, opts?: { prefix?: string; suffix?: string; step?: string }) => (
     <div>
       <Label className="text-[11px] text-muted-foreground">{label}</Label>
       <div className="relative mt-1">
@@ -79,7 +53,7 @@ export default function DBPensionDialog({ open, onOpenChange, pension, onSave, i
   );
 
   const handleSubmit = () => {
-    onSave({ ...form, id: pension?.id });
+    onSave({ ...toDbPensionPayload(form), id: pension?.id });
   };
 
   return (

@@ -5,6 +5,7 @@ import { useAccounts, type Account } from "@/hooks/useAccounts";
 import { accountTypeLabels } from "@/data/types";
 import { formatCurrency, formatDate, staleness, daysAgo, calcMonthlyPayment } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { formatOwnerGroup } from "@/lib/accountOwners";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import AddAccountDialog from "@/components/AddAccountDialog";
@@ -32,7 +33,7 @@ function groupAccounts(accounts: Account[], groupBy: GroupBy) {
   return accounts.reduce<Record<string, Account[]>>((acc, account) => {
     let key: string;
     if (groupBy === "type") key = accountTypeLabels[account.account_type] ?? account.account_type;
-    else if (groupBy === "owner") key = account.owner_name;
+    else if (groupBy === "owner") key = formatOwnerGroup(account.owner_name);
     else key = account.wrapper_type === "none" ? "Unwrapped" : account.wrapper_type.toUpperCase();
     (acc[key] ??= []).push(account);
     return acc;
@@ -148,7 +149,7 @@ export default function AccountsPage() {
                               )}
                             </div>
                             <p className="text-[11px] text-muted-foreground mt-0.5">
-                              {account.owner_name} · {formatDate(account.last_updated)}
+                              {formatOwnerGroup(account.owner_name)} · {formatDate(account.last_updated)}
                               {["mortgage", "loan", "credit_card"].includes(account.account_type) && (account as any).interest_rate != null && (
                                 <span className="ml-1.5">{Number((account as any).interest_rate).toFixed(2)}%</span>
                               )}

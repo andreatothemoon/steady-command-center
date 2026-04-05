@@ -50,15 +50,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!user) return;
 
     const fetchHousehold = async () => {
-      const { data } = await supabase
-        .from("household_members")
-        .select("household_id")
-        .eq("user_id", user.id)
-        .limit(1)
-        .single();
+      try {
+        const { data, error } = await supabase
+          .from("household_members")
+          .select("household_id")
+          .eq("user_id", user.id)
+          .limit(1)
+          .maybeSingle();
 
-      setHouseholdId(data?.household_id ?? null);
-      setLoading(false);
+        if (error) throw error;
+        setHouseholdId(data?.household_id ?? null);
+      } catch (error) {
+        console.error("Failed to fetch household", error);
+        setHouseholdId(null);
+      } finally {
+        setLoading(false);
+      }
     };
 
     fetchHousehold();

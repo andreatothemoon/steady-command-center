@@ -1,10 +1,11 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import type { Tables } from "@/integrations/supabase/types";
+import type { Tables, Database } from "@/integrations/supabase/types";
 import { toast } from "sonner";
 
 export type Document = Tables<"documents">;
+type DocumentType = Database["public"]["Enums"]["document_type"];
 
 export function useDocuments() {
   const { householdId } = useAuth();
@@ -40,18 +41,17 @@ export function useUploadDocument() {
         .upload(filePath, file);
       if (uploadError) throw uploadError;
 
-      const { data: { publicUrl } } = supabase.storage
-        .from("documents")
-        .getPublicUrl(filePath);
-
       const { error: dbError } = await supabase.from("documents").insert({
         household_id: householdId,
         file_name: file.name,
         file_url: filePath,
-        document_type: documentType as any,
+        document_type: documentType as DocumentType,
         status: "pending",
       });
-      if (dbError) throw dbError;
+      if (dbError) {
+        await supabase.storage.from("documents").remove([filePath]);
+        throw dbError;
+      }
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["documents"] });
@@ -68,7 +68,8 @@ export function useDeleteDocument() {
     mutationFn: async (doc: Document) => {
       // Delete from storage if file_url exists
       if (doc.file_url) {
-        await supabase.storage.from("documents").remove([doc.file_url]);
+        const { error: storageError } = await supabase.storage.from("documents").remove([doc.file_url]);
+        if (storageError) throw storageError;
       }
       const { error } = await supabase.from("documents").delete().eq("id", doc.id);
       if (error) throw error;
