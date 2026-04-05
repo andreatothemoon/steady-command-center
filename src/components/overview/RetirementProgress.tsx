@@ -42,6 +42,28 @@ export default function RetirementProgress({ accounts }: Props) {
     .filter((a) => ["sipp", "workplace_pension"].includes(a.account_type))
     .reduce((s, a) => s + Number(a.current_value), 0);
 
+  // DB pension projected income
+  const totalDBIncome = useMemo(() => {
+    if (!dbPensions.length) return 0;
+    return dbPensions.reduce((sum, p) => {
+      const proj = projectDBPension({
+        current_age: p.current_age,
+        retirement_age: p.retirement_age,
+        current_salary: Number(p.current_salary),
+        salary_growth_rate: Number(p.salary_growth_rate),
+        accrual_rate: Number(p.accrual_rate),
+        is_active_member: p.is_active_member,
+        revaluation_type: p.revaluation_type,
+        revaluation_rate: Number(p.revaluation_rate),
+        revaluation_uplift: Number(p.revaluation_uplift),
+        existing_income: Number(p.existing_income),
+      });
+      return sum + proj.projected_annual_income;
+    }, 0);
+  }, [dbPensions]);
+
+  const UK_STATE_PENSION = 11502;
+
   // Use scenario from DB or sensible defaults
   const currentAge = scenario?.current_age ?? 35;
   const retireAge = scenario?.retirement_age ?? 57;
@@ -51,21 +73,24 @@ export default function RetirementProgress({ accounts }: Props) {
   const targetIncome = scenario?.target_income ?? 30000;
   const currentPot = scenario?.current_pot ?? pensionPot;
 
-  const { finalReal, readiness, status } = useMemo(() => {
+  const { finalReal, readiness, status, estimatedIncome } = useMemo(() => {
     const years = retireAge - currentAge;
-    if (years <= 0) return { finalReal: currentPot, readiness: 100, status: "ahead" as const };
+    if (years <= 0) {
+      const dcIncome = Math.round(currentPot * 0.04);
+      const total = dcIncome + totalDBIncome + UK_STATE_PENSION;
+      return { finalReal: currentPot, readiness: Math.min(Math.round((total / targetIncome) * 100), 150), status: "ahead" as const, estimatedIncome: total };
+    }
     const monthlyReal = (expectedReturn - inflation) / 12;
     let pot = currentPot;
     for (let m = 0; m < years * 12; m++) {
       pot = pot * (1 + monthlyReal) + monthlyContrib;
     }
-    const income = Math.round(pot * 0.04);
-    const pct = Math.min(Math.round((income / targetIncome) * 100), 150);
+    const dcIncome = Math.round(pot * 0.04);
+    const totalIncome = dcIncome + totalDBIncome + UK_STATE_PENSION;
+    const pct = Math.min(Math.round((totalIncome / targetIncome) * 100), 150);
     const st: "on_track" | "ahead" | "behind" = pct >= 100 ? "ahead" : pct >= 80 ? "on_track" : "behind";
-    return { finalReal: Math.round(pot), readiness: pct, status: st };
-  }, [currentPot, retireAge, currentAge, monthlyContrib, expectedReturn, inflation, targetIncome]);
-
-  const estimatedIncome = Math.round(finalReal * 0.04);
+    return { finalReal: Math.round(pot), readiness: pct, status: st, estimatedIncome: totalIncome };
+  }, [currentPot, retireAge, currentAge, monthlyContrib, expectedReturn, inflation, targetIncome, totalDBIncome]);
 
   // Empty state — no scenario created yet
   if (!isLoading && !scenario) {
