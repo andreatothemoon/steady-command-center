@@ -8,6 +8,8 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import type { Account } from "@/hooks/useAccounts";
+import { useDBPensions } from "@/hooks/useDBPensions";
+import { projectDBPension } from "@/lib/dbPensionEngine";
 
 interface Props {
   accounts: Account[];
