@@ -16,6 +16,7 @@ export interface DBPensionFormValues {
   indexation_type: "CPI" | "capped";
   indexation_cap: number;
   existing_income: number;
+  early_retirement_factor: number; // % reduction per year before NRA
 }
 
 export const defaultDBPensionForm: DBPensionFormValues = {
@@ -33,6 +34,7 @@ export const defaultDBPensionForm: DBPensionFormValues = {
   indexation_type: "CPI",
   indexation_cap: 5,
   existing_income: 0,
+  early_retirement_factor: 3, // 3% per year default
 };
 
 export function toDbPensionFormValues(pension: DBPension): DBPensionFormValues {
@@ -51,6 +53,7 @@ export function toDbPensionFormValues(pension: DBPension): DBPensionFormValues {
     indexation_type: pension.indexation_type,
     indexation_cap: denormalizeRateForDisplay(Number(pension.indexation_cap)),
     existing_income: Number(pension.existing_income),
+    early_retirement_factor: denormalizeRateForDisplay(Number(pension.early_retirement_factor)),
   };
 }
 
@@ -61,5 +64,6 @@ export function toDbPensionPayload(form: DBPensionFormValues): DBPensionInput {
     revaluation_rate: normalizeRate(form.revaluation_rate),
     revaluation_uplift: normalizeRate(form.revaluation_uplift),
     indexation_cap: normalizeRate(form.indexation_cap),
+    early_retirement_factor: normalizeRate(form.early_retirement_factor),
   };
 }

@@ -126,6 +126,17 @@ export default function DBPensionDialog({ open, onOpenChange, pension, onSave, i
               }
             </div>
           </div>
+
+          {/* Early Retirement */}
+          <div className="space-y-2">
+            <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Early Retirement</p>
+            <div className="grid grid-cols-1 gap-3">
+              {numField("early_retirement_factor", "Penalty per year early (%)", { suffix: "%", step: "0.5" })}
+            </div>
+            <p className="text-[10px] text-muted-foreground">
+              Percentage reduction applied for each year you retire before the scheme's normal retirement age.
+            </p>
+          </div>
         </div>
 
         <div className="flex justify-end gap-2 mt-4">

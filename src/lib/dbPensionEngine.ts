@@ -15,6 +15,7 @@ export interface DBPensionParams {
   revaluation_rate: number;
   revaluation_uplift: number;
   existing_income: number; // already-accrued annual income
+  early_retirement_factor: number; // decimal e.g. 0.03 = 3% per year
 }
 
 export interface AccrualSlice {

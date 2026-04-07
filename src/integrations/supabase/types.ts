@@ -227,6 +227,7 @@ export type Database = {
           created_at: string
           current_age: number
           current_salary: number
+          early_retirement_factor: number
           existing_income: number
           household_id: string
           id: string
@@ -248,6 +249,7 @@ export type Database = {
           created_at?: string
           current_age?: number
           current_salary?: number
+          early_retirement_factor?: number
           existing_income?: number
           household_id: string
           id?: string
@@ -269,6 +271,7 @@ export type Database = {
           created_at?: string
           current_age?: number
           current_salary?: number
+          early_retirement_factor?: number
           existing_income?: number
           household_id?: string
           id?: string
