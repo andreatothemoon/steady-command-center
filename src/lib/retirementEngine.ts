@@ -89,19 +89,28 @@ export function buildIncomeTimeline(
   const statePensionAnnual = Math.round(UK_STATE_PENSION_FULL * (statePensionPct / 100));
 
   // Pre-compute DB projections
-  const dbProjections = dbPensionParams.map((p) => projectDBPension(p));
+  const dbProjections = dbPensionParams.map((p) => ({
+    projection: projectDBPension(p),
+    schemeRetireAge: p.retirement_age,
+    earlyFactor: p.early_retirement_factor, // decimal e.g. 0.03
+  }));
   
   // Build DB income by age lookup (sum across all schemes)
+  // If user takes DB early, apply early retirement penalty
   const dbByAge: Record<number, number> = {};
-  for (const proj of dbProjections) {
-    const lastPoint = proj.yearly_projection[proj.yearly_projection.length - 1];
-    const retAge = proj.yearly_projection.length > 0 ? lastPoint?.age ?? 0 : 0;
+  for (const { projection: proj, schemeRetireAge, earlyFactor } of dbProjections) {
     const projectedIncome = proj.projected_annual_income;
-    // DB income starts at the scheme's retirement age
-    for (let age = currentAge; age <= longevity; age++) {
-      if (age >= retAge && retAge > 0) {
-        dbByAge[age] = (dbByAge[age] ?? 0) + projectedIncome;
+    // DB income can start at user's retire age or scheme NRA, whichever is earlier
+    const startAge = Math.min(retireAge, schemeRetireAge);
+    for (let age = startAge; age <= longevity; age++) {
+      let income = projectedIncome;
+      // Apply early retirement penalty if taking before scheme NRA
+      if (age < schemeRetireAge && earlyFactor > 0) {
+        const yearsEarly = schemeRetireAge - age;
+        const penalty = Math.min(yearsEarly * earlyFactor, 1); // cap at 100%
+        income = Math.round(income * (1 - penalty));
       }
+      dbByAge[age] = (dbByAge[age] ?? 0) + income;
     }
   }
 
