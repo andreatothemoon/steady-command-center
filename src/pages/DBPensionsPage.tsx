@@ -40,6 +40,7 @@ export default function DBPensionsPage() {
         revaluation_rate: normalizeRate(Number(p.revaluation_rate)),
         revaluation_uplift: normalizeRate(Number(p.revaluation_uplift)),
         existing_income: Number(p.existing_income),
+        early_retirement_factor: normalizeRate(Number(p.early_retirement_factor)),
       };
       return { pension: p, projection: projectDBPension(params) };
     });

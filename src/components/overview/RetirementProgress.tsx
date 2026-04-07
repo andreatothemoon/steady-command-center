@@ -57,6 +57,7 @@ export default function RetirementProgress({ accounts }: Props) {
         revaluation_rate: Number(p.revaluation_rate),
         revaluation_uplift: Number(p.revaluation_uplift),
         existing_income: Number(p.existing_income),
+        early_retirement_factor: Number(p.early_retirement_factor),
       });
       return sum + proj.projected_annual_income;
     }, 0);

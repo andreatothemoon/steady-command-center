@@ -32,6 +32,7 @@ export default function IncomeSourceCards({ projection, dbPensions, statePension
       revaluation_rate: Number(p.revaluation_rate),
       revaluation_uplift: Number(p.revaluation_uplift),
       existing_income: Number(p.existing_income),
+      early_retirement_factor: Number(p.early_retirement_factor),
     })
   );
 
