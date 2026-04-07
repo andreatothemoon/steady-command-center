@@ -53,6 +53,7 @@ export function toDbPensionFormValues(pension: DBPension): DBPensionFormValues {
     indexation_type: pension.indexation_type,
     indexation_cap: denormalizeRateForDisplay(Number(pension.indexation_cap)),
     existing_income: Number(pension.existing_income),
+    early_retirement_factor: denormalizeRateForDisplay(Number(pension.early_retirement_factor)),
   };
 }
 
@@ -63,5 +64,6 @@ export function toDbPensionPayload(form: DBPensionFormValues): DBPensionInput {
     revaluation_rate: normalizeRate(form.revaluation_rate),
     revaluation_uplift: normalizeRate(form.revaluation_uplift),
     indexation_cap: normalizeRate(form.indexation_cap),
+    early_retirement_factor: normalizeRate(form.early_retirement_factor),
   };
 }

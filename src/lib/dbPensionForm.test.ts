@@ -30,6 +30,7 @@ describe("dbPensionForm", () => {
       indexation_type: "capped",
       indexation_cap: 0.05,
       existing_income: 8000,
+      early_retirement_factor: 0.03,
       created_at: "2026-04-05T00:00:00Z",
       updated_at: "2026-04-05T00:00:00Z",
     });
@@ -59,6 +60,7 @@ describe("dbPensionForm", () => {
       indexation_type: "capped",
       indexation_cap: 5,
       existing_income: 8000,
+      early_retirement_factor: 0,
       created_at: "2026-04-05T00:00:00Z",
       updated_at: "2026-04-05T00:00:00Z",
     });
