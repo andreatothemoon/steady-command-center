@@ -35,11 +35,10 @@ export default function IncomeTimeline({ timeline, retireAge, targetIncome }: Pr
           <p className="label-muted">Retirement Income Timeline</p>
           <p className="text-[11px] text-muted-foreground mt-1">Annual income by source from age {retireAge} to 90</p>
         </div>
-        <div className="flex items-center gap-5 text-xs">
-          <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-sm" style={{ background: "hsl(142, 71%, 45%)" }} /><span className="font-medium text-card-foreground">DC Drawdown</span></span>
-          <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-sm" style={{ background: "hsl(217, 91%, 60%)" }} /><span className="font-medium text-card-foreground">DB Pension</span></span>
-          <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-sm" style={{ background: "hsl(38, 92%, 50%)" }} /><span className="font-medium text-card-foreground">State Pension</span></span>
-          <span className="flex items-center gap-1.5"><span className="w-5 h-0 border-t border-dashed" style={{ borderColor: "hsl(0, 0%, 100%, 0.4)" }} /><span className="font-medium text-card-foreground">Target</span></span>
+        <div className="flex items-center gap-4 text-[10px] font-medium">
+          <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-sm" style={{ background: "hsl(142, 71%, 45%)" }} /> DC</span>
+          <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-sm" style={{ background: "hsl(217, 91%, 60%)" }} /> DB</span>
+          <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-sm" style={{ background: "hsl(38, 92%, 50%)" }} /> State</span>
         </div>
       </div>
       <ResponsiveContainer width="100%" height={320}>
