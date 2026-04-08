@@ -12,4 +12,13 @@ describe("dbPensionRates", () => {
     expect(normalizeRate(1.5)).toBeCloseTo(0.015);
     expect(denormalizeRateForDisplay(3)).toBeCloseTo(3);
   });
+
+  it("normalizes boundary value of 1 as 1%", () => {
+    expect(normalizeRate(1)).toBeCloseTo(0.01);
+    expect(denormalizeRateForDisplay(1)).toBeCloseTo(1);
+  });
+
+  it("handles zero correctly", () => {
+    expect(normalizeRate(0)).toBe(0);
+  });
 });
