@@ -110,19 +110,7 @@ export default function RetirementPage() {
 
   // DB pension params
   const dbPensionParams: DBPensionParams[] = useMemo(() =>
-    dbPensions.map((p) => ({
-      current_age: p.current_age,
-      retirement_age: p.retirement_age,
-      current_salary: Number(p.current_salary),
-      salary_growth_rate: Number(p.salary_growth_rate),
-      accrual_rate: Number(p.accrual_rate),
-      is_active_member: p.is_active_member,
-      revaluation_type: p.revaluation_type,
-      revaluation_rate: Number(p.revaluation_rate),
-      revaluation_uplift: Number(p.revaluation_uplift),
-      existing_income: Number(p.existing_income),
-      early_retirement_factor: Number(p.early_retirement_factor),
-    })),
+    dbPensions.map((p) => toDBPensionParams(p)),
     [dbPensions]
   );
 
