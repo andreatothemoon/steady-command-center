@@ -4,6 +4,7 @@ import { Landmark, Shield, Building2, Wallet } from "lucide-react";
 import type { RetirementProjection } from "@/lib/retirementEngine";
 import type { DBPension } from "@/hooks/useDBPensions";
 import { projectDBPension } from "@/lib/dbPensionEngine";
+import { toDBPensionParams } from "@/lib/dbPensionRates";
 import { STATE_PENSION_AGE, UK_STATE_PENSION_FULL } from "@/lib/retirementEngine";
 
 const item = {
@@ -21,19 +22,7 @@ interface Props {
 
 export default function IncomeSourceCards({ projection, dbPensions, statePensionPct, retireAge, drawdownRate }: Props) {
   const dbProjections = dbPensions.map((p) =>
-    projectDBPension({
-      current_age: p.current_age,
-      retirement_age: p.retirement_age,
-      current_salary: Number(p.current_salary),
-      salary_growth_rate: Number(p.salary_growth_rate),
-      accrual_rate: Number(p.accrual_rate),
-      is_active_member: p.is_active_member,
-      revaluation_type: p.revaluation_type,
-      revaluation_rate: Number(p.revaluation_rate),
-      revaluation_uplift: Number(p.revaluation_uplift),
-      existing_income: Number(p.existing_income),
-      early_retirement_factor: Number(p.early_retirement_factor),
-    })
+    projectDBPension(toDBPensionParams(p))
   );
 
   return (

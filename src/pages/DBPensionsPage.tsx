@@ -6,8 +6,8 @@ import { formatCurrency } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useDBPensions, useUpsertDBPension, useDeleteDBPension, type DBPension, type DBPensionInput } from "@/hooks/useDBPensions";
-import { projectDBPension, type DBPensionParams } from "@/lib/dbPensionEngine";
-import { normalizeRate } from "@/lib/dbPensionRates";
+import { projectDBPension } from "@/lib/dbPensionEngine";
+import { toDBPensionParams } from "@/lib/dbPensionRates";
 import { toast } from "sonner";
 import DBPensionDialog from "@/components/db-pension/DBPensionDialog";
 import DBPensionCard from "@/components/db-pension/DBPensionCard";
@@ -29,19 +29,7 @@ export default function DBPensionsPage() {
 
   const projections = useMemo(() => {
     return pensions.map((p) => {
-      const params: DBPensionParams = {
-        current_age: p.current_age,
-        retirement_age: p.retirement_age,
-        current_salary: Number(p.current_salary),
-        salary_growth_rate: normalizeRate(Number(p.salary_growth_rate)),
-        accrual_rate: Number(p.accrual_rate),
-        is_active_member: p.is_active_member,
-        revaluation_type: p.revaluation_type as "CPI" | "fixed",
-        revaluation_rate: normalizeRate(Number(p.revaluation_rate)),
-        revaluation_uplift: normalizeRate(Number(p.revaluation_uplift)),
-        existing_income: Number(p.existing_income),
-        early_retirement_factor: normalizeRate(Number(p.early_retirement_factor)),
-      };
+      const params = toDBPensionParams(p);
       return { pension: p, projection: projectDBPension(params) };
     });
   }, [pensions]);
