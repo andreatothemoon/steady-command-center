@@ -39,6 +39,7 @@ export default function IncomeTimeline({ timeline, retireAge, targetIncome }: Pr
           <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-sm" style={{ background: "hsl(142, 71%, 45%)" }} /> DC</span>
           <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-sm" style={{ background: "hsl(217, 91%, 60%)" }} /> DB</span>
           <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-sm" style={{ background: "hsl(38, 92%, 50%)" }} /> State</span>
+          <span className="flex items-center gap-1.5"><span className="w-6 border-t-2 border-dashed" style={{ borderColor: "hsl(220, 9%, 46%)" }} /> Target</span>
         </div>
       </div>
       <ResponsiveContainer width="100%" height={320}>
