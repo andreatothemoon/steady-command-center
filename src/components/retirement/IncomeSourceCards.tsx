@@ -4,6 +4,7 @@ import { Landmark, Shield, Building2, Wallet } from "lucide-react";
 import type { RetirementProjection } from "@/lib/retirementEngine";
 import type { DBPension } from "@/hooks/useDBPensions";
 import { projectDBPension } from "@/lib/dbPensionEngine";
+import { toDBPensionParams } from "@/lib/dbPensionRates";
 import { STATE_PENSION_AGE, UK_STATE_PENSION_FULL } from "@/lib/retirementEngine";
 
 const item = {

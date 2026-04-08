@@ -13,6 +13,7 @@ import {
   type RetirementInputs,
 } from "@/lib/retirementEngine";
 import type { DBPensionParams } from "@/lib/dbPensionEngine";
+import { toDBPensionParams } from "@/lib/dbPensionRates";
 
 import HeroOutcome from "@/components/retirement/HeroOutcome";
 import IncomeTimeline from "@/components/retirement/IncomeTimeline";

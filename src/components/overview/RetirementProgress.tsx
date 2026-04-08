@@ -10,6 +10,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import type { Account } from "@/hooks/useAccounts";
 import { useDBPensions } from "@/hooks/useDBPensions";
 import { projectDBPension } from "@/lib/dbPensionEngine";
+import { toDBPensionParams } from "@/lib/dbPensionRates";
 
 interface Props {
   accounts: Account[];
