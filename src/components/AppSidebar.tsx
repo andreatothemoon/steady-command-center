@@ -87,6 +87,18 @@ function SidebarContent({ collapsed, toggle, onNavigate }: { collapsed: boolean;
           {!collapsed && <span>Settings</span>}
         </NavLink>
 
+        {isAdmin && (
+          <NavLink
+            to="/admin/approvals"
+            onClick={onNavigate}
+            className={location.pathname === "/admin/approvals" ? "nav-item-active" : "nav-item-inactive"}
+            title={collapsed ? "Approvals" : undefined}
+          >
+            <Shield className="h-[18px] w-[18px] flex-shrink-0" />
+            {!collapsed && <span>Approvals</span>}
+          </NavLink>
+        )}
+
         {!onNavigate && (
           <button
             onClick={toggle}
