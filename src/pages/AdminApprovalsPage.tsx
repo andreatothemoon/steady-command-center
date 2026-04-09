@@ -56,7 +56,9 @@ export default function AdminApprovalsPage() {
             <Card key={a.id}>
               <CardContent className="flex items-center justify-between py-4">
                 <div className="space-y-1">
-                  <p className="text-sm font-medium text-foreground font-mono">{a.user_id}</p>
+                  <p className="text-sm font-medium text-foreground">
+                    {a.email ?? a.user_id}
+                  </p>
                   <div className="flex items-center gap-2">
                     <Badge variant="outline" className={statusColor(a.status)}>
                       {a.status}
