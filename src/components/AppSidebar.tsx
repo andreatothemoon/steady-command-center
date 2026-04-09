@@ -36,6 +36,7 @@ function SidebarContent({ collapsed, toggle, onNavigate }: { collapsed: boolean;
   const location = useLocation();
   const { isPageVisible } = usePageVisibility();
   const { data: profiles = [] } = useHouseholdProfiles();
+  const { data: isAdmin } = useIsAdmin();
   const adults = profiles.filter((p) => p.role === "adult");
   const initials = adults.length > 0
     ? adults.map((p) => p.name.charAt(0).toUpperCase()).join("")
