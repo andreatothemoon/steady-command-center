@@ -858,6 +858,7 @@ export type Database = {
         Returns: Database["public"]["Enums"]["approval_status"]
       }
       get_ni_number: { Args: { _profile_id: string }; Returns: string }
+      get_user_email: { Args: { _user_id: string }; Returns: string }
       get_user_household_ids: { Args: { _user_id: string }; Returns: string[] }
       has_role: {
         Args: {
