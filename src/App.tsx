@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { SidebarProvider } from "@/contexts/SidebarContext";
 import { PageVisibilityProvider } from "@/contexts/PageVisibilityContext";
+import { useApprovalStatus, useIsAdmin } from "@/hooks/useApprovalStatus";
 import AppSidebar from "@/components/AppSidebar";
 import AppLayout from "@/components/AppLayout";
 import OverviewPage from "@/pages/OverviewPage";
@@ -17,14 +18,18 @@ import RetirementPage from "@/pages/RetirementPage";
 import SettingsPage from "@/pages/SettingsPage";
 import DBPensionsPage from "@/pages/DBPensionsPage";
 import AuthPage from "@/pages/AuthPage";
+import PendingApprovalPage from "@/pages/PendingApprovalPage";
+import AdminApprovalsPage from "@/pages/AdminApprovalsPage";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
 
 function ProtectedRoutes() {
   const { user, loading } = useAuth();
+  const { data: approvalStatus, isLoading: approvalLoading } = useApprovalStatus();
+  const { data: isAdmin } = useIsAdmin();
 
-  if (loading) {
+  if (loading || approvalLoading) {
     return (
       <div className="dark min-h-screen bg-background flex items-center justify-center">
         <div className="h-8 w-8 rounded-lg bg-primary animate-pulse" />
@@ -33,6 +38,11 @@ function ProtectedRoutes() {
   }
 
   if (!user) return <Navigate to="/auth" replace />;
+
+  // Block unapproved users
+  if (approvalStatus && approvalStatus !== "approved") {
+    return <PendingApprovalPage />;
+  }
 
   return (
     <SidebarProvider>
@@ -49,6 +59,9 @@ function ProtectedRoutes() {
               <Route path="/retirement" element={<RetirementPage />} />
               <Route path="/db-pensions" element={<DBPensionsPage />} />
               <Route path="/settings" element={<SettingsPage />} />
+              {isAdmin && (
+                <Route path="/admin/approvals" element={<AdminApprovalsPage />} />
+              )}
               <Route path="*" element={<NotFound />} />
             </Routes>
           </AppLayout>

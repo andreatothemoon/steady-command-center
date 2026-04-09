@@ -1,5 +1,6 @@
 import { NavLink, useLocation } from "react-router-dom";
 import { useHouseholdProfiles } from "@/hooks/useHouseholdProfiles";
+import { useIsAdmin } from "@/hooks/useApprovalStatus";
 import {
   LayoutDashboard,
   Wallet,
@@ -9,6 +10,7 @@ import {
   TrendingUp,
   Building2,
   Settings,
+  Shield,
   ChevronLeft,
   ChevronRight,
   Menu,
@@ -34,6 +36,7 @@ function SidebarContent({ collapsed, toggle, onNavigate }: { collapsed: boolean;
   const location = useLocation();
   const { isPageVisible } = usePageVisibility();
   const { data: profiles = [] } = useHouseholdProfiles();
+  const { data: isAdmin } = useIsAdmin();
   const adults = profiles.filter((p) => p.role === "adult");
   const initials = adults.length > 0
     ? adults.map((p) => p.name.charAt(0).toUpperCase()).join("")
@@ -83,6 +86,18 @@ function SidebarContent({ collapsed, toggle, onNavigate }: { collapsed: boolean;
           <Settings className="h-[18px] w-[18px] flex-shrink-0" />
           {!collapsed && <span>Settings</span>}
         </NavLink>
+
+        {isAdmin && (
+          <NavLink
+            to="/admin/approvals"
+            onClick={onNavigate}
+            className={location.pathname === "/admin/approvals" ? "nav-item-active" : "nav-item-inactive"}
+            title={collapsed ? "Approvals" : undefined}
+          >
+            <Shield className="h-[18px] w-[18px] flex-shrink-0" />
+            {!collapsed && <span>Approvals</span>}
+          </NavLink>
+        )}
 
         {!onNavigate && (
           <button
