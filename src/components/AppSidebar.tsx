@@ -1,5 +1,6 @@
 import { NavLink, useLocation } from "react-router-dom";
 import { useHouseholdProfiles } from "@/hooks/useHouseholdProfiles";
+import { useIsAdmin } from "@/hooks/useApprovalStatus";
 import {
   LayoutDashboard,
   Wallet,
@@ -9,6 +10,7 @@ import {
   TrendingUp,
   Building2,
   Settings,
+  Shield,
   ChevronLeft,
   ChevronRight,
   Menu,
