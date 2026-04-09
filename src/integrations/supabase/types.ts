@@ -797,13 +797,75 @@ export type Database = {
           },
         ]
       }
+      user_approvals: {
+        Row: {
+          created_at: string
+          id: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: Database["public"]["Enums"]["approval_status"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["approval_status"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["approval_status"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      get_approval_status: {
+        Args: { _user_id: string }
+        Returns: Database["public"]["Enums"]["approval_status"]
+      }
       get_ni_number: { Args: { _profile_id: string }; Returns: string }
       get_user_household_ids: { Args: { _user_id: string }; Returns: string[] }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
       is_household_member: {
         Args: { _household_id: string; _user_id: string }
         Returns: boolean
@@ -833,6 +895,8 @@ export type Database = {
         | "property"
         | "loan"
         | "credit_card"
+      app_role: "admin" | "user"
+      approval_status: "pending" | "approved" | "rejected"
       confidence_level: "high" | "medium" | "low"
       db_scheme_type: "CARE" | "FINAL_SALARY"
       document_status: "pending" | "approved" | "rejected"
@@ -997,6 +1061,8 @@ export const Constants = {
         "loan",
         "credit_card",
       ],
+      app_role: ["admin", "user"],
+      approval_status: ["pending", "approved", "rejected"],
       confidence_level: ["high", "medium", "low"],
       db_scheme_type: ["CARE", "FINAL_SALARY"],
       document_status: ["pending", "approved", "rejected"],
