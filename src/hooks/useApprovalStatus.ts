@@ -45,12 +45,20 @@ export function usePendingApprovals() {
   return useQuery({
     queryKey: ["pending-approvals"],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data: approvals, error } = await supabase
         .from("user_approvals")
         .select("*")
         .order("created_at", { ascending: true });
       if (error) throw error;
-      return data;
+
+      // Fetch emails via secure RPC
+      const withEmails = await Promise.all(
+        (approvals ?? []).map(async (a) => {
+          const { data: email } = await supabase.rpc("get_user_email", { _user_id: a.user_id });
+          return { ...a, email: email as string | null };
+        })
+      );
+      return withEmails;
     },
   });
 }
