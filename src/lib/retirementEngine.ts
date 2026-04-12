@@ -203,9 +203,12 @@ export function computeRetirement(
     return sum + proj.projected_annual_income;
   }, 0);
   const statePensionIncome = Math.round(UK_STATE_PENSION_FULL * (inputs.statePensionPct / 100));
-  const totalIncome = dcDrawdown + totalDBIncome + (inputs.retireAge >= STATE_PENSION_AGE ? statePensionIncome : statePensionIncome);
+  // ISA income at retirement
+  const isaRealReturn = (inputs.isaGrowthRate - inputs.inflation) / 100;
+  const isaAtRetire = inputs.isaPot * Math.pow(1 + Math.max(isaRealReturn, 0), yearsToRetire);
+  const isaDrawdown = Math.round(isaAtRetire * inputs.isaDrawdownRate);
   // At retirement, state pension only counts if retire age >= 67
-  const incomeAtRetirement = dcDrawdown + totalDBIncome + (inputs.retireAge >= STATE_PENSION_AGE ? statePensionIncome : 0);
+  const incomeAtRetirement = dcDrawdown + isaDrawdown + totalDBIncome + (inputs.retireAge >= STATE_PENSION_AGE ? statePensionIncome : 0);
   const gap = inputs.targetIncome - incomeAtRetirement;
   const pct = Math.min(Math.round((incomeAtRetirement / inputs.targetIncome) * 100), 150);
   
