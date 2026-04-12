@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { useDBPensions } from "@/hooks/useDBPensions";
+import { useAccounts } from "@/hooks/useAccounts";
 import {
   computeRetirement,
   generateActions,
@@ -65,6 +66,15 @@ export default function RetirementPage() {
   });
 
   const { data: dbPensions = [] } = useDBPensions();
+  const { data: accounts = [] } = useAccounts();
+
+  // Sum ISA balances (cash_isa + stocks_and_shares_isa)
+  const totalIsaPot = useMemo(() =>
+    accounts
+      .filter((a) => a.account_type === "cash_isa" || a.account_type === "stocks_and_shares_isa")
+      .reduce((sum, a) => sum + Number(a.current_value), 0),
+    [accounts]
+  );
 
   // Active scenario & compare mode
   const [activeId, setActiveId] = useState<string | null>(null);
@@ -124,11 +134,14 @@ export default function RetirementPage() {
         retireAge: v.retireAge,
         statePensionPct,
         drawdownRate: drawdownRate / 100,
+        isaPot: totalIsaPot,
+        isaDrawdownRate: drawdownRate / 100, // same rate as DC for now
+        isaGrowthRate: v.expectedReturn, // assume same growth
       };
       const projection = computeRetirement(inputs, dbPensionParams);
       return { scenario: s, values: v, inputs, projection };
     });
-  }, [scenarios, getScenarioValues, statePensionPct, drawdownRate, dbPensionParams]);
+  }, [scenarios, getScenarioValues, statePensionPct, drawdownRate, dbPensionParams, totalIsaPot]);
 
   const activeProjectionData = allProjections.find((p) => p.scenario.id === activeId);
   const projection = activeProjectionData?.projection;
