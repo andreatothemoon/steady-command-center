@@ -21,6 +21,9 @@ export interface RetirementInputs {
   targetIncome: number;
   statePensionPct: number; // 0-100
   drawdownRate: number; // decimal e.g. 0.04
+  isaPot: number; // total ISA balance at today
+  isaDrawdownRate: number; // decimal e.g. 0.04
+  isaGrowthRate: number; // % annual growth for ISA
 }
 
 export interface IncomeTimelinePoint {
@@ -85,7 +88,7 @@ export function buildIncomeTimeline(
   dbPensionParams: DBPensionParams[],
   longevity: number = DEFAULT_LONGEVITY
 ): IncomeTimelinePoint[] {
-  const { currentAge, retireAge, currentPot, monthlyContrib, employerContrib, expectedReturn, inflation, statePensionPct, drawdownRate } = inputs;
+  const { currentAge, retireAge, currentPot, monthlyContrib, employerContrib, expectedReturn, inflation, statePensionPct, drawdownRate, isaPot, isaDrawdownRate, isaGrowthRate } = inputs;
   const statePensionAnnual = Math.round(UK_STATE_PENSION_FULL * (statePensionPct / 100));
 
   // Pre-compute DB projections
@@ -133,11 +136,17 @@ export function buildIncomeTimeline(
   // Compute DC pot at retirement
   const yearsToRetire = Math.max(0, retireAge - currentAge);
   const { real: dcPotReal } = projectDCPot(currentPot, monthlyContrib, employerContrib, expectedReturn, inflation, yearsToRetire);
+
+  // Compute ISA pot at retirement (grows but no contributions assumed)
+  const isaRealReturn = (isaGrowthRate - inflation) / 100;
+  let isaAtRetire = isaPot * Math.pow(1 + Math.max(isaRealReturn, 0), yearsToRetire);
   
   // Phase 2: Decumulation (retirement to longevity)
   let remainingPot = dcPotReal;
   const annualDrawdown = Math.round(dcPotReal * drawdownRate);
   let dcDepletionAge: number | null = null;
+  let remainingIsa = isaAtRetire;
+  const isaAnnualDrawdown = Math.round(isaAtRetire * isaDrawdownRate);
   
   for (let age = retireAge; age <= longevity; age++) {
     const dc = remainingPot > 0 ? Math.min(annualDrawdown, remainingPot) : 0;
@@ -145,17 +154,20 @@ export function buildIncomeTimeline(
     if (remainingPot === 0 && dcDepletionAge === null && age > retireAge) {
       dcDepletionAge = age;
     }
+
+    const isa = remainingIsa > 0 ? Math.min(isaAnnualDrawdown, remainingIsa) : 0;
+    remainingIsa = Math.max(0, remainingIsa - isa);
     
     const db = dbByAge[age] ?? 0;
     const sp = age >= STATE_PENSION_AGE ? statePensionAnnual : 0;
-    const total = dc + db + sp;
+    const total = dc + db + sp + isa;
     
     timeline.push({
       age,
       dcDrawdown: dc,
       dbPension: db,
       statePension: sp,
-      isaWithdrawal: 0,
+      isaWithdrawal: isa,
       otherIncome: 0,
       totalIncome: total,
       dcPot: remainingPot,
