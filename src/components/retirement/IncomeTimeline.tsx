@@ -37,6 +37,7 @@ export default function IncomeTimeline({ timeline, retireAge, targetIncome }: Pr
         </div>
         <div className="flex items-center gap-4 text-[11px] font-semibold text-card-foreground">
           <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-sm" style={{ background: "hsl(142, 71%, 45%)" }} /> DC</span>
+          <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-sm" style={{ background: "hsl(280, 67%, 55%)" }} /> ISA</span>
           <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-sm" style={{ background: "hsl(217, 91%, 60%)" }} /> DB</span>
           <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-sm" style={{ background: "hsl(38, 92%, 50%)" }} /> State</span>
           <span className="flex items-center gap-1.5"><span className="w-6 border-t-2 border-dashed" style={{ borderColor: "hsl(220, 9%, 46%)" }} /> Target</span>
@@ -57,6 +58,10 @@ export default function IncomeTimeline({ timeline, retireAge, targetIncome }: Pr
               <stop offset="0%" stopColor="hsl(38, 92%, 50%)" stopOpacity={0.3} />
               <stop offset="100%" stopColor="hsl(38, 92%, 50%)" stopOpacity={0.02} />
             </linearGradient>
+            <linearGradient id="isaGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="hsl(280, 67%, 55%)" stopOpacity={0.3} />
+              <stop offset="100%" stopColor="hsl(280, 67%, 55%)" stopOpacity={0.02} />
+            </linearGradient>
           </defs>
           <XAxis
             dataKey="age"
@@ -76,15 +81,20 @@ export default function IncomeTimeline({ timeline, retireAge, targetIncome }: Pr
             content={({ active, payload, label }) => {
               if (!active || !payload?.length) return null;
               const dc = (payload.find((p) => p.dataKey === "dcDrawdown")?.value as number) ?? 0;
+              const isa = (payload.find((p) => p.dataKey === "isaWithdrawal")?.value as number) ?? 0;
               const db = (payload.find((p) => p.dataKey === "dbPension")?.value as number) ?? 0;
               const sp = (payload.find((p) => p.dataKey === "statePension")?.value as number) ?? 0;
-              const total = dc + db + sp;
+              const total = dc + isa + db + sp;
               return (
                 <div className="card-surface px-3 py-2.5 shadow-xl border border-border text-xs space-y-1">
                   <p className="font-semibold text-card-foreground">Age {label}</p>
                   <div className="flex justify-between gap-4">
                     <span className="text-muted-foreground">DC drawdown</span>
                     <span className="tabular-nums text-card-foreground">{formatCurrency(dc)}</span>
+                  </div>
+                  <div className="flex justify-between gap-4">
+                    <span className="text-muted-foreground">ISA drawdown</span>
+                    <span className="tabular-nums text-card-foreground">{formatCurrency(isa)}</span>
                   </div>
                   <div className="flex justify-between gap-4">
                     <span className="text-muted-foreground">DB pension</span>
@@ -131,6 +141,15 @@ export default function IncomeTimeline({ timeline, retireAge, targetIncome }: Pr
             strokeWidth={1}
             fill="url(#dbGrad)"
             animationDuration={1400}
+          />
+          <Area
+            type="monotone"
+            dataKey="isaWithdrawal"
+            stackId="income"
+            stroke="hsl(280, 67%, 55%)"
+            strokeWidth={1}
+            fill="url(#isaGrad)"
+            animationDuration={1500}
           />
           <Area
             type="monotone"
