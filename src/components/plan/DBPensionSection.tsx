@@ -4,7 +4,7 @@
  */
 import { useState, useMemo } from "react";
 import { Building2, Plus } from "lucide-react";
-import { useDBPensions, useAddDBPension, useUpdateDBPension, useDeleteDBPension } from "@/hooks/useDBPensions";
+import { useDBPensions, useUpsertDBPension, useDeleteDBPension } from "@/hooks/useDBPensions";
 import { projectDBPension } from "@/lib/dbPensionEngine";
 import { toDBPensionParams } from "@/lib/dbPensionRates";
 import DBPensionCard from "@/components/db-pension/DBPensionCard";
