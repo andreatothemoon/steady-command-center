@@ -80,7 +80,7 @@ export default function DBPensionSection() {
         onOpenChange={(open) => { setDialogOpen(open); if (!open) setEditingPension(null); }}
         pension={editingPension}
         onSave={handleSave}
-        isPending={addMutation.isPending || updateMutation.isPending}
+        isPending={upsertMutation.isPending}
       />
     </div>
   );
