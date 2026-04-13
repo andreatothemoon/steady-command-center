@@ -5,18 +5,14 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { SidebarProvider } from "@/contexts/SidebarContext";
-import { PageVisibilityProvider } from "@/contexts/PageVisibilityContext";
 import { useApprovalStatus, useIsAdmin } from "@/hooks/useApprovalStatus";
 import AppSidebar from "@/components/AppSidebar";
 import AppLayout from "@/components/AppLayout";
-import OverviewPage from "@/pages/OverviewPage";
-import AccountsPage from "@/pages/AccountsPage";
-import ContributionsPage from "@/pages/ContributionsPage";
-import DocumentsPage from "@/pages/DocumentsPage";
-import TaxPage from "@/pages/TaxPage";
-import RetirementPage from "@/pages/RetirementPage";
-import SettingsPage from "@/pages/SettingsPage";
-import DBPensionsPage from "@/pages/DBPensionsPage";
+import HomePage from "@/pages/HomePage";
+import PlanPage from "@/pages/PlanPage";
+import WealthPage from "@/pages/WealthPage";
+import ActionsPage from "@/pages/ActionsPage";
+import ProfilePage from "@/pages/ProfilePage";
 import AuthPage from "@/pages/AuthPage";
 import PendingApprovalPage from "@/pages/PendingApprovalPage";
 import AdminApprovalsPage from "@/pages/AdminApprovalsPage";
@@ -39,34 +35,28 @@ function ProtectedRoutes() {
 
   if (!user) return <Navigate to="/auth" replace />;
 
-  // Block unapproved users
   if (approvalStatus && approvalStatus !== "approved") {
     return <PendingApprovalPage />;
   }
 
   return (
     <SidebarProvider>
-      <PageVisibilityProvider>
-        <div className="dark">
-          <AppSidebar />
-          <AppLayout>
-            <Routes>
-              <Route path="/" element={<OverviewPage />} />
-              <Route path="/accounts" element={<AccountsPage />} />
-              <Route path="/contributions" element={<ContributionsPage />} />
-              <Route path="/documents" element={<DocumentsPage />} />
-              <Route path="/tax" element={<TaxPage />} />
-              <Route path="/retirement" element={<RetirementPage />} />
-              <Route path="/db-pensions" element={<DBPensionsPage />} />
-              <Route path="/settings" element={<SettingsPage />} />
-              {isAdmin && (
-                <Route path="/admin/approvals" element={<AdminApprovalsPage />} />
-              )}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </AppLayout>
-        </div>
-      </PageVisibilityProvider>
+      <div className="dark">
+        <AppSidebar />
+        <AppLayout>
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/plan" element={<PlanPage />} />
+            <Route path="/wealth" element={<WealthPage />} />
+            <Route path="/actions" element={<ActionsPage />} />
+            <Route path="/profile" element={<ProfilePage />} />
+            {isAdmin && (
+              <Route path="/admin/approvals" element={<AdminApprovalsPage />} />
+            )}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </AppLayout>
+      </div>
     </SidebarProvider>
   );
 }
