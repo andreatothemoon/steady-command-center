@@ -26,15 +26,9 @@ export default function DBPensionSection() {
   }, [pensions]);
 
   const handleSave = (input: DBPensionInput & { id?: string }) => {
-    if (input.id) {
-      updateMutation.mutate(input as DBPensionInput & { id: string }, {
-        onSuccess: () => { setDialogOpen(false); setEditingPension(null); },
-      });
-    } else {
-      addMutation.mutate(input, {
-        onSuccess: () => { setDialogOpen(false); setEditingPension(null); },
-      });
-    }
+    upsertMutation.mutate(input, {
+      onSuccess: () => { setDialogOpen(false); setEditingPension(null); },
+    });
   };
 
   const handleEdit = (pension: DBPension) => {
