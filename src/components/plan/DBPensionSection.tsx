@@ -13,8 +13,7 @@ import type { DBPension, DBPensionInput } from "@/hooks/useDBPensions";
 
 export default function DBPensionSection() {
   const { data: pensions = [] } = useDBPensions();
-  const addMutation = useAddDBPension();
-  const updateMutation = useUpdateDBPension();
+  const upsertMutation = useUpsertDBPension();
   const deleteMutation = useDeleteDBPension();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingPension, setEditingPension] = useState<DBPension | null>(null);
