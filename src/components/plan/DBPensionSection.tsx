@@ -1,16 +1,51 @@
 /**
  * DB Pension section embedded in the Plan page.
- * Reuses existing DBPensionCard/Dialog components.
+ * Renders DB pension cards with full functionality.
  */
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Building2, Plus } from "lucide-react";
-import { useDBPensions } from "@/hooks/useDBPensions";
+import { useDBPensions, useAddDBPension, useUpdateDBPension, useDeleteDBPension } from "@/hooks/useDBPensions";
+import { projectDBPension } from "@/lib/dbPensionEngine";
+import { toDBPensionParams } from "@/lib/dbPensionRates";
 import DBPensionCard from "@/components/db-pension/DBPensionCard";
 import DBPensionDialog from "@/components/db-pension/DBPensionDialog";
+import type { DBPension, DBPensionInput } from "@/hooks/useDBPensions";
 
 export default function DBPensionSection() {
   const { data: pensions = [] } = useDBPensions();
+  const addMutation = useAddDBPension();
+  const updateMutation = useUpdateDBPension();
+  const deleteMutation = useDeleteDBPension();
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [editingPension, setEditingPension] = useState<DBPension | null>(null);
+
+  const projections = useMemo(() => {
+    return pensions.map((p) => ({
+      pension: p,
+      projection: projectDBPension(toDBPensionParams(p)),
+    }));
+  }, [pensions]);
+
+  const handleSave = (input: DBPensionInput & { id?: string }) => {
+    if (input.id) {
+      updateMutation.mutate(input as DBPensionInput & { id: string }, {
+        onSuccess: () => { setDialogOpen(false); setEditingPension(null); },
+      });
+    } else {
+      addMutation.mutate(input, {
+        onSuccess: () => { setDialogOpen(false); setEditingPension(null); },
+      });
+    }
+  };
+
+  const handleEdit = (pension: DBPension) => {
+    setEditingPension(pension);
+    setDialogOpen(true);
+  };
+
+  const handleDelete = (id: string) => {
+    deleteMutation.mutate(id);
+  };
 
   return (
     <div className="space-y-3">
@@ -20,7 +55,7 @@ export default function DBPensionSection() {
           <p className="label-muted" style={{ opacity: 1 }}>Defined Benefit Pensions</p>
         </div>
         <button
-          onClick={() => setDialogOpen(true)}
+          onClick={() => { setEditingPension(null); setDialogOpen(true); }}
           className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary hover:text-primary/80 transition-colors"
         >
           <Plus className="h-3.5 w-3.5" />
@@ -35,13 +70,25 @@ export default function DBPensionSection() {
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          {pensions.map((p) => (
-            <DBPensionCard key={p.id} pension={p} />
+          {projections.map(({ pension, projection }) => (
+            <DBPensionCard
+              key={pension.id}
+              pension={pension}
+              projection={projection}
+              onEdit={() => handleEdit(pension)}
+              onDelete={() => handleDelete(pension.id)}
+            />
           ))}
         </div>
       )}
 
-      <DBPensionDialog open={dialogOpen} onOpenChange={setDialogOpen} />
+      <DBPensionDialog
+        open={dialogOpen}
+        onOpenChange={(open) => { setDialogOpen(open); if (!open) setEditingPension(null); }}
+        pension={editingPension}
+        onSave={handleSave}
+        isPending={addMutation.isPending || updateMutation.isPending}
+      />
     </div>
   );
 }

@@ -12,13 +12,6 @@ interface Props {
   targetIncome: number;
 }
 
-function useAnimatedValue(target: number, duration = 1200) {
-  const [value, setValue] = import("react").then ? 0 : 0;
-  // Simple implementation using useState/useEffect
-  const { useState, useEffect, useRef } = require("react");
-  return target; // fallback
-}
-
 export default function IncomeHeroCard({ monthlyIncome, retireAge, projection, targetIncome }: Props) {
   const navigate = useNavigate();
   const monthlyTarget = Math.round(targetIncome / 12);
