@@ -42,7 +42,7 @@ export default function TaxStatusCard({ ani, pensionContributions = 0, isaUsed =
     <div className="card-insight p-5">
       <div className="flex items-center justify-between mb-4">
         <p className="label-muted" style={{ opacity: 1 }}>Tax Status</p>
-        <button onClick={() => navigate("/tax")} className="text-[11px] text-muted-foreground hover:text-primary transition-colors flex items-center gap-0.5">
+        <button onClick={() => navigate("/profile")} className="text-[11px] text-muted-foreground hover:text-primary transition-colors flex items-center gap-0.5">
           View all <ChevronRight className="h-3 w-3" />
         </button>
       </div>
