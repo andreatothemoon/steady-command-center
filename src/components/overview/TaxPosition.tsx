@@ -95,7 +95,7 @@ export default function TaxPosition({ memberANIs, isaUsed, isaLimit, pensionCont
           <p className="label-muted" style={{ opacity: 1 }}>Tax Position</p>
         </div>
         <button
-          onClick={() => navigate("/tax")}
+          onClick={() => navigate("/profile")}
           className="text-[11px] text-muted-foreground hover:text-primary transition-colors flex items-center gap-0.5"
         >
           View all <ChevronRight className="h-3 w-3" />

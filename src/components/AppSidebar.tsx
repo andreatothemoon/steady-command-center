@@ -1,15 +1,11 @@
 import { NavLink, useLocation } from "react-router-dom";
-import { useHouseholdProfiles } from "@/hooks/useHouseholdProfiles";
 import { useIsAdmin } from "@/hooks/useApprovalStatus";
 import {
-  LayoutDashboard,
+  Home,
+  LineChart,
   Wallet,
-  ArrowUpDown,
-  FileText,
-  Receipt,
-  TrendingUp,
-  Building2,
-  Settings,
+  Zap,
+  User,
   Shield,
   ChevronLeft,
   ChevronRight,
@@ -17,24 +13,21 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useSidebarCollapse } from "@/contexts/SidebarContext";
-import { usePageVisibility } from "@/contexts/PageVisibilityContext";
+import { useHouseholdProfiles } from "@/hooks/useHouseholdProfiles";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { useState } from "react";
 
 const navItems = [
-  { to: "/", label: "Overview", icon: LayoutDashboard, key: null },
-  { to: "/accounts", label: "Accounts", icon: Wallet, key: "accounts" as const },
-  { to: "/contributions", label: "Contributions", icon: ArrowUpDown, key: "contributions" as const },
-  { to: "/documents", label: "Documents", icon: FileText, key: "documents" as const },
-  { to: "/tax", label: "Tax", icon: Receipt, key: "tax" as const },
-  { to: "/retirement", label: "Retirement", icon: TrendingUp, key: "retirement" as const },
-  { to: "/db-pensions", label: "DB Pensions", icon: Building2, key: "db-pensions" as const },
+  { to: "/", label: "Home", icon: Home },
+  { to: "/plan", label: "Plan", icon: LineChart },
+  { to: "/wealth", label: "Wealth", icon: Wallet },
+  { to: "/actions", label: "Actions", icon: Zap },
+  { to: "/profile", label: "Profile", icon: User },
 ];
 
 function SidebarContent({ collapsed, toggle, onNavigate }: { collapsed: boolean; toggle: () => void; onNavigate?: () => void }) {
   const location = useLocation();
-  const { isPageVisible } = usePageVisibility();
   const { data: profiles = [] } = useHouseholdProfiles();
   const { data: isAdmin } = useIsAdmin();
   const adults = profiles.filter((p) => p.role === "adult");
@@ -59,8 +52,8 @@ function SidebarContent({ collapsed, toggle, onNavigate }: { collapsed: boolean;
       </div>
 
       <nav className={cn("flex-1 space-y-0.5 pt-3", collapsed ? "px-2" : "px-3")}>
-        {navItems.filter(({ key }) => key === null || isPageVisible(key)).map(({ to, label, icon: Icon }) => {
-          const isActive = location.pathname === to;
+        {navItems.map(({ to, label, icon: Icon }) => {
+          const isActive = to === "/" ? location.pathname === "/" : location.pathname.startsWith(to);
           return (
             <NavLink
               key={to}
@@ -77,16 +70,6 @@ function SidebarContent({ collapsed, toggle, onNavigate }: { collapsed: boolean;
       </nav>
 
       <div className="space-y-2 p-3">
-        <NavLink
-          to="/settings"
-          onClick={onNavigate}
-          className={location.pathname === "/settings" ? "nav-item-active" : "nav-item-inactive"}
-          title={collapsed ? "Settings" : undefined}
-        >
-          <Settings className="h-[18px] w-[18px] flex-shrink-0" />
-          {!collapsed && <span>Settings</span>}
-        </NavLink>
-
         {isAdmin && (
           <NavLink
             to="/admin/approvals"

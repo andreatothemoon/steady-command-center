@@ -83,7 +83,7 @@ export default function ActionCenter({ accounts, memberANIs = [], isaUsed = 0, i
       impact: "Affects net worth accuracy",
       severity: days > 180 ? "high" : "medium",
       cta: "Update now",
-      route: "/accounts",
+      route: "/wealth",
       category: "freshness",
     });
   });
@@ -100,7 +100,7 @@ export default function ActionCenter({ accounts, memberANIs = [], isaUsed = 0, i
           impact: "Risk of losing personal allowance (£12,570)",
           severity: buffer < 5000 ? "high" : "medium",
           cta: "Review tax position",
-          route: "/tax",
+          route: "/profile",
           category: "tax",
         });
       }
@@ -112,7 +112,7 @@ export default function ActionCenter({ accounts, memberANIs = [], isaUsed = 0, i
         impact: "Personal allowance tapering in effect",
         severity: "high",
         cta: "Review options",
-        route: "/tax",
+        route: "/profile",
         category: "tax",
     });
     }
@@ -128,7 +128,7 @@ export default function ActionCenter({ accounts, memberANIs = [], isaUsed = 0, i
       impact: "Use it or lose it — resets 6 April",
       severity: "medium",
       cta: "View allowances",
-      route: "/tax",
+      route: "/profile",
       category: "optimisation",
     });
   }
@@ -143,7 +143,7 @@ export default function ActionCenter({ accounts, memberANIs = [], isaUsed = 0, i
       impact: "Consider a review cycle",
       severity: "low",
       cta: "View accounts",
-      route: "/accounts",
+      route: "/wealth",
       category: "freshness",
     });
   }
