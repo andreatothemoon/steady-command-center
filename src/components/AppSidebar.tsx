@@ -154,7 +154,7 @@ export default function AppSidebar() {
         collapsed ? "w-[68px]" : "w-56"
       )}
       style={{
-        background: "linear-gradient(180deg, hsl(35 29% 98% / 0.9) 0%, hsl(28 24% 97% / 0.88) 100%)",
+        background: "linear-gradient(180deg, hsl(38 18% 97% / 0.94) 0%, hsl(32 14% 94% / 0.9) 100%)",
       }}
     >
       <SidebarContent collapsed={collapsed} toggle={toggle} />

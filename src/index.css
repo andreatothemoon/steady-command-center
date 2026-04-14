@@ -6,7 +6,7 @@
 
 @layer base {
   :root {
-    --background: 34 45% 97%;
+    --background: 36 22% 96%;
     --foreground: 215 23% 12%;
     --card: 0 0% 100%;
     --card-foreground: 215 23% 12%;
@@ -14,26 +14,26 @@
     --popover-foreground: 215 23% 12%;
     --primary: 145 66% 38%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 36 20% 94%;
+    --secondary: 34 18% 92%;
     --secondary-foreground: 215 20% 22%;
-    --muted: 36 22% 95%;
+    --muted: 34 14% 93%;
     --muted-foreground: 220 8% 47%;
-    --accent: 338 88% 94%;
-    --accent-foreground: 339 58% 37%;
+    --accent: 35 24% 91%;
+    --accent-foreground: 28 18% 34%;
     --destructive: 4 77% 57%;
     --destructive-foreground: 0 0% 100%;
-    --border: 30 18% 87%;
-    --input: 30 20% 90%;
+    --border: 32 15% 84%;
+    --input: 32 16% 88%;
     --ring: 145 66% 38%;
     --radius: 1.1rem;
 
-    --sidebar-background: 35 29% 98%;
+    --sidebar-background: 35 20% 97%;
     --sidebar-foreground: 220 8% 47%;
     --sidebar-primary: 145 66% 38%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 0 0% 100%;
+    --sidebar-accent: 36 18% 95%;
     --sidebar-accent-foreground: 215 23% 12%;
-    --sidebar-border: 30 18% 87%;
+    --sidebar-border: 32 15% 84%;
     --sidebar-ring: 145 66% 38%;
 
     --success: 145 66% 38%;
@@ -45,7 +45,7 @@
 
     --chart-1: 145 66% 38%;
     --chart-2: 212 90% 56%;
-    --chart-3: 338 79% 62%;
+    --chart-3: 27 62% 62%;
     --chart-4: 33 89% 55%;
     --chart-5: 268 52% 58%;
   }
@@ -133,16 +133,16 @@
   .card-surface {
     @apply rounded-[28px];
     border: 1px solid hsl(var(--border) / 0.9);
-    background: linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(34 28% 99%) 100%);
-    box-shadow: 0 18px 40px -34px hsl(215 25% 20% / 0.3);
+    background: linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(36 18% 98%) 100%);
+    box-shadow: 0 18px 40px -34px hsl(30 18% 26% / 0.18);
   }
 
   .card-surface-hover {
     @apply card-surface transition-all duration-200 cursor-default;
   }
   .card-surface-hover:hover {
-    border-color: hsl(145 40% 78%);
-    box-shadow: 0 24px 48px -34px hsl(145 40% 30% / 0.18);
+    border-color: hsl(34 18% 78%);
+    box-shadow: 0 24px 48px -34px hsl(30 18% 30% / 0.16);
     transform: translateY(-2px);
   }
   .card-surface-hover:active {
@@ -153,14 +153,14 @@
   /* ── Level 3: Elevated / Hero surfaces ── */
   .hero-surface {
     @apply rounded-[36px] overflow-hidden relative;
-    border: 1px solid hsl(30 22% 88%);
+    border: 1px solid hsl(34 18% 85%);
     background: linear-gradient(
       160deg,
       hsl(0 0% 100%) 0%,
-      hsl(34 40% 98%) 52%,
-      hsl(140 68% 96%) 100%
+      hsl(36 26% 97%) 52%,
+      hsl(30 19% 93%) 100%
     );
-    box-shadow: 0 30px 70px -46px hsl(145 35% 24% / 0.22);
+    box-shadow: 0 30px 70px -46px hsl(30 16% 24% / 0.16);
   }
   .hero-surface::before {
     content: '';
@@ -171,11 +171,11 @@
     height: 100%;
     background: linear-gradient(
       135deg,
-      hsl(145 70% 92% / 0.7) 0%,
-      transparent 36%,
-      hsl(338 88% 93% / 0.65) 100%
+      hsl(40 28% 94% / 0.95) 0%,
+      hsl(36 24% 96% / 0.35) 38%,
+      hsl(30 18% 90% / 0.85) 100%
     );
-    opacity: 0.9;
+    opacity: 1;
     pointer-events: none;
   }
 
@@ -191,8 +191,8 @@
   .card-insight {
     @apply rounded-[28px] overflow-hidden;
     border: 1px solid hsl(var(--border) / 0.85);
-    background: hsl(0 0% 100% / 0.78);
-    box-shadow: 0 16px 34px -32px hsl(215 22% 20% / 0.25);
+    background: hsl(0 0% 100% / 0.8);
+    box-shadow: 0 16px 34px -32px hsl(30 15% 22% / 0.16);
     backdrop-filter: blur(18px);
   }
 

@@ -16,9 +16,9 @@ export default function AppLayout({ children }: AppLayoutProps) {
       className="min-h-screen bg-background"
       style={{
         background: `
-          radial-gradient(circle at top left, hsl(145 72% 92% / 0.55), transparent 26%),
-          radial-gradient(circle at top right, hsl(340 88% 92% / 0.55), transparent 24%),
-          linear-gradient(180deg, hsl(36 33% 98%) 0%, hsl(28 25% 97%) 100%)
+          radial-gradient(circle at top left, hsl(42 30% 96% / 0.95), transparent 28%),
+          radial-gradient(circle at top right, hsl(32 22% 91% / 0.45), transparent 26%),
+          linear-gradient(180deg, hsl(38 22% 97%) 0%, hsl(30 16% 94%) 100%)
         `,
       }}
     >
