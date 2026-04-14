@@ -1,9 +1,237 @@
 /**
- * Wealth Page — placeholder absorbing Accounts + Contributions
- * Renders existing AccountsPage content for now
+ * Wealth Page — Assets mapped to retirement income contribution
+ * Groups: Guaranteed Income, Growth Assets, Safety Net, Property & Debt
  */
-import AccountsPage from "@/pages/AccountsPage";
+import { useState, useMemo } from "react";
+import { motion } from "framer-motion";
+import {
+  Plus, Upload, Download, Inbox, Clock, Link2, Shield,
+  TrendingUp, Landmark, Home as HomeIcon, Pencil,
+} from "lucide-react";
+import { useAccounts, type Account } from "@/hooks/useAccounts";
+import { useDBPensions } from "@/hooks/useDBPensions";
+import { useCashFlows } from "@/hooks/useCashFlows";
+import { accountTypeLabels } from "@/data/types";
+import { formatCurrency, formatDate, staleness, daysAgo, calcMonthlyPayment } from "@/lib/format";
+import { formatOwnerGroup } from "@/lib/accountOwners";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import AddAccountDialog from "@/components/AddAccountDialog";
+import EditAccountDialog from "@/components/EditAccountDialog";
+import ImportAccountsDialog from "@/components/ImportAccountsDialog";
+import { exportAccountsCsv } from "@/lib/csvAccounts";
+import { DEFAULT_DRAWDOWN_RATE, UK_STATE_PENSION_FULL } from "@/lib/retirementEngine";
+
+/* ─── bucket definitions ─── */
+type Bucket = "guaranteed" | "growth" | "safety" | "property";
+
+const bucketMeta: Record<Bucket, { label: string; icon: typeof Shield; color: string; description: string }> = {
+  guaranteed: { label: "Guaranteed Income", icon: Shield, color: "text-success", description: "Pensions & annuities — income you can count on" },
+  growth:     { label: "Growth Assets",     icon: TrendingUp, color: "text-primary", description: "Invested assets generating retirement drawdown" },
+  safety:     { label: "Safety Net",        icon: Landmark, color: "text-chart-3", description: "Cash & savings for short-term needs" },
+  property:   { label: "Property & Debt",   icon: HomeIcon, color: "text-chart-4", description: "Property equity & liabilities" },
+};
+
+function toBucket(type: string): Bucket {
+  switch (type) {
+    case "db_pension": case "workplace_pension": case "sipp":
+      return "guaranteed";
+    case "stocks_and_shares_isa": case "cash_isa": case "gia": case "crypto": case "employer_share_scheme":
+      return "growth";
+    case "current_account": case "savings":
+      return "safety";
+    case "property": case "mortgage": case "loan": case "credit_card":
+      return "property";
+    default:
+      return "growth";
+  }
+}
+
+// Rough annual income contribution for an asset
+function estimateIncome(account: Account): number | null {
+  const val = Number(account.current_value);
+  if (val <= 0) return null;
+  if (["db_pension"].includes(account.account_type)) return null; // handled separately
+  if (["sipp", "workplace_pension"].includes(account.account_type)) return Math.round(val * DEFAULT_DRAWDOWN_RATE);
+  if (["stocks_and_shares_isa", "cash_isa", "gia", "crypto", "employer_share_scheme"].includes(account.account_type)) return Math.round(val * DEFAULT_DRAWDOWN_RATE);
+  return null;
+}
+
+const stagger = {
+  container: { transition: { staggerChildren: 0.06 } },
+  item: { initial: { opacity: 0, y: 10 }, animate: { opacity: 1, y: 0, transition: { duration: 0.35 } } },
+};
 
 export default function WealthPage() {
-  return <AccountsPage />;
+  const { data: accounts = [], isLoading } = useAccounts();
+  const { data: dbPensions = [] } = useDBPensions();
+  const [addOpen, setAddOpen] = useState(false);
+  const [editAccount, setEditAccount] = useState<Account | null>(null);
+  const [importOpen, setImportOpen] = useState(false);
+
+  const buckets = useMemo(() => {
+    const groups: Record<Bucket, Account[]> = { guaranteed: [], growth: [], safety: [], property: [] };
+    accounts.forEach((a) => groups[toBucket(a.account_type)].push(a));
+    return groups;
+  }, [accounts]);
+
+  // Summary metrics
+  const totalAssets = accounts.filter(a => Number(a.current_value) > 0).reduce((s, a) => s + Number(a.current_value), 0);
+  const totalLiabilities = accounts.filter(a => Number(a.current_value) < 0).reduce((s, a) => s + Number(a.current_value), 0);
+  const netWorth = totalAssets + totalLiabilities;
+
+  // Income contribution estimate
+  const dcIncome = accounts
+    .filter(a => ["sipp", "workplace_pension", "stocks_and_shares_isa", "cash_isa", "gia", "crypto", "employer_share_scheme"].includes(a.account_type) && Number(a.current_value) > 0)
+    .reduce((s, a) => s + Number(a.current_value) * DEFAULT_DRAWDOWN_RATE, 0);
+
+  const dbIncome = dbPensions.reduce((s, p) => s + Number(p.existing_income ?? 0), 0);
+  const totalIncomeEstimate = dcIncome + dbIncome + UK_STATE_PENSION_FULL;
+
+  return (
+    <motion.div className="space-y-5" variants={stagger.container} initial="initial" animate="animate">
+      {/* Header */}
+      <motion.div variants={stagger.item} className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight text-foreground">Wealth</h1>
+          <p className="label-subtle mt-1">
+            {isLoading ? "Loading…" : `${accounts.length} assets mapped to your retirement income`}
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button size="sm" variant="outline" className="gap-2" onClick={() => setImportOpen(true)}>
+            <Upload className="h-4 w-4" /> Import
+          </Button>
+          {accounts.length > 0 && (
+            <Button size="sm" variant="outline" className="gap-2" onClick={() => exportAccountsCsv(accounts)}>
+              <Download className="h-4 w-4" /> Export
+            </Button>
+          )}
+          <Button size="sm" className="gap-2" onClick={() => setAddOpen(true)}>
+            <Plus className="h-4 w-4" /> Add Account
+          </Button>
+        </div>
+      </motion.div>
+
+      {/* Summary strip */}
+      {!isLoading && accounts.length > 0 && (
+        <motion.div variants={stagger.item} className="grid grid-cols-1 gap-3 sm:grid-cols-4">
+          <div className="card-surface p-4">
+            <p className="label-muted">Total Assets</p>
+            <p className="value-large mt-1">{formatCurrency(totalAssets)}</p>
+          </div>
+          <div className="card-surface p-4">
+            <p className="label-muted">Liabilities</p>
+            <p className="value-large mt-1 text-destructive">{formatCurrency(totalLiabilities)}</p>
+          </div>
+          <div className="hero-surface p-4">
+            <p className="label-muted">Net Worth</p>
+            <p className="value-large mt-1 text-primary">{formatCurrency(netWorth)}</p>
+          </div>
+          <div className="card-surface p-4">
+            <p className="label-muted">Est. Annual Income</p>
+            <p className="value-large mt-1">{formatCurrency(Math.round(totalIncomeEstimate))}</p>
+            <p className="text-[10px] text-muted-foreground mt-0.5">≈ {formatCurrency(Math.round(totalIncomeEstimate / 12))}/mo</p>
+          </div>
+        </motion.div>
+      )}
+
+      {/* Loading / empty */}
+      {isLoading ? (
+        <div className="space-y-4">{[1, 2, 3].map((i) => <Skeleton key={i} className="h-20 w-full rounded-xl" />)}</div>
+      ) : accounts.length === 0 ? (
+        <motion.div variants={stagger.item} className="card-surface p-12 flex flex-col items-center gap-3 text-center">
+          <Inbox className="h-10 w-10 text-muted-foreground/40" />
+          <p className="text-sm text-muted-foreground">No accounts yet. Add your first account to get started.</p>
+          <Button size="sm" variant="outline" onClick={() => setAddOpen(true)}><Plus className="h-4 w-4 mr-1" /> Add Account</Button>
+        </motion.div>
+      ) : (
+        /* Asset buckets */
+        <div className="space-y-6">
+          {(["guaranteed", "growth", "safety", "property"] as Bucket[]).map((bucket) => {
+            const items = buckets[bucket];
+            if (items.length === 0) return null;
+            const meta = bucketMeta[bucket];
+            const Icon = meta.icon;
+            const bucketTotal = items.reduce((s, a) => s + Number(a.current_value), 0);
+
+            return (
+              <motion.div key={bucket} variants={stagger.item}>
+                <div className="flex items-center gap-2.5 mb-2.5">
+                  <Icon className={cn("h-4 w-4", meta.color)} />
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between">
+                      <h2 className="text-sm font-semibold text-foreground">{meta.label}</h2>
+                      <span className="text-sm font-medium text-muted-foreground tabular-nums">{formatCurrency(bucketTotal)}</span>
+                    </div>
+                    <p className="text-[11px] text-muted-foreground">{meta.description}</p>
+                  </div>
+                </div>
+
+                <div className="card-surface divide-y divide-border overflow-hidden">
+                  {items
+                    .sort((a, b) => Math.abs(Number(b.current_value)) - Math.abs(Number(a.current_value)))
+                    .map((account) => {
+                      const stale = staleness(account.last_updated);
+                      const income = estimateIncome(account);
+                      return (
+                        <div
+                          key={account.id}
+                          className="flex items-center justify-between px-5 py-3.5 hover:bg-secondary/30 transition-colors cursor-pointer"
+                          onClick={() => setEditAccount(account)}
+                        >
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <p className="text-sm font-medium text-card-foreground truncate">{account.name}</p>
+                              {stale === "stale" && (
+                                <span className="inline-flex items-center gap-1 text-[10px] font-medium text-warning bg-warning/10 px-1.5 py-0.5 rounded-full">
+                                  <Clock className="h-2.5 w-2.5" />{daysAgo(account.last_updated)}d ago
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-[11px] text-muted-foreground mt-0.5">
+                              {formatOwnerGroup(account.owner_name)} · {accountTypeLabels[account.account_type] ?? account.account_type}
+                              {["mortgage", "loan", "credit_card"].includes(account.account_type) && account.interest_rate != null && (
+                                <span className="ml-1.5">{Number(account.interest_rate).toFixed(2)}%</span>
+                              )}
+                              {["mortgage", "loan", "credit_card"].includes(account.account_type) && account.term_remaining_months != null && (
+                                <span className="ml-1">· {Math.floor(Number(account.term_remaining_months) / 12)}y {Number(account.term_remaining_months) % 12}m left</span>
+                              )}
+                              {(() => {
+                                const mp = calcMonthlyPayment(Math.abs(Number(account.current_value)), Number(account.interest_rate ?? 0), Number(account.term_remaining_months ?? 0));
+                                return mp ? <span className="ml-1">· {formatCurrency(Math.round(mp))}/mo</span> : null;
+                              })()}
+                              {account.account_type === "mortgage" && account.linked_account_id && (() => {
+                                const linked = accounts.find((a) => a.id === account.linked_account_id);
+                                return linked ? <span className="inline-flex items-center gap-0.5 ml-1.5 text-primary"><Link2 className="h-2.5 w-2.5" />{linked.name}</span> : null;
+                              })()}
+                            </p>
+                          </div>
+                          <div className="text-right flex-shrink-0">
+                            <p className={cn("text-sm font-semibold tabular-nums", Number(account.current_value) < 0 ? "text-destructive" : "text-card-foreground")}>
+                              {formatCurrency(Number(account.current_value))}
+                            </p>
+                            {income != null && (
+                              <p className="text-[10px] text-primary tabular-nums">
+                                +{formatCurrency(Math.round(income / 12))}/mo income
+                              </p>
+                            )}
+                            {income == null && <p className="text-[10px] text-muted-foreground capitalize">{account.source_type}</p>}
+                          </div>
+                        </div>
+                      );
+                    })}
+                </div>
+              </motion.div>
+            );
+          })}
+        </div>
+      )}
+
+      <AddAccountDialog open={addOpen} onOpenChange={setAddOpen} />
+      <EditAccountDialog account={editAccount} open={!!editAccount} onOpenChange={(o) => { if (!o) setEditAccount(null); }} />
+      <ImportAccountsDialog open={importOpen} onOpenChange={setImportOpen} />
+    </motion.div>
+  );
 }
