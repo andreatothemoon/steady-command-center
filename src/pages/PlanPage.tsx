@@ -27,7 +27,7 @@ import ActionsPanel from "@/components/retirement/ActionsPanel";
 import QuickControls from "@/components/retirement/QuickControls";
 import ScenarioTabs, { type ScenarioMeta } from "@/components/retirement/ScenarioTabs";
 import ScenarioComparison from "@/components/retirement/ScenarioComparison";
-import DBPensionSection from "@/components/plan/DBPensionSection";
+
 
 const stagger = {
   container: { transition: { staggerChildren: 0.06 } },
