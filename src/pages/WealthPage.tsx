@@ -96,6 +96,20 @@ export default function WealthPage() {
     }, 0),
     [dbPensions]
   );
+
+  // Map account_id → projected annual income for DB pensions
+  const dbIncomeByAccountId = useMemo(() => {
+    const map: Record<string, number> = {};
+    dbPensions.forEach((p) => {
+      if (p.account_id) {
+        const params = toDBPensionParams(p);
+        const result = projectDBPension(params);
+        map[p.account_id] = result.projected_annual_income;
+      }
+    });
+    return map;
+  }, [dbPensions]);
+
   const totalIncomeEstimate = dcIncome + dbIncome + UK_STATE_PENSION_FULL;
 
   return (
