@@ -88,7 +88,14 @@ export default function WealthPage() {
     .filter(a => ["sipp", "workplace_pension", "stocks_and_shares_isa", "cash_isa", "gia", "crypto", "employer_share_scheme"].includes(a.account_type) && Number(a.current_value) > 0)
     .reduce((s, a) => s + Number(a.current_value) * DEFAULT_DRAWDOWN_RATE, 0);
 
-  const dbIncome = dbPensions.reduce((s, p) => s + Number(p.existing_income ?? 0), 0);
+  const dbIncome = useMemo(() =>
+    dbPensions.reduce((s, p) => {
+      const params = toDBPensionParams(p);
+      const result = projectDBPension(params);
+      return s + result.projected_annual_income;
+    }, 0),
+    [dbPensions]
+  );
   const totalIncomeEstimate = dcIncome + dbIncome + UK_STATE_PENSION_FULL;
 
   return (
