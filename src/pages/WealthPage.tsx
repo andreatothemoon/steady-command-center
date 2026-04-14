@@ -197,7 +197,7 @@ export default function WealthPage() {
                     .sort((a, b) => Math.abs(Number(b.current_value)) - Math.abs(Number(a.current_value)))
                     .map((account) => {
                       const stale = staleness(account.last_updated);
-                      const income = estimateIncome(account);
+                      const income = estimateIncome(account, dbIncomeByAccountId[account.id]);
                       return (
                         <div
                           key={account.id}
