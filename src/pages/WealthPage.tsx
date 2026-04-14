@@ -4,6 +4,8 @@
  */
 import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
+import { projectDBPension } from "@/lib/dbPensionEngine";
+import { toDBPensionParams } from "@/lib/dbPensionRates";
 import {
   Plus, Upload, Download, Inbox, Clock, Link2, Shield,
   TrendingUp, Landmark, Home as HomeIcon, Pencil,
