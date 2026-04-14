@@ -4,6 +4,8 @@
  */
 import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
+import { projectDBPension } from "@/lib/dbPensionEngine";
+import { toDBPensionParams } from "@/lib/dbPensionRates";
 import {
   Plus, Upload, Download, Inbox, Clock, Link2, Shield,
   TrendingUp, Landmark, Home as HomeIcon, Pencil,
@@ -49,10 +51,10 @@ function toBucket(type: string): Bucket {
 }
 
 // Rough annual income contribution for an asset
-function estimateIncome(account: Account): number | null {
+function estimateIncome(account: Account, dbPensionIncome?: number): number | null {
   const val = Number(account.current_value);
+  if (["db_pension"].includes(account.account_type)) return dbPensionIncome ?? null;
   if (val <= 0) return null;
-  if (["db_pension"].includes(account.account_type)) return null; // handled separately
   if (["sipp", "workplace_pension"].includes(account.account_type)) return Math.round(val * DEFAULT_DRAWDOWN_RATE);
   if (["stocks_and_shares_isa", "cash_isa", "gia", "crypto", "employer_share_scheme"].includes(account.account_type)) return Math.round(val * DEFAULT_DRAWDOWN_RATE);
   return null;
@@ -86,7 +88,28 @@ export default function WealthPage() {
     .filter(a => ["sipp", "workplace_pension", "stocks_and_shares_isa", "cash_isa", "gia", "crypto", "employer_share_scheme"].includes(a.account_type) && Number(a.current_value) > 0)
     .reduce((s, a) => s + Number(a.current_value) * DEFAULT_DRAWDOWN_RATE, 0);
 
-  const dbIncome = dbPensions.reduce((s, p) => s + Number(p.existing_income ?? 0), 0);
+  const dbIncome = useMemo(() =>
+    dbPensions.reduce((s, p) => {
+      const params = toDBPensionParams(p);
+      const result = projectDBPension(params);
+      return s + result.projected_annual_income;
+    }, 0),
+    [dbPensions]
+  );
+
+  // Map account_id → projected annual income for DB pensions
+  const dbIncomeByAccountId = useMemo(() => {
+    const map: Record<string, number> = {};
+    dbPensions.forEach((p) => {
+      if (p.account_id) {
+        const params = toDBPensionParams(p);
+        const result = projectDBPension(params);
+        map[p.account_id] = result.projected_annual_income;
+      }
+    });
+    return map;
+  }, [dbPensions]);
+
   const totalIncomeEstimate = dcIncome + dbIncome + UK_STATE_PENSION_FULL;
 
   return (
@@ -174,7 +197,7 @@ export default function WealthPage() {
                     .sort((a, b) => Math.abs(Number(b.current_value)) - Math.abs(Number(a.current_value)))
                     .map((account) => {
                       const stale = staleness(account.last_updated);
-                      const income = estimateIncome(account);
+                      const income = estimateIncome(account, dbIncomeByAccountId[account.id]);
                       return (
                         <div
                           key={account.id}
