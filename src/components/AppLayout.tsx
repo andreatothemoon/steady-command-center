@@ -15,14 +15,18 @@ export default function AppLayout({ children }: AppLayoutProps) {
     <div
       className="min-h-screen bg-background"
       style={{
-        background: "linear-gradient(135deg, hsl(220 27% 6%) 0%, hsl(222 28% 7.5%) 50%, hsl(220 27% 6%) 100%)",
+        background: `
+          radial-gradient(circle at top left, hsl(145 72% 92% / 0.55), transparent 26%),
+          radial-gradient(circle at top right, hsl(340 88% 92% / 0.55), transparent 24%),
+          linear-gradient(180deg, hsl(36 33% 98%) 0%, hsl(28 25% 97%) 100%)
+        `,
       }}
     >
       <main className={cn(
         "transition-all duration-300",
         isMobile ? "pl-0 pt-16" : collapsed ? "pl-[68px]" : "pl-56"
       )}>
-        <div className="mx-auto max-w-[1280px] px-4 py-5 sm:px-6 sm:py-6 lg:px-8">
+        <div className="mx-auto max-w-[1320px] px-4 py-6 sm:px-6 sm:py-8 lg:px-10">
           {children}
         </div>
       </main>

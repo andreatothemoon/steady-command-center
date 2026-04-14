@@ -27,8 +27,8 @@ function ProtectedRoutes() {
 
   if (loading || approvalLoading) {
     return (
-      <div className="dark min-h-screen bg-background flex items-center justify-center">
-        <div className="h-8 w-8 rounded-lg bg-primary animate-pulse" />
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="h-10 w-10 rounded-full border border-border bg-card animate-pulse" />
       </div>
     );
   }
@@ -41,7 +41,7 @@ function ProtectedRoutes() {
 
   return (
     <SidebarProvider>
-      <div className="dark">
+      <div>
         <AppSidebar />
         <AppLayout>
           <Routes>

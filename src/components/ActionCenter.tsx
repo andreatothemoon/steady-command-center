@@ -69,6 +69,7 @@ const stagger = {
 
 export default function ActionCenter({ accounts, memberANIs = [], isaUsed = 0, isaLimit = 20000 }: Props) {
   const navigate = useNavigate();
+  const MAX_VISIBLE_ACTIONS = 4;
 
   const actions: ActionItem[] = [];
 
@@ -150,11 +151,13 @@ export default function ActionCenter({ accounts, memberANIs = [], isaUsed = 0, i
 
   if (actions.length === 0) {
     return (
-      <div className="card-insight p-5 flex items-center gap-3">
-        <CheckCircle2 className="h-5 w-5 text-success flex-shrink-0" />
+      <div className="card-insight p-6 flex items-center gap-3">
+        <div className="h-11 w-11 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-center">
+          <CheckCircle2 className="h-5 w-5 text-success flex-shrink-0" />
+        </div>
         <div>
-          <p className="text-sm font-medium text-card-foreground">All clear</p>
-          <p className="text-[11px] text-muted-foreground mt-0.5">No actions needed — everything is up to date</p>
+          <p className="text-base font-semibold text-card-foreground">All clear</p>
+          <p className="text-[12px] text-muted-foreground mt-0.5">No actions needed. Everything important is up to date.</p>
         </div>
       </div>
     );
@@ -163,6 +166,8 @@ export default function ActionCenter({ accounts, memberANIs = [], isaUsed = 0, i
   // Sort by severity
   const severityOrder: Record<Severity, number> = { high: 0, medium: 1, low: 2 };
   actions.sort((a, b) => severityOrder[a.severity] - severityOrder[b.severity]);
+  const visibleActions = actions.slice(0, MAX_VISIBLE_ACTIONS);
+  const hiddenCount = Math.max(0, actions.length - visibleActions.length);
 
   const highCount = actions.filter((a) => a.severity === "high").length;
 
@@ -172,28 +177,38 @@ export default function ActionCenter({ accounts, memberANIs = [], isaUsed = 0, i
       highCount > 0 ? "border-destructive/20" : "border-border"
     )} style={{
       background: highCount > 0
-        ? "linear-gradient(165deg, hsl(0 18% 9%) 0%, hsl(222 28% 8%) 100%)"
-        : "linear-gradient(165deg, hsl(222 28% 10%) 0%, hsl(222 28% 8%) 100%)",
-      boxShadow: highCount > 0
-        ? "0 4px 24px -4px hsl(0 84% 60% / 0.06), inset 0 1px 0 0 hsl(0 0% 100% / 0.02)"
-        : "0 2px 12px -4px hsl(0 0% 0% / 0.2), inset 0 1px 0 0 hsl(0 0% 100% / 0.03)"
+        ? "linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(23 100% 98%) 100%)"
+        : "linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(34 30% 99%) 100%)",
+      boxShadow: "0 18px 40px -32px hsl(215 25% 20% / 0.22)"
     }}>
       {/* Header */}
-      <div className="px-5 py-3.5 border-b border-border/60 flex items-center justify-between">
+      <div className="px-6 py-4 border-b border-border/60 flex items-center justify-between">
         <div className="flex items-center gap-2.5">
-          <div className="relative">
+          <div className={cn(
+            "h-10 w-10 rounded-2xl flex items-center justify-center border",
+            highCount > 0 ? "bg-orange-50 border-orange-200" : "bg-secondary border-border"
+          )}>
             <Lightbulb className="h-4.5 w-4.5 text-primary" style={{ width: 18, height: 18 }} />
           </div>
-          <span className="label-muted" style={{ opacity: 1 }}>Action Center</span>
+          <div>
+            <p className="text-base font-semibold text-card-foreground">Action Center</p>
+            <p className="text-[12px] text-muted-foreground mt-0.5">A calm shortlist of what needs attention next.</p>
+          </div>
         </div>
         <span className={cn(
           "text-[10px] font-bold px-2.5 py-1 rounded-full tabular-nums",
           highCount > 0
-            ? "bg-destructive/15 text-destructive"
-            : "bg-primary/10 text-primary"
+            ? "bg-orange-100 text-orange-700"
+            : "bg-secondary text-foreground/70"
         )}>
           {actions.length} {actions.length === 1 ? "action" : "actions"}
         </span>
+      </div>
+
+      <div className="px-6 py-3 border-b border-border/40 text-[12px] text-muted-foreground bg-white/60">
+        {highCount > 0
+          ? "Address the urgent items first, then work through the rest."
+          : "A short list of the highest-priority follow-ups right now."}
       </div>
 
       {/* Action Items */}
@@ -203,7 +218,7 @@ export default function ActionCenter({ accounts, memberANIs = [], isaUsed = 0, i
         initial="initial"
         animate="animate"
       >
-        {actions.map((action) => {
+        {visibleActions.map((action) => {
           const config = severityConfig[action.severity];
           return (
             <motion.button
@@ -211,8 +226,8 @@ export default function ActionCenter({ accounts, memberANIs = [], isaUsed = 0, i
               variants={stagger.item}
               onClick={() => navigate(action.route)}
               className={cn(
-                "w-full text-left px-5 py-3.5 flex items-start gap-3 group transition-colors duration-150",
-                "hover:bg-secondary/20 border-l-2",
+                "w-full text-left px-6 py-4 flex items-start gap-3 group transition-colors duration-150",
+                "hover:bg-secondary/35 border-l-2",
                 config.border
               )}
             >
@@ -226,9 +241,9 @@ export default function ActionCenter({ accounts, memberANIs = [], isaUsed = 0, i
                 )}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-card-foreground leading-tight">{action.title}</p>
-                <p className="text-[11px] text-muted-foreground mt-0.5">{action.context}</p>
-                <p className="text-[11px] text-muted-foreground/70 mt-0.5 italic">{action.impact}</p>
+                <p className="text-sm font-semibold text-card-foreground leading-tight">{action.title}</p>
+                <p className="text-[12px] text-muted-foreground mt-0.5">{action.context}</p>
+                <p className="text-[12px] text-muted-foreground/80 mt-0.5">{action.impact}</p>
               </div>
               <span className="flex-shrink-0 text-[11px] font-semibold text-primary opacity-0 group-hover:opacity-100 transition-opacity duration-150 flex items-center gap-0.5 mt-0.5 whitespace-nowrap">
                 {action.cta} <ArrowUpRight className="h-3 w-3" />
@@ -236,6 +251,11 @@ export default function ActionCenter({ accounts, memberANIs = [], isaUsed = 0, i
             </motion.button>
           );
         })}
+        {hiddenCount > 0 && (
+          <div className="px-6 py-3 text-[11px] text-muted-foreground bg-secondary/20">
+            {hiddenCount} more item{hiddenCount !== 1 ? "s" : ""} available in the related sections.
+          </div>
+        )}
       </motion.div>
     </div>
   );

@@ -85,11 +85,16 @@ export default function RetirementProgress({ accounts }: Props) {
   // Empty state — no scenario created yet
   if (!isLoading && !scenario) {
     return (
-      <div className="card-insight p-5 h-full flex flex-col">
+      <div className="card-insight p-6 h-full flex flex-col">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            <Target className="h-4 w-4 text-muted-foreground/50" />
-            <p className="label-muted" style={{ opacity: 1 }}>Retirement Readiness</p>
+            <div className="h-10 w-10 rounded-2xl bg-secondary border border-border flex items-center justify-center">
+              <Target className="h-4 w-4 text-muted-foreground/70" />
+            </div>
+            <div>
+              <p className="text-base font-semibold text-card-foreground">Retirement Readiness</p>
+              <p className="text-[12px] text-muted-foreground mt-0.5">Set up your first retirement scenario.</p>
+            </div>
           </div>
         </div>
         <div className="flex-1 flex flex-col items-center justify-center text-center gap-3">
@@ -108,10 +113,15 @@ export default function RetirementProgress({ accounts }: Props) {
 
   if (isLoading) {
     return (
-      <div className="card-insight p-5 h-full flex flex-col">
+      <div className="card-insight p-6 h-full flex flex-col">
         <div className="flex items-center gap-2 mb-4">
-          <Target className="h-4 w-4 text-muted-foreground/50" />
-          <p className="label-muted" style={{ opacity: 1 }}>Retirement Readiness</p>
+          <div className="h-10 w-10 rounded-2xl bg-secondary border border-border flex items-center justify-center">
+            <Target className="h-4 w-4 text-muted-foreground/70" />
+          </div>
+          <div>
+            <p className="text-base font-semibold text-card-foreground">Retirement Readiness</p>
+            <p className="text-[12px] text-muted-foreground mt-0.5">Loading your latest scenario.</p>
+          </div>
         </div>
         <div className="flex-1 flex items-center justify-center">
           <div className="h-5 w-5 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
@@ -121,11 +131,16 @@ export default function RetirementProgress({ accounts }: Props) {
   }
 
   return (
-    <div className="card-insight p-5 h-full flex flex-col">
+    <div className="card-insight p-6 h-full flex flex-col">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <Target className="h-4 w-4 text-muted-foreground/50" />
-          <p className="label-muted" style={{ opacity: 1 }}>Retirement Readiness</p>
+          <div className="h-10 w-10 rounded-2xl bg-secondary border border-border flex items-center justify-center">
+            <Target className="h-4 w-4 text-muted-foreground/70" />
+          </div>
+          <div>
+            <p className="text-base font-semibold text-card-foreground">Retirement Readiness</p>
+            <p className="text-[12px] text-muted-foreground mt-0.5">How close today’s plan is to your target income.</p>
+          </div>
         </div>
         <button
           onClick={() => navigate("/plan")}
@@ -136,9 +151,9 @@ export default function RetirementProgress({ accounts }: Props) {
       </div>
 
       {/* Readiness percentage */}
-      <div className="flex items-end gap-3 mb-4">
+      <div className="flex items-end gap-3 mb-5">
         <span className={cn(
-          "text-4xl font-bold tabular-nums tracking-tight",
+          "text-5xl font-semibold tabular-nums tracking-tight",
           status === "ahead" ? "text-success" : status === "on_track" ? "text-card-foreground" : "text-warning"
         )}>
           {readiness}%

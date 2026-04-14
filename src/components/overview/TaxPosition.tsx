@@ -88,11 +88,16 @@ export default function TaxPosition({ memberANIs, isaUsed, isaLimit, pensionCont
   }
 
   return (
-    <div className="card-insight p-5 h-full flex flex-col">
+    <div className="card-insight p-6 h-full flex flex-col">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <ShieldCheck className="h-4 w-4 text-muted-foreground/50" />
-          <p className="label-muted" style={{ opacity: 1 }}>Tax Position</p>
+          <div className="h-10 w-10 rounded-2xl bg-secondary border border-border flex items-center justify-center">
+            <ShieldCheck className="h-4 w-4 text-muted-foreground/70" />
+          </div>
+          <div>
+            <p className="text-base font-semibold text-card-foreground">Tax Position</p>
+            <p className="text-[12px] text-muted-foreground mt-0.5">Allowance usage and income pressure at a glance.</p>
+          </div>
         </div>
         <button
           onClick={() => navigate("/profile")}
@@ -109,15 +114,15 @@ export default function TaxPosition({ memberANIs, isaUsed, isaLimit, pensionCont
           <p className="text-2xl font-bold tabular-nums tracking-tight text-card-foreground">—</p>
         </div>
       ) : (
-        <div className="space-y-2 mb-4">
+        <div className="space-y-2.5 mb-5">
           {sorted.map((m) => {
             const status = getAniStatus(m.ani);
             return (
-              <div key={m.name} className="flex items-center justify-between">
+              <div key={m.name} className="flex items-center justify-between rounded-3xl border border-border/70 bg-white/70 px-4 py-3">
                 <div>
                   <p className="text-[11px] text-muted-foreground mb-0.5">{m.name}</p>
                   <p className={cn(
-                    "text-lg font-bold tabular-nums tracking-tight",
+                    "text-xl font-semibold tabular-nums tracking-tight",
                     status === "danger" ? "text-destructive" : status === "warning" ? "text-warning" : "text-card-foreground"
                   )}>
                     {formatCurrency(m.ani)}
@@ -138,7 +143,7 @@ export default function TaxPosition({ memberANIs, isaUsed, isaLimit, pensionCont
       )}
 
       {/* Allowance bars */}
-      <div className="space-y-4 flex-1">
+      <div className="space-y-5 flex-1">
         <BarRow label="ISA Allowance" used={isaUsed} limit={isaLimit} status={isaStatus} />
         <BarRow label="Pension Annual Allowance" used={pensionContributions} limit={pensionAA} status={pensionStatus} />
       </div>

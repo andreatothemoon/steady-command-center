@@ -41,8 +41,8 @@ function SidebarContent({ collapsed, toggle, onNavigate }: { collapsed: boolean;
   return (
     <>
       <div className={cn("flex h-16 items-center gap-2.5", collapsed ? "px-4 justify-center" : "px-5")}>
-        <div className="h-9 w-9 rounded-xl bg-sidebar-primary/90 flex items-center justify-center flex-shrink-0">
-          <span className="text-sidebar-primary-foreground font-bold text-sm">W</span>
+        <div className="h-10 w-10 rounded-2xl bg-sidebar-primary/15 border border-sidebar-border flex items-center justify-center flex-shrink-0">
+          <span className="text-sidebar-primary font-bold text-sm">W</span>
         </div>
         {!collapsed && (
           <span className="text-sidebar-accent-foreground font-semibold text-[15px] tracking-tight">
@@ -104,7 +104,7 @@ function SidebarContent({ collapsed, toggle, onNavigate }: { collapsed: boolean;
           collapsed ? "flex justify-center" : ""
         )}>
           <div className={cn("flex items-center", collapsed ? "" : "gap-3 px-1")}>
-            <div className="h-8 w-8 rounded-full bg-sidebar-accent flex items-center justify-center flex-shrink-0">
+            <div className="h-8 w-8 rounded-full bg-sidebar-accent border border-sidebar-border flex items-center justify-center flex-shrink-0">
               <span className="text-[11px] font-semibold text-sidebar-accent-foreground">{initials.slice(0, 2)}</span>
             </div>
             {!collapsed && (
@@ -130,10 +130,10 @@ export default function AppSidebar() {
       <>
         <button
           onClick={() => setMobileOpen(true)}
-          className="fixed top-4 left-4 z-50 h-10 w-10 rounded-xl bg-sidebar flex items-center justify-center border border-sidebar-border shadow-lg"
+          className="fixed top-4 left-4 z-50 h-11 w-11 rounded-2xl bg-card/90 backdrop-blur-md flex items-center justify-center border border-border shadow-[0_10px_30px_-18px_rgba(15,23,42,0.35)]"
           aria-label="Open menu"
         >
-          <Menu className="h-5 w-5 text-sidebar-accent-foreground" />
+          <Menu className="h-5 w-5 text-foreground" />
         </button>
         <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
           <SheetContent side="left" className="w-64 p-0 bg-sidebar border-sidebar-border">
@@ -150,11 +150,11 @@ export default function AppSidebar() {
   return (
     <aside
       className={cn(
-        "fixed left-0 top-0 z-40 flex h-screen flex-col border-r border-sidebar-border transition-all duration-300",
+        "fixed left-0 top-0 z-40 flex h-screen flex-col border-r border-sidebar-border transition-all duration-300 backdrop-blur-xl",
         collapsed ? "w-[68px]" : "w-56"
       )}
       style={{
-        background: "linear-gradient(180deg, hsl(225 30% 5%) 0%, hsl(225 30% 3.5%) 100%)",
+        background: "linear-gradient(180deg, hsl(35 29% 98% / 0.9) 0%, hsl(28 24% 97% / 0.88) 100%)",
       }}
     >
       <SidebarContent collapsed={collapsed} toggle={toggle} />

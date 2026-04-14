@@ -12,10 +12,10 @@ interface SnapshotCardProps {
 
 function SnapshotCard({ label, value, icon, variant = "default" }: SnapshotCardProps) {
   return (
-    <div className="card-surface-hover p-4 min-w-[140px] flex-1 snap-start">
-      <div className="flex items-center justify-between mb-2">
-        <p className="label-muted text-[11px]" style={{ opacity: 1 }}>{label}</p>
-        <div className="text-muted-foreground/40">{icon}</div>
+    <div className="card-surface-hover p-5 min-w-[160px] flex-1 snap-start">
+      <div className="flex items-center justify-between mb-3">
+        <p className="label-muted text-[11px] text-foreground/55" style={{ opacity: 1 }}>{label}</p>
+        <div className="h-10 w-10 rounded-2xl bg-secondary flex items-center justify-center text-foreground/60">{icon}</div>
       </div>
       <p className={`value-compact tabular-nums ${variant === "negative" ? "text-destructive" : ""}`}>
         {formatCurrency(value)}

@@ -6,48 +6,48 @@
 
 @layer base {
   :root {
-    --background: 210 20% 98%;
-    --foreground: 220 15% 10%;
+    --background: 34 45% 97%;
+    --foreground: 215 23% 12%;
     --card: 0 0% 100%;
-    --card-foreground: 220 15% 10%;
+    --card-foreground: 215 23% 12%;
     --popover: 0 0% 100%;
-    --popover-foreground: 220 15% 10%;
-    --primary: 142 71% 45%;
+    --popover-foreground: 215 23% 12%;
+    --primary: 145 66% 38%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 215 16% 93%;
-    --secondary-foreground: 220 15% 10%;
-    --muted: 215 16% 95%;
-    --muted-foreground: 220 9% 46%;
-    --accent: 142 40% 94%;
-    --accent-foreground: 142 71% 30%;
-    --destructive: 0 84% 60%;
+    --secondary: 36 20% 94%;
+    --secondary-foreground: 215 20% 22%;
+    --muted: 36 22% 95%;
+    --muted-foreground: 220 8% 47%;
+    --accent: 338 88% 94%;
+    --accent-foreground: 339 58% 37%;
+    --destructive: 4 77% 57%;
     --destructive-foreground: 0 0% 100%;
-    --border: 215 16% 90%;
-    --input: 215 16% 90%;
-    --ring: 142 71% 45%;
-    --radius: 0.75rem;
+    --border: 30 18% 87%;
+    --input: 30 20% 90%;
+    --ring: 145 66% 38%;
+    --radius: 1.1rem;
 
-    --sidebar-background: 222 25% 7%;
-    --sidebar-foreground: 220 9% 46%;
-    --sidebar-primary: 142 71% 45%;
+    --sidebar-background: 35 29% 98%;
+    --sidebar-foreground: 220 8% 47%;
+    --sidebar-primary: 145 66% 38%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 222 20% 12%;
-    --sidebar-accent-foreground: 215 16% 85%;
-    --sidebar-border: 222 15% 12%;
-    --sidebar-ring: 142 71% 45%;
+    --sidebar-accent: 0 0% 100%;
+    --sidebar-accent-foreground: 215 23% 12%;
+    --sidebar-border: 30 18% 87%;
+    --sidebar-ring: 145 66% 38%;
 
-    --success: 142 71% 45%;
+    --success: 145 66% 38%;
     --success-foreground: 0 0% 100%;
-    --warning: 38 92% 50%;
-    --warning-foreground: 0 0% 100%;
-    --info: 217 91% 60%;
+    --warning: 33 89% 55%;
+    --warning-foreground: 20 14% 12%;
+    --info: 212 90% 56%;
     --info-foreground: 0 0% 100%;
 
-    --chart-1: 174 58% 39%;
-    --chart-2: 142 71% 45%;
-    --chart-3: 38 92% 50%;
-    --chart-4: 258 52% 55%;
-    --chart-5: 48 96% 53%;
+    --chart-1: 145 66% 38%;
+    --chart-2: 212 90% 56%;
+    --chart-3: 338 79% 62%;
+    --chart-4: 33 89% 55%;
+    --chart-5: 268 52% 58%;
   }
 
   .dark {
@@ -124,30 +124,25 @@
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    min-height: 100vh;
   }
 }
 
 @layer components {
   /* ── Level 2: Standard Cards ── */
   .card-surface {
-    @apply rounded-xl;
-    border: 1px solid hsl(222 15% 12% / 0.8);
-    background: linear-gradient(
-      180deg,
-      hsl(222 28% 9%) 0%,
-      hsl(220 27% 7.5%) 100%
-    );
-    box-shadow: 0 1px 3px 0 hsl(0 0% 0% / 0.15),
-                inset 0 1px 0 0 hsl(0 0% 100% / 0.03);
+    @apply rounded-[28px];
+    border: 1px solid hsl(var(--border) / 0.9);
+    background: linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(34 28% 99%) 100%);
+    box-shadow: 0 18px 40px -34px hsl(215 25% 20% / 0.3);
   }
 
   .card-surface-hover {
     @apply card-surface transition-all duration-200 cursor-default;
   }
   .card-surface-hover:hover {
-    border-color: hsl(222 15% 16%);
-    box-shadow: 0 8px 32px -8px hsl(0 0% 0% / 0.5),
-                inset 0 1px 0 0 hsl(0 0% 100% / 0.04);
+    border-color: hsl(145 40% 78%);
+    box-shadow: 0 24px 48px -34px hsl(145 40% 30% / 0.18);
     transform: translateY(-2px);
   }
   .card-surface-hover:active {
@@ -157,16 +152,15 @@
 
   /* ── Level 3: Elevated / Hero surfaces ── */
   .hero-surface {
-    @apply rounded-2xl overflow-hidden relative;
-    border: 1px solid hsl(222 15% 14%);
+    @apply rounded-[36px] overflow-hidden relative;
+    border: 1px solid hsl(30 22% 88%);
     background: linear-gradient(
-      145deg,
-      hsl(222 26% 12%) 0%,
-      hsl(220 24% 9%) 40%,
-      hsl(218 22% 7%) 100%
+      160deg,
+      hsl(0 0% 100%) 0%,
+      hsl(34 40% 98%) 52%,
+      hsl(140 68% 96%) 100%
     );
-    box-shadow: 0 12px 48px -12px hsl(0 0% 0% / 0.6),
-                inset 0 1px 0 0 hsl(0 0% 100% / 0.04);
+    box-shadow: 0 30px 70px -46px hsl(145 35% 24% / 0.22);
   }
   .hero-surface::before {
     content: '';
@@ -174,40 +168,32 @@
     top: 0;
     left: 0;
     right: 0;
-    height: 1px;
+    height: 100%;
     background: linear-gradient(
-      90deg,
-      transparent 0%,
-      hsl(142 71% 45% / 0.12) 30%,
-      hsl(142 71% 45% / 0.2) 50%,
-      hsl(142 71% 45% / 0.12) 70%,
-      transparent 100%
+      135deg,
+      hsl(145 70% 92% / 0.7) 0%,
+      transparent 36%,
+      hsl(338 88% 93% / 0.65) 100%
     );
+    opacity: 0.9;
+    pointer-events: none;
   }
 
   /* Alert card */
   .card-alert {
-    @apply rounded-xl overflow-hidden;
-    border: 1px solid hsl(38 92% 50% / 0.12);
-    background: linear-gradient(
-      165deg,
-      hsl(38 20% 10%) 0%,
-      hsl(222 28% 9%) 100%
-    );
-    box-shadow: 0 4px 24px -4px hsl(38 92% 50% / 0.06);
+    @apply rounded-[28px] overflow-hidden;
+    border: 1px solid hsl(33 72% 80%);
+    background: linear-gradient(180deg, hsl(36 100% 98%) 0%, hsl(28 75% 95%) 100%);
+    box-shadow: 0 18px 36px -30px hsl(33 75% 45% / 0.18);
   }
 
   /* Insight card */
   .card-insight {
-    @apply rounded-xl overflow-hidden;
-    border: 1px solid hsl(222 15% 12% / 0.8);
-    background: linear-gradient(
-      165deg,
-      hsl(222 26% 10.5%) 0%,
-      hsl(222 28% 8%) 100%
-    );
-    box-shadow: 0 2px 8px -2px hsl(0 0% 0% / 0.2),
-                inset 0 1px 0 0 hsl(0 0% 100% / 0.03);
+    @apply rounded-[28px] overflow-hidden;
+    border: 1px solid hsl(var(--border) / 0.85);
+    background: hsl(0 0% 100% / 0.78);
+    box-shadow: 0 16px 34px -32px hsl(215 22% 20% / 0.25);
+    backdrop-filter: blur(18px);
   }
 
   /* Action card */
@@ -231,23 +217,22 @@
 
   /* Sidebar nav item */
   .nav-item {
-    @apply relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200;
+    @apply relative flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-medium transition-all duration-200;
   }
   .nav-item-active {
     @apply nav-item text-sidebar-primary;
-    background: hsl(142 71% 45% / 0.08);
+    background: hsl(145 72% 95%);
   }
   .nav-item-active::before {
     content: '';
     position: absolute;
-    left: 0;
+    left: 8px;
     top: 50%;
     transform: translateY(-50%);
     width: 3px;
-    height: 20px;
-    border-radius: 0 4px 4px 0;
-    background: hsl(142 71% 45%);
-    box-shadow: 0 0 8px hsl(142 71% 45% / 0.4);
+    height: 18px;
+    border-radius: 999px;
+    background: hsl(var(--primary));
     animation: accent-bar-in 250ms ease-out;
   }
   .nav-item-inactive {
@@ -255,29 +240,29 @@
   }
   .nav-item-inactive:hover {
     @apply text-sidebar-accent-foreground;
-    background: hsl(222 28% 9% / 0.8);
+    background: hsl(0 0% 100% / 0.75);
   }
 
   /* Number display */
   .value-hero {
-    @apply text-4xl font-extrabold tracking-tighter tabular-nums text-foreground;
-    letter-spacing: -0.03em;
+    @apply text-5xl font-semibold tracking-tighter tabular-nums text-foreground;
+    letter-spacing: -0.055em;
   }
   .value-large {
-    @apply text-2xl font-bold tracking-tight tabular-nums text-card-foreground;
-    letter-spacing: -0.02em;
+    @apply text-[2rem] font-semibold tracking-tight tabular-nums text-card-foreground;
+    letter-spacing: -0.04em;
   }
   .value-compact {
-    @apply text-lg font-bold tabular-nums text-card-foreground;
-    letter-spacing: -0.01em;
+    @apply text-xl font-semibold tabular-nums text-card-foreground;
+    letter-spacing: -0.025em;
   }
   .label-muted {
-    @apply text-[11px] font-semibold tracking-widest uppercase text-muted-foreground;
-    letter-spacing: 0.06em;
+    @apply text-[11px] font-semibold uppercase text-muted-foreground;
+    letter-spacing: 0.12em;
   }
   .label-subtle {
     @apply text-sm text-muted-foreground;
-    opacity: 0.7;
+    opacity: 0.88;
   }
 
   /* Glow dot */
@@ -306,25 +291,25 @@
   }
   .status-safe {
     @apply status-badge;
-    background: hsl(142 71% 45% / 0.1);
-    color: hsl(142 71% 50%);
+    background: hsl(145 66% 38% / 0.12);
+    color: hsl(145 66% 33%);
   }
   .status-warning {
     @apply status-badge;
-    background: hsl(38 92% 50% / 0.1);
-    color: hsl(38 92% 55%);
+    background: hsl(33 89% 55% / 0.14);
+    color: hsl(27 75% 38%);
   }
   .status-danger {
     @apply status-badge;
-    background: hsl(0 84% 60% / 0.1);
-    color: hsl(0 84% 62%);
+    background: hsl(4 77% 57% / 0.12);
+    color: hsl(4 66% 45%);
   }
 }
 
 @layer utilities {
   .text-gradient {
     @apply bg-clip-text text-transparent;
-    background-image: linear-gradient(90deg, hsl(142 71% 45%), hsl(160 80% 55%));
+    background-image: linear-gradient(90deg, hsl(145 66% 38%), hsl(338 82% 62%));
   }
 }
 

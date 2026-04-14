@@ -26,9 +26,9 @@ export default function CollapsibleInsights({ accounts }: Props) {
     <div>
       <button
         onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between px-4 py-3 rounded-xl bg-secondary/20 hover:bg-secondary/30 transition-colors text-sm text-muted-foreground"
+        className="w-full flex items-center justify-between px-5 py-4 rounded-[28px] border border-border bg-white/75 hover:bg-white transition-colors text-sm text-muted-foreground shadow-[0_16px_34px_-32px_rgba(15,23,42,0.25)]"
       >
-        <span className="font-medium">More Insights</span>
+        <span className="font-semibold text-card-foreground">More Insights</span>
         <motion.div
           animate={{ rotate: open ? 180 : 0 }}
           transition={{ duration: 0.2 }}
@@ -79,17 +79,17 @@ function PropertyEquity({ properties, mortgages }: { properties: Account[]; mort
   const totalEquity = equityItems.reduce((s, e) => s + e.equity, 0);
 
   return (
-    <div className="card-surface p-5">
+    <div className="card-surface p-6">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <Home className="h-4 w-4 text-muted-foreground/50" />
+          <Home className="h-4 w-4 text-muted-foreground/60" />
           <p className="label-muted" style={{ opacity: 1 }}>Property Equity</p>
         </div>
         <span className="text-sm font-bold tabular-nums text-card-foreground">{formatCurrency(totalEquity)}</span>
       </div>
       <div className="space-y-3">
         {equityItems.map((item) => (
-          <div key={item.property.id} className="rounded-lg bg-secondary/20 px-4 py-3">
+          <div key={item.property.id} className="rounded-[24px] bg-secondary/50 px-4 py-4">
             <div className="flex items-center justify-between mb-1.5">
               <p className="text-sm font-medium text-card-foreground">{item.property.name}</p>
               <p className="text-sm font-bold tabular-nums text-success">{formatCurrency(item.equity)}</p>
@@ -130,10 +130,10 @@ function DebtSummary({ accounts }: { accounts: Account[] }) {
   }, {});
 
   return (
-    <div className="card-surface p-5">
+    <div className="card-surface p-6">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <CreditCard className="h-4 w-4 text-muted-foreground/50" />
+          <CreditCard className="h-4 w-4 text-muted-foreground/60" />
           <p className="label-muted" style={{ opacity: 1 }}>Debt Summary</p>
         </div>
         <span className="text-sm font-bold tabular-nums text-destructive">{formatCurrency(totalDebt)}</span>
@@ -142,7 +142,7 @@ function DebtSummary({ accounts }: { accounts: Account[] }) {
         {Object.entries(byType).map(([type, items]) => {
           const typeTotal = items.reduce((s, a) => s + Math.abs(Number(a.current_value)), 0);
           return (
-            <div key={type} className="rounded-lg bg-secondary/20 px-4 py-3">
+            <div key={type} className="rounded-[24px] bg-secondary/50 px-4 py-4">
               <div className="flex items-center justify-between mb-1.5">
                 <p className="text-sm font-medium text-card-foreground">
                   {accountTypeLabels[type as keyof typeof accountTypeLabels] ?? type}

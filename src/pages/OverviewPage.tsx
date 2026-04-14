@@ -61,20 +61,20 @@ export default function OverviewPage() {
         />
       </motion.div>
 
-      {/* 4. ACTION CENTER — Mobile: appears 2nd, Desktop: after progress */}
-      <motion.div variants={stagger.item} className="order-2 lg:order-4">
-        <ActionCenter accounts={accounts} memberANIs={memberANIs} isaUsed={householdIsaUsed} isaLimit={isaLimit} />
-      </motion.div>
-
-      {/* 2. SNAPSHOT ROW — Mobile: 3rd, Desktop: 2nd */}
-      <motion.div variants={stagger.item} className="order-3 lg:order-2">
+      {/* 2. SNAPSHOT ROW */}
+      <motion.div variants={stagger.item} className="order-2">
         <SnapshotRow accounts={accounts} />
       </motion.div>
 
       {/* 3. PROGRESS LAYER — Retirement + Tax */}
-      <motion.div variants={stagger.item} className="grid grid-cols-1 gap-4 lg:grid-cols-2 order-4 lg:order-3">
+      <motion.div variants={stagger.item} className="grid grid-cols-1 gap-4 lg:grid-cols-2 order-3">
         <RetirementProgress accounts={accounts} />
         <TaxPosition memberANIs={memberANIs} isaUsed={householdIsaUsed} isaLimit={isaLimit} pensionContributions={householdPensionContributions} />
+      </motion.div>
+
+      {/* 4. ACTION CENTER */}
+      <motion.div variants={stagger.item} className="order-4">
+        <ActionCenter accounts={accounts} memberANIs={memberANIs} isaUsed={householdIsaUsed} isaLimit={isaLimit} />
       </motion.div>
 
       {/* 5. COLLAPSIBLE INSIGHTS */}

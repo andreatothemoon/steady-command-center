@@ -40,6 +40,29 @@ function groupAccounts(accounts: Account[], groupBy: GroupBy) {
   }, {});
 }
 
+function formatDebtMeta(account: Account): string[] {
+  const details: string[] = [];
+  const interestRate = Number((account as any).interest_rate);
+  const termMonths = Number((account as any).term_remaining_months);
+  const monthlyPayment = calcMonthlyPayment(
+    Math.abs(Number(account.current_value)),
+    Number((account as any).interest_rate ?? 0),
+    Number((account as any).term_remaining_months ?? 0)
+  );
+
+  if (Number.isFinite(interestRate) && (account as any).interest_rate != null) {
+    details.push(`${interestRate.toFixed(2)}% interest`);
+  }
+  if (Number.isFinite(termMonths) && (account as any).term_remaining_months != null) {
+    details.push(`${Math.floor(termMonths / 12)}y ${termMonths % 12}m left`);
+  }
+  if (monthlyPayment) {
+    details.push(`${formatCurrency(Math.round(monthlyPayment))}/mo`);
+  }
+
+  return details;
+}
+
 export default function AccountsPage() {
   const [groupBy, setGroupBy] = useState<GroupBy>("type");
   const [addOpen, setAddOpen] = useState(false);
@@ -130,6 +153,12 @@ export default function AccountsPage() {
                   <div className="card-surface divide-y divide-border overflow-hidden">
                     {accts.map((account) => {
                       const stale = staleness(account.last_updated);
+                      const debtMeta = ["mortgage", "loan", "credit_card"].includes(account.account_type)
+                        ? formatDebtMeta(account)
+                        : [];
+                      const linkedProperty = account.account_type === "mortgage" && (account as any).linked_account_id
+                        ? accounts.find((a) => a.id === (account as any).linked_account_id)
+                        : null;
                       return (
                         <div
                           key={account.id}
@@ -149,31 +178,21 @@ export default function AccountsPage() {
                               )}
                             </div>
                             <p className="text-[11px] text-muted-foreground mt-0.5">
-                              {formatOwnerGroup(account.owner_name)} · {formatDate(account.last_updated)}
-                              {["mortgage", "loan", "credit_card"].includes(account.account_type) && (account as any).interest_rate != null && (
-                                <span className="ml-1.5">{Number((account as any).interest_rate).toFixed(2)}%</span>
-                              )}
-                              {["mortgage", "loan", "credit_card"].includes(account.account_type) && (account as any).term_remaining_months != null && (
-                                <span className="ml-1">· {Math.floor(Number((account as any).term_remaining_months) / 12)}y {Number((account as any).term_remaining_months) % 12}m left</span>
-                              )}
-                              {(() => {
-                                const mp = calcMonthlyPayment(
-                                  Math.abs(Number(account.current_value)),
-                                  Number((account as any).interest_rate ?? 0),
-                                  Number((account as any).term_remaining_months ?? 0)
-                                );
-                                return mp ? <span className="ml-1">· {formatCurrency(Math.round(mp))}/mo</span> : null;
-                              })()}
-                              {account.account_type === "mortgage" && (account as any).linked_account_id && (() => {
-                                const linked = accounts.find((a) => a.id === (account as any).linked_account_id);
-                                return linked ? (
-                                  <span className="inline-flex items-center gap-0.5 ml-1.5 text-primary">
-                                    <Link2 className="h-2.5 w-2.5" />
-                                    {linked.name}
-                                  </span>
-                                ) : null;
-                              })()}
+                              {formatOwnerGroup(account.owner_name)} · Updated {formatDate(account.last_updated)}
                             </p>
+                            {(debtMeta.length > 0 || linkedProperty) && (
+                              <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-muted-foreground/80">
+                                {debtMeta.map((detail) => (
+                                  <span key={detail}>{detail}</span>
+                                ))}
+                                {linkedProperty && (
+                                  <span className="inline-flex items-center gap-0.5 text-primary">
+                                    <Link2 className="h-2.5 w-2.5" />
+                                    {linkedProperty.name}
+                                  </span>
+                                )}
+                              </div>
+                            )}
                           </div>
                           <div className="text-right">
                             <p

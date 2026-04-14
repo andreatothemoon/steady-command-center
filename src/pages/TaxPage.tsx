@@ -9,7 +9,7 @@ import {
   Plus,
   Save,
   Pencil,
-  TrendingDown,
+  ChevronRight,
 } from "lucide-react";
 import { formatCurrency } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -82,9 +82,6 @@ export default function TaxPage() {
     if (!s) return 0;
     return computeANI(summaryToForm(s)).adjusted_net_income;
   };
-
-  const getHouseholdANI = () =>
-    adults.reduce((sum, p) => sum + getANI(p.id), 0);
 
   const anyAdultOverThreshold = adults.some((p) => getANI(p.id) >= 100000);
 
@@ -379,7 +376,6 @@ export default function TaxPage() {
             <div className="space-y-4">
               {profiles.map((profile) => {
                 const isChild = profile.role === "child";
-                const memberAllowances = getAllowances(profile);
                 const memberAccounts = getMemberAccounts(profile);
                 const totalValue = memberAccounts.reduce((s, a) => s + Number(a.current_value), 0);
                 const memberANI = getANI(profile.id);
@@ -403,19 +399,28 @@ export default function TaxPage() {
                             {profile.role}
                             {profile.date_of_birth && ` · Age ${getAge(profile.date_of_birth)}`}
                             {!isChild && ` · ANI ${formatCurrency(memberANI)}`}
-                            {memberAccounts.length > 0 && ` · ${formatCurrency(totalValue)} across ${memberAccounts.length} accounts`}
+                            {memberAccounts.length > 0 && ` · ${memberAccounts.length} account${memberAccounts.length !== 1 ? "s" : ""}`}
                           </p>
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
                         {!isEditing ? (
-                          <button
-                            onClick={() => startEditing(profile)}
-                            className="text-xs text-muted-foreground hover:text-primary transition-colors inline-flex items-center gap-1"
-                          >
-                            <Pencil className="h-3 w-3" />
-                            {summary ? "Edit" : "Add income"}
-                          </button>
+                          <>
+                            <button
+                              onClick={() => setViewMode(profile.id)}
+                              className="text-xs text-muted-foreground hover:text-primary transition-colors inline-flex items-center gap-1"
+                            >
+                              View details
+                              <ChevronRight className="h-3 w-3" />
+                            </button>
+                            <button
+                              onClick={() => startEditing(profile)}
+                              className="text-xs text-muted-foreground hover:text-primary transition-colors inline-flex items-center gap-1"
+                            >
+                              <Pencil className="h-3 w-3" />
+                              {summary ? "Edit" : "Add income"}
+                            </button>
+                          </>
                         ) : (
                           <div className="flex gap-1.5">
                             <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={cancelEditing}>
@@ -438,34 +443,20 @@ export default function TaxPage() {
                     {/* Income form (inline edit) */}
                     {isEditing && renderEditForm(profile, true)}
 
-                    {/* Allowance bars */}
-                    <div className="px-5 py-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      {memberAllowances.map((a) => {
-                        const pct = a.limit > 0 ? Math.min((a.used / a.limit) * 100, 100) : 0;
-                        const remaining = Math.max(0, a.limit - a.used);
-                        return (
-                          <div key={a.label}>
-                            <div className="flex justify-between items-baseline mb-1">
-                              <span className="text-[11px] text-muted-foreground">{a.label}</span>
-                              <span className="text-[11px] text-muted-foreground tabular-nums">
-                                {formatCurrency(remaining)} left
-                              </span>
-                            </div>
-                            <div className="h-1.5 rounded-full bg-secondary/60 overflow-hidden">
-                              <motion.div
-                                className={cn(
-                                  "h-full rounded-full",
-                                  pct >= 100 ? "bg-warning" : pct > 80 ? "bg-warning" : "bg-primary"
-                                )}
-                                initial={{ width: 0 }}
-                                animate={{ width: `${pct}%` }}
-                                transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
-                              />
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
+                    {!isEditing && (
+                      <div className="px-5 py-3 flex items-center justify-between text-[11px] text-muted-foreground border-t border-border/50 bg-secondary/10">
+                        <span>
+                          {summary
+                            ? isChild
+                              ? "Junior ISA tracked"
+                              : "Income, deductions, and allowances tracked"
+                            : "No tax details entered yet"}
+                        </span>
+                        {memberAccounts.length > 0 && (
+                          <span className="tabular-nums text-card-foreground/80">{formatCurrency(totalValue)}</span>
+                        )}
+                      </div>
+                    )}
                   </motion.div>
                 );
               })}
