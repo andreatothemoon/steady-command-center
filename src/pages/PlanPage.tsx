@@ -320,10 +320,6 @@ export default function PlanPage() {
             />
           </motion.div>
 
-          {/* DB Pensions section */}
-          <motion.div variants={stagger.item}>
-            <DBPensionSection />
-          </motion.div>
         </>
       )}
 
