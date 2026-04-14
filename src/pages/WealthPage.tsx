@@ -51,10 +51,10 @@ function toBucket(type: string): Bucket {
 }
 
 // Rough annual income contribution for an asset
-function estimateIncome(account: Account): number | null {
+function estimateIncome(account: Account, dbPensionIncome?: number): number | null {
   const val = Number(account.current_value);
+  if (["db_pension"].includes(account.account_type)) return dbPensionIncome ?? null;
   if (val <= 0) return null;
-  if (["db_pension"].includes(account.account_type)) return null; // handled separately
   if (["sipp", "workplace_pension"].includes(account.account_type)) return Math.round(val * DEFAULT_DRAWDOWN_RATE);
   if (["stocks_and_shares_isa", "cash_isa", "gia", "crypto", "employer_share_scheme"].includes(account.account_type)) return Math.round(val * DEFAULT_DRAWDOWN_RATE);
   return null;
