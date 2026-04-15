@@ -109,14 +109,15 @@ export default function HomePage() {
         <p className="text-muted-foreground">Live projection of your retirement income, actions, and wealth position.</p>
       </motion.div>
 
-      <motion.div variants={stagger.item}>
-        <IncomeHeroCard
-          monthlyIncome={monthlyIncome}
-          retireAge={retireAge}
-          projection={projection?.result ?? null}
-          targetIncome={targetIncome}
-        />
-      </motion.div>
+      {projection && (
+        <motion.div variants={stagger.item}>
+          <IncomeTimeline
+            timeline={projection.result.timeline}
+            retireAge={retireAge}
+            targetIncome={targetIncome}
+          />
+        </motion.div>
+      )}
 
       <motion.div variants={stagger.item} className="grid grid-cols-1 gap-6 xl:grid-cols-3">
         <ReadinessCard projection={projection?.result ?? null} retireAge={retireAge} />
@@ -136,16 +137,6 @@ export default function HomePage() {
           showHeader={false}
         />
       </motion.div>
-
-      {projection && (
-        <motion.div variants={stagger.item}>
-          <IncomeTimeline
-            timeline={projection.result.timeline}
-            retireAge={retireAge}
-            targetIncome={targetIncome}
-          />
-        </motion.div>
-      )}
 
       <motion.div variants={stagger.item}>
         <WealthSummaryStrip accounts={accounts} />
