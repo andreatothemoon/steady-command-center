@@ -23,7 +23,7 @@ export default function IncomeHeroCard({ monthlyIncome, retireAge, projection, t
     return (
       <div className="hero-surface p-10">
         <div className="py-6">
-          <div className="inline-flex items-center gap-2 rounded-full bg-secondary px-4 py-2 text-sm text-muted-foreground">
+          <div className="inline-flex items-center gap-2 rounded-full bg-secondary px-4 py-2 text-sm font-medium text-foreground/70">
             Current Plan
           </div>
           <p className="mt-8 text-5xl font-semibold tracking-tight text-foreground">Plan not set up</p>
@@ -60,18 +60,18 @@ export default function IncomeHeroCard({ monthlyIncome, retireAge, projection, t
 
         <div className="grid gap-6 text-left sm:grid-cols-3 lg:min-w-[360px]">
           <div>
-            <p className="mb-1 text-sm text-muted-foreground">Confidence</p>
+            <p className="mb-1 text-sm font-medium text-foreground/60">Confidence</p>
             <div className="flex items-center gap-2">
               <span className={`h-2.5 w-2.5 rounded-full ${confidenceDot}`} />
               <span className="text-lg font-semibold text-foreground">{confidence}</span>
             </div>
           </div>
           <div>
-            <p className="mb-1 text-sm text-muted-foreground">Target</p>
+            <p className="mb-1 text-sm font-medium text-foreground/60">Target</p>
             <p className="text-lg font-semibold text-foreground">{formatCurrency(monthlyTarget)}/mo</p>
           </div>
           <div>
-            <p className="mb-1 text-sm text-muted-foreground">Gap</p>
+            <p className="mb-1 text-sm font-medium text-foreground/60">Gap</p>
             <p className={`text-lg font-semibold ${gap > 0 ? "text-destructive" : "text-success"}`}>
               {gap > 0 ? `-${formatCurrency(Math.round(gap / 12))}/mo` : "On target"}
             </p>
