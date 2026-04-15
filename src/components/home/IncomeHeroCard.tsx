@@ -45,17 +45,17 @@ export default function IncomeHeroCard({ monthlyIncome, retireAge, projection, t
     <div className="hero-surface p-8 lg:p-10">
       <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between">
         <div className="max-w-3xl">
-          <div className="inline-flex items-center gap-2 rounded-full bg-secondary px-4 py-2 text-sm text-muted-foreground">
+          <div className="inline-flex items-center gap-2 rounded-full bg-secondary px-4 py-2 text-sm font-medium text-foreground/70">
             Current Plan
           </div>
           <div className="mt-7 flex items-end gap-3">
             <h2 className="text-[3.75rem] font-semibold tracking-[-0.06em] text-foreground leading-none lg:text-[4.5rem]">
               {formatCurrency(monthlyIncome)}
             </h2>
-            <span className="pb-2 text-2xl text-muted-foreground">/ month</span>
+            <span className="pb-2 text-2xl font-medium text-muted-foreground">/ month</span>
           </div>
           <p className="mt-3 text-lg text-muted-foreground">at age {retireAge}</p>
-          <p className="mt-1 text-sm text-muted-foreground/80">After tax, in today's money</p>
+          <p className="mt-1 text-sm text-muted-foreground">After tax, in today's money</p>
         </div>
 
         <div className="grid gap-6 text-left sm:grid-cols-3 lg:min-w-[360px]">
