@@ -9,7 +9,7 @@ interface Props {
 export default function ReadinessCard({ projection, retireAge }: Props) {
   if (!projection) {
     return (
-      <div className="card-surface flex min-h-[260px] items-center justify-center p-8">
+      <div className="card-surface flex min-h-[140px] items-center justify-center p-5">
         <p className="text-sm text-muted-foreground">No scenario configured</p>
       </div>
     );
@@ -18,22 +18,22 @@ export default function ReadinessCard({ projection, retireAge }: Props) {
   const onTrack = projection.readinessPct >= 100;
 
   return (
-    <div className="card-surface h-full min-h-[260px] p-8">
-      <div className="mb-12 flex items-start justify-between">
-        <div className="flex h-16 w-16 items-center justify-center rounded-[28px] bg-[#eef5fb]">
-          <TrendingUp className="h-6 w-6 text-primary" />
+    <div className="card-surface h-full p-5">
+      <div className="mb-6 flex items-start justify-between">
+        <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#eef5fb]">
+          <TrendingUp className="h-5 w-5 text-primary" />
         </div>
-        <div className="flex items-center gap-2">
-          <div className={`h-2.5 w-2.5 rounded-full ${onTrack ? "bg-success" : "bg-warning"}`} />
-          <span className={`text-base font-medium ${onTrack ? "text-success" : "text-warning"}`}>
+        <div className="flex items-center gap-1.5">
+          <div className={`h-2 w-2 rounded-full ${onTrack ? "bg-success" : "bg-warning"}`} />
+          <span className={`text-sm font-medium ${onTrack ? "text-success" : "text-warning"}`}>
             {onTrack ? "On track" : "Needs attention"}
           </span>
         </div>
       </div>
 
-      <h3 className="mb-5 text-[2.125rem] font-semibold tracking-[-0.04em] text-foreground">Retirement Readiness</h3>
-      <p className="mb-3 text-[4rem] font-semibold leading-none tracking-[-0.08em] text-foreground">Age {retireAge}</p>
-      <p className="text-xl text-muted-foreground">Target retirement age</p>
+      <h3 className="mb-2 text-base font-semibold tracking-tight text-foreground">Retirement Readiness</h3>
+      <p className="mb-1 text-[2rem] font-semibold leading-none tracking-tight text-foreground">Age {retireAge}</p>
+      <p className="text-sm text-muted-foreground">Target retirement age</p>
     </div>
   );
 }
