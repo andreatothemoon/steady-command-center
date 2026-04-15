@@ -109,6 +109,15 @@ export default function HomePage() {
         <p className="text-muted-foreground">Live projection of your retirement income, actions, and wealth position.</p>
       </motion.div>
 
+      <motion.div variants={stagger.item}>
+        <IncomeHeroCard
+          monthlyIncome={monthlyIncome}
+          retireAge={retireAge}
+          projection={projection?.result ?? null}
+          targetIncome={targetIncome}
+        />
+      </motion.div>
+
       {projection && (
         <motion.div variants={stagger.item}>
           <IncomeTimeline
