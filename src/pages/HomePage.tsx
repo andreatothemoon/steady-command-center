@@ -136,7 +136,7 @@ export default function HomePage() {
 
       <motion.div variants={stagger.item} className="space-y-5">
         <div>
-          <h3 className="text-[3rem] font-semibold tracking-[-0.05em] text-foreground">Recommended Actions</h3>
+          <h3 className="mb-2 text-2xl font-semibold text-foreground">Recommended Actions</h3>
         </div>
         <TopActionsCard
           accounts={accounts}
