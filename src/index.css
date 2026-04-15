@@ -250,7 +250,6 @@
   }
   .label-subtle {
     @apply text-sm text-muted-foreground;
-    opacity: 0.88;
   }
 
   /* Glow dot */
