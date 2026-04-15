@@ -14,6 +14,8 @@ import IncomeTimeline from "@/components/retirement/IncomeTimeline";
 import IncomeHeroCard from "@/components/home/IncomeHeroCard";
 import WealthSummaryStrip from "@/components/home/WealthSummaryStrip";
 import ReadinessCard from "@/components/home/ReadinessCard";
+import GuaranteedIncomeCard from "@/components/home/GuaranteedIncomeCard";
+import BridgeGapCard from "@/components/home/BridgeGapCard";
 import TopActionsCard from "@/components/home/TopActionsCard";
 import type { MemberANI } from "@/pages/OverviewPage";
 
@@ -101,7 +103,7 @@ export default function HomePage() {
   const targetIncome = scenario ? Number(scenario.target_income) : 30000;
 
   return (
-    <motion.div className="flex flex-col gap-8" variants={stagger.container} initial="initial" animate="animate">
+    <motion.div className="flex flex-col gap-10" variants={stagger.container} initial="initial" animate="animate">
       <motion.div variants={stagger.item} className="space-y-2">
         <h1 className="text-4xl font-semibold tracking-tight text-foreground">Your Retirement Plan</h1>
         <p className="text-muted-foreground">Live projection of your retirement income, actions, and wealth position.</p>
@@ -116,6 +118,25 @@ export default function HomePage() {
         />
       </motion.div>
 
+      <motion.div variants={stagger.item} className="grid grid-cols-1 gap-6 xl:grid-cols-3">
+        <ReadinessCard projection={projection?.result ?? null} retireAge={retireAge} />
+        <GuaranteedIncomeCard projection={projection?.result ?? null} />
+        <BridgeGapCard retireAge={retireAge} />
+      </motion.div>
+
+      <motion.div variants={stagger.item} className="space-y-5">
+        <div>
+          <h2 className="text-[3rem] font-semibold tracking-[-0.05em] text-foreground">Recommended Actions</h2>
+        </div>
+        <TopActionsCard
+          accounts={accounts}
+          memberANIs={memberANIs}
+          isaUsed={householdIsaUsed}
+          isaLimit={isaLimit}
+          showHeader={false}
+        />
+      </motion.div>
+
       {projection && (
         <motion.div variants={stagger.item}>
           <IncomeTimeline
@@ -125,11 +146,6 @@ export default function HomePage() {
           />
         </motion.div>
       )}
-
-      <motion.div variants={stagger.item} className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <ReadinessCard projection={projection?.result ?? null} retireAge={retireAge} targetIncome={targetIncome} />
-        <TopActionsCard accounts={accounts} memberANIs={memberANIs} isaUsed={householdIsaUsed} isaLimit={isaLimit} />
-      </motion.div>
 
       <motion.div variants={stagger.item}>
         <WealthSummaryStrip accounts={accounts} />

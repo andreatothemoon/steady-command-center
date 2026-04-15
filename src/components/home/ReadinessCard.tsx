@@ -1,70 +1,39 @@
-import { Target } from "lucide-react";
-import { formatCurrency } from "@/lib/format";
+import { TrendingUp } from "lucide-react";
 import type { RetirementProjection } from "@/lib/retirementEngine";
 
 interface Props {
   projection: RetirementProjection | null;
   retireAge: number;
-  targetIncome: number;
 }
 
-export default function ReadinessCard({ projection, retireAge, targetIncome }: Props) {
+export default function ReadinessCard({ projection, retireAge }: Props) {
   if (!projection) {
     return (
-      <div className="card-surface min-h-[220px] p-8 flex items-center justify-center">
+      <div className="card-surface flex min-h-[260px] items-center justify-center p-8">
         <p className="text-sm text-muted-foreground">No scenario configured</p>
       </div>
     );
   }
 
-  const guaranteedMonthly = Math.round((projection.dbPensionIncome + projection.statePensionIncome) / 12);
-  const bridgeYears = Math.max(0, 67 - retireAge);
   const onTrack = projection.readinessPct >= 100;
 
   return (
-    <div className="card-surface h-full p-8">
-      <div className="mb-5 flex items-start justify-between">
-        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#f5f7fb]">
-          <Target className="h-6 w-6 text-primary" />
+    <div className="card-surface h-full min-h-[260px] p-8">
+      <div className="mb-12 flex items-start justify-between">
+        <div className="flex h-16 w-16 items-center justify-center rounded-[28px] bg-[#eef5fb]">
+          <TrendingUp className="h-6 w-6 text-primary" />
         </div>
         <div className="flex items-center gap-2">
-          <div className={`h-2 w-2 rounded-full ${onTrack ? "bg-success" : "bg-warning"}`} />
-          <span className={`text-sm font-medium ${onTrack ? "text-success" : "text-warning"}`}>
+          <div className={`h-2.5 w-2.5 rounded-full ${onTrack ? "bg-success" : "bg-warning"}`} />
+          <span className={`text-base font-medium ${onTrack ? "text-success" : "text-warning"}`}>
             {onTrack ? "On track" : "Needs attention"}
           </span>
         </div>
       </div>
 
-      <h3 className="mb-2 text-lg font-semibold text-foreground">Retirement Readiness</h3>
-      <p className="mb-1 text-3xl font-semibold text-foreground">Age {retireAge}</p>
-      <p className="text-sm text-muted-foreground">Target retirement age</p>
-
-      <div className="mt-6 space-y-2 border-t border-border/60 pt-5">
-        <div className="flex justify-between text-sm">
-          <span className="text-muted-foreground">Projected income</span>
-          <span className="font-semibold text-foreground">{formatCurrency(projection.totalIncome)}</span>
-        </div>
-        <div className="flex justify-between text-sm">
-          <span className="text-muted-foreground">Target income</span>
-          <span className="font-medium text-foreground">{formatCurrency(targetIncome)}</span>
-        </div>
-        <div className="flex justify-between text-sm">
-          <span className="text-muted-foreground">Readiness</span>
-          <span className="font-medium text-foreground">{projection.readinessPct}%</span>
-        </div>
-        <div className="flex justify-between text-sm">
-          <span className="text-muted-foreground">DC pot at retirement</span>
-          <span className="font-medium text-foreground">{formatCurrency(projection.dcPotAtRetirement)}</span>
-        </div>
-        <div className="flex justify-between text-sm">
-          <span className="text-muted-foreground">Guaranteed income</span>
-          <span className="font-medium text-foreground">{formatCurrency(guaranteedMonthly)}/mo</span>
-        </div>
-        <div className="flex justify-between text-sm">
-          <span className="text-muted-foreground">Bridge gap</span>
-          <span className="font-medium text-foreground">{bridgeYears} years</span>
-        </div>
-      </div>
+      <h3 className="mb-5 text-[2.125rem] font-semibold tracking-[-0.04em] text-foreground">Retirement Readiness</h3>
+      <p className="mb-3 text-[4rem] font-semibold leading-none tracking-[-0.08em] text-foreground">Age {retireAge}</p>
+      <p className="text-xl text-muted-foreground">Target retirement age</p>
     </div>
   );
 }
