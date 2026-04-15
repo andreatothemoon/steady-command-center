@@ -40,18 +40,18 @@ function SidebarContent({ collapsed, toggle, onNavigate }: { collapsed: boolean;
 
   return (
     <>
-      <div className={cn("flex h-16 items-center gap-2.5", collapsed ? "px-4 justify-center" : "px-5")}>
-        <div className="h-10 w-10 rounded-2xl bg-sidebar-primary/15 border border-sidebar-border flex items-center justify-center flex-shrink-0">
-          <span className="text-sidebar-primary font-bold text-sm">W</span>
+      <div className={cn("flex h-20 items-center", collapsed ? "justify-center px-4" : "px-5")}>
+        <div className="h-10 w-10 rounded-xl bg-primary flex items-center justify-center flex-shrink-0">
+          <span className="text-primary-foreground font-semibold text-lg">W</span>
         </div>
         {!collapsed && (
-          <span className="text-sidebar-accent-foreground font-semibold text-[15px] tracking-tight">
+          <span className="ml-3 text-sidebar-accent-foreground font-semibold text-[15px] tracking-tight">
             WealthOS
           </span>
         )}
       </div>
 
-      <nav className={cn("flex-1 space-y-0.5 pt-3", collapsed ? "px-2" : "px-3")}>
+      <nav className={cn("flex-1 pt-2", collapsed ? "px-2 space-y-3" : "px-3 space-y-2")}>
         {navItems.map(({ to, label, icon: Icon }) => {
           const isActive = to === "/" ? location.pathname === "/" : location.pathname.startsWith(to);
           return (
@@ -59,11 +59,20 @@ function SidebarContent({ collapsed, toggle, onNavigate }: { collapsed: boolean;
               key={to}
               to={to}
               onClick={onNavigate}
-              className={isActive ? "nav-item-active" : "nav-item-inactive"}
+              className={cn(
+                collapsed ? "flex flex-col items-center gap-1 rounded-xl p-2.5 text-[11px] transition-all" : "nav-item",
+                isActive
+                  ? collapsed
+                    ? "bg-sidebar-accent text-sidebar-primary"
+                    : "nav-item-active"
+                  : collapsed
+                    ? "text-sidebar-foreground hover:bg-background hover:text-sidebar-accent-foreground"
+                    : "nav-item-inactive"
+              )}
               title={collapsed ? label : undefined}
             >
               <Icon className="h-[18px] w-[18px] flex-shrink-0" />
-              {!collapsed && <span>{label}</span>}
+              <span>{label}</span>
             </NavLink>
           );
         })}
@@ -74,22 +83,38 @@ function SidebarContent({ collapsed, toggle, onNavigate }: { collapsed: boolean;
           <NavLink
             to="/admin/approvals"
             onClick={onNavigate}
-            className={location.pathname === "/admin/approvals" ? "nav-item-active" : "nav-item-inactive"}
+            className={cn(
+              collapsed ? "flex flex-col items-center gap-1 rounded-xl p-2.5 text-[11px] transition-all" : "nav-item",
+              location.pathname === "/admin/approvals"
+                ? collapsed
+                  ? "bg-sidebar-accent text-sidebar-primary"
+                  : "nav-item-active"
+                : collapsed
+                  ? "text-sidebar-foreground hover:bg-background hover:text-sidebar-accent-foreground"
+                  : "nav-item-inactive"
+            )}
             title={collapsed ? "Approvals" : undefined}
           >
             <Shield className="h-[18px] w-[18px] flex-shrink-0" />
-            {!collapsed && <span>Approvals</span>}
+            <span>Approvals</span>
           </NavLink>
         )}
 
         {!onNavigate && (
           <button
             onClick={toggle}
-            className="nav-item-inactive w-full justify-center"
+            className={cn(
+              collapsed
+                ? "flex w-full flex-col items-center gap-1 rounded-xl p-2.5 text-[11px] text-sidebar-foreground transition-all hover:bg-background hover:text-sidebar-accent-foreground"
+                : "nav-item-inactive w-full justify-center"
+            )}
             title={collapsed ? "Expand" : "Collapse"}
           >
             {collapsed ? (
-              <ChevronRight className="h-4 w-4" />
+              <>
+                <ChevronRight className="h-4 w-4" />
+                <span>More</span>
+              </>
             ) : (
               <>
                 <ChevronLeft className="h-4 w-4" />
@@ -104,7 +129,7 @@ function SidebarContent({ collapsed, toggle, onNavigate }: { collapsed: boolean;
           collapsed ? "flex justify-center" : ""
         )}>
           <div className={cn("flex items-center", collapsed ? "" : "gap-3 px-1")}>
-            <div className="h-8 w-8 rounded-full bg-sidebar-accent border border-sidebar-border flex items-center justify-center flex-shrink-0">
+            <div className="h-8 w-8 rounded-full bg-secondary border border-sidebar-border flex items-center justify-center flex-shrink-0">
               <span className="text-[11px] font-semibold text-sidebar-accent-foreground">{initials.slice(0, 2)}</span>
             </div>
             {!collapsed && (
@@ -130,7 +155,7 @@ export default function AppSidebar() {
       <>
         <button
           onClick={() => setMobileOpen(true)}
-          className="fixed top-4 left-4 z-50 h-11 w-11 rounded-2xl bg-card/90 backdrop-blur-md flex items-center justify-center border border-border shadow-[0_10px_30px_-18px_rgba(15,23,42,0.35)]"
+          className="fixed top-4 left-4 z-50 flex h-11 w-11 items-center justify-center rounded-2xl border border-border bg-card shadow-[0_10px_30px_-18px_rgba(15,23,42,0.18)]"
           aria-label="Open menu"
         >
           <Menu className="h-5 w-5 text-foreground" />
@@ -150,12 +175,10 @@ export default function AppSidebar() {
   return (
     <aside
       className={cn(
-        "fixed left-0 top-0 z-40 flex h-screen flex-col border-r border-sidebar-border transition-all duration-300 backdrop-blur-xl",
-        collapsed ? "w-[68px]" : "w-56"
+        "fixed left-0 top-0 z-40 flex h-screen flex-col border-r border-sidebar-border transition-all duration-300",
+        collapsed ? "w-20" : "w-56"
       )}
-      style={{
-        background: "linear-gradient(180deg, hsl(38 18% 97% / 0.94) 0%, hsl(32 14% 94% / 0.9) 100%)",
-      }}
+      style={{ background: "hsl(0 0% 100%)" }}
     >
       <SidebarContent collapsed={collapsed} toggle={toggle} />
     </aside>

@@ -6,48 +6,48 @@
 
 @layer base {
   :root {
-    --background: 36 22% 96%;
+    --background: 0 0% 98%;
     --foreground: 215 23% 12%;
     --card: 0 0% 100%;
     --card-foreground: 215 23% 12%;
     --popover: 0 0% 100%;
     --popover-foreground: 215 23% 12%;
-    --primary: 145 66% 38%;
+    --primary: 211 51% 24%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 34 18% 92%;
+    --secondary: 0 0% 96%;
     --secondary-foreground: 215 20% 22%;
-    --muted: 34 14% 93%;
+    --muted: 0 0% 96%;
     --muted-foreground: 220 8% 47%;
-    --accent: 35 24% 91%;
-    --accent-foreground: 28 18% 34%;
+    --accent: 0 0% 94%;
+    --accent-foreground: 215 23% 12%;
     --destructive: 4 77% 57%;
     --destructive-foreground: 0 0% 100%;
-    --border: 32 15% 84%;
-    --input: 32 16% 88%;
-    --ring: 145 66% 38%;
-    --radius: 1.1rem;
+    --border: 0 0% 0%;
+    --input: 0 0% 97%;
+    --ring: 211 51% 24%;
+    --radius: 1rem;
 
-    --sidebar-background: 35 20% 97%;
+    --sidebar-background: 0 0% 100%;
     --sidebar-foreground: 220 8% 47%;
-    --sidebar-primary: 145 66% 38%;
+    --sidebar-primary: 211 51% 24%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 36 18% 95%;
+    --sidebar-accent: 0 0% 96%;
     --sidebar-accent-foreground: 215 23% 12%;
-    --sidebar-border: 32 15% 84%;
-    --sidebar-ring: 145 66% 38%;
+    --sidebar-border: 0 0% 0%;
+    --sidebar-ring: 211 51% 24%;
 
-    --success: 145 66% 38%;
+    --success: 160 84% 39%;
     --success-foreground: 0 0% 100%;
     --warning: 33 89% 55%;
     --warning-foreground: 20 14% 12%;
     --info: 212 90% 56%;
     --info-foreground: 0 0% 100%;
 
-    --chart-1: 145 66% 38%;
-    --chart-2: 212 90% 56%;
-    --chart-3: 27 62% 62%;
+    --chart-1: 211 51% 24%;
+    --chart-2: 211 40% 38%;
+    --chart-3: 160 84% 39%;
     --chart-4: 33 89% 55%;
-    --chart-5: 268 52% 58%;
+    --chart-5: 213 34% 68%;
   }
 
   .dark {
@@ -132,17 +132,17 @@
   /* ── Level 2: Standard Cards ── */
   .card-surface {
     @apply rounded-[28px];
-    border: 1px solid hsl(var(--border) / 0.9);
-    background: linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(36 18% 98%) 100%);
-    box-shadow: 0 18px 40px -34px hsl(30 18% 26% / 0.18);
+    border: 1px solid rgb(0 0 0 / 0.04);
+    background: hsl(0 0% 100%);
+    box-shadow: 0 14px 34px -28px rgb(15 23 42 / 0.12);
   }
 
   .card-surface-hover {
     @apply card-surface transition-all duration-200 cursor-default;
   }
   .card-surface-hover:hover {
-    border-color: hsl(34 18% 78%);
-    box-shadow: 0 24px 48px -34px hsl(30 18% 30% / 0.16);
+    border-color: rgb(0 0 0 / 0.06);
+    box-shadow: 0 18px 38px -28px rgb(15 23 42 / 0.16);
     transform: translateY(-2px);
   }
   .card-surface-hover:active {
@@ -153,14 +153,9 @@
   /* ── Level 3: Elevated / Hero surfaces ── */
   .hero-surface {
     @apply rounded-[36px] overflow-hidden relative;
-    border: 1px solid hsl(34 18% 85%);
-    background: linear-gradient(
-      160deg,
-      hsl(0 0% 100%) 0%,
-      hsl(36 26% 97%) 52%,
-      hsl(30 19% 93%) 100%
-    );
-    box-shadow: 0 30px 70px -46px hsl(30 16% 24% / 0.16);
+    border: 1px solid rgb(0 0 0 / 0.04);
+    background: hsl(0 0% 100%);
+    box-shadow: 0 18px 44px -34px rgb(15 23 42 / 0.14);
   }
   .hero-surface::before {
     content: '';
@@ -169,13 +164,8 @@
     left: 0;
     right: 0;
     height: 100%;
-    background: linear-gradient(
-      135deg,
-      hsl(40 28% 94% / 0.95) 0%,
-      hsl(36 24% 96% / 0.35) 38%,
-      hsl(30 18% 90% / 0.85) 100%
-    );
-    opacity: 1;
+    background: linear-gradient(180deg, rgb(255 255 255 / 0.55) 0%, rgb(250 250 250 / 0.18) 100%);
+    opacity: 0.8;
     pointer-events: none;
   }
 
@@ -190,10 +180,9 @@
   /* Insight card */
   .card-insight {
     @apply rounded-[28px] overflow-hidden;
-    border: 1px solid hsl(var(--border) / 0.85);
-    background: hsl(0 0% 100% / 0.8);
-    box-shadow: 0 16px 34px -32px hsl(30 15% 22% / 0.16);
-    backdrop-filter: blur(18px);
+    border: 1px solid rgb(0 0 0 / 0.04);
+    background: hsl(0 0% 100%);
+    box-shadow: 0 14px 34px -30px rgb(15 23 42 / 0.12);
   }
 
   /* Action card */
@@ -221,7 +210,7 @@
   }
   .nav-item-active {
     @apply nav-item text-sidebar-primary;
-    background: hsl(145 72% 95%);
+    background: hsl(0 0% 96%);
   }
   .nav-item-active::before {
     content: '';
@@ -229,18 +218,17 @@
     left: 8px;
     top: 50%;
     transform: translateY(-50%);
-    width: 3px;
-    height: 18px;
+    width: 0;
+    height: 0;
     border-radius: 999px;
     background: hsl(var(--primary));
-    animation: accent-bar-in 250ms ease-out;
   }
   .nav-item-inactive {
     @apply nav-item text-sidebar-foreground;
   }
   .nav-item-inactive:hover {
     @apply text-sidebar-accent-foreground;
-    background: hsl(0 0% 100% / 0.75);
+    background: hsl(0 0% 98%);
   }
 
   /* Number display */
@@ -291,8 +279,8 @@
   }
   .status-safe {
     @apply status-badge;
-    background: hsl(145 66% 38% / 0.12);
-    color: hsl(145 66% 33%);
+    background: hsl(160 60% 95%);
+    color: hsl(160 84% 24%);
   }
   .status-warning {
     @apply status-badge;
@@ -309,7 +297,7 @@
 @layer utilities {
   .text-gradient {
     @apply bg-clip-text text-transparent;
-    background-image: linear-gradient(90deg, hsl(145 66% 38%), hsl(338 82% 62%));
+    background-image: linear-gradient(90deg, hsl(215 23% 12%), hsl(211 51% 24%));
   }
 }
 

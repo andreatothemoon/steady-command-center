@@ -7,12 +7,9 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useDBPensions } from "@/hooks/useDBPensions";
-import { projectDBPension } from "@/lib/dbPensionEngine";
 import { toDBPensionParams } from "@/lib/dbPensionRates";
-import { computeRetirement, UK_STATE_PENSION_FULL, STATE_PENSION_AGE, type RetirementInputs } from "@/lib/retirementEngine";
+import { computeRetirement, type RetirementInputs } from "@/lib/retirementEngine";
 import type { DBPensionParams } from "@/lib/dbPensionEngine";
-import { formatCurrency } from "@/lib/format";
-import { cn } from "@/lib/utils";
 import IncomeTimeline from "@/components/retirement/IncomeTimeline";
 import IncomeHeroCard from "@/components/home/IncomeHeroCard";
 import WealthSummaryStrip from "@/components/home/WealthSummaryStrip";
@@ -104,8 +101,12 @@ export default function HomePage() {
   const targetIncome = scenario ? Number(scenario.target_income) : 30000;
 
   return (
-    <motion.div className="flex flex-col gap-5" variants={stagger.container} initial="initial" animate="animate">
-      {/* 1. Hero — Monthly Income */}
+    <motion.div className="flex flex-col gap-8" variants={stagger.container} initial="initial" animate="animate">
+      <motion.div variants={stagger.item} className="space-y-2">
+        <h1 className="text-4xl font-semibold tracking-tight text-foreground">Your Retirement Plan</h1>
+        <p className="text-muted-foreground">Live projection of your retirement income, actions, and wealth position.</p>
+      </motion.div>
+
       <motion.div variants={stagger.item}>
         <IncomeHeroCard
           monthlyIncome={monthlyIncome}
@@ -115,7 +116,6 @@ export default function HomePage() {
         />
       </motion.div>
 
-      {/* 2. Income Timeline */}
       {projection && (
         <motion.div variants={stagger.item}>
           <IncomeTimeline
@@ -126,13 +126,11 @@ export default function HomePage() {
         </motion.div>
       )}
 
-      {/* 3. Supporting Cards Row */}
-      <motion.div variants={stagger.item} className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+      <motion.div variants={stagger.item} className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <ReadinessCard projection={projection?.result ?? null} retireAge={retireAge} targetIncome={targetIncome} />
         <TopActionsCard accounts={accounts} memberANIs={memberANIs} isaUsed={householdIsaUsed} isaLimit={isaLimit} />
       </motion.div>
 
-      {/* 4. Wealth Summary Strip */}
       <motion.div variants={stagger.item}>
         <WealthSummaryStrip accounts={accounts} />
       </motion.div>

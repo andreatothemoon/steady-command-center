@@ -12,15 +12,15 @@ interface SnapshotCardProps {
 
 function SnapshotCard({ label, value, icon, sub, variant = "default" }: SnapshotCardProps) {
   return (
-    <div className="card-surface-hover p-4 min-w-[140px] flex-1 snap-start">
-      <div className="flex items-center justify-between mb-2">
-        <p className="label-muted text-[11px]" style={{ opacity: 1 }}>{label}</p>
-        <div className="text-muted-foreground/40">{icon}</div>
+    <div className="card-surface-hover min-w-[140px] flex-1 snap-start p-6">
+      <div className="mb-2">
+        <p className="mb-2 text-sm text-muted-foreground">{label}</p>
+        <div className="text-muted-foreground/45">{icon}</div>
       </div>
-      <p className={`value-compact tabular-nums ${variant === "negative" ? "text-destructive" : ""}`}>
+      <p className={`text-3xl font-semibold tracking-tight tabular-nums ${variant === "negative" ? "text-destructive" : "text-foreground"}`}>
         {formatCurrency(value)}
       </p>
-      {sub && <p className="text-[10px] text-muted-foreground mt-1">{sub}</p>}
+      {sub && <p className="mt-1 text-xs text-muted-foreground">{sub}</p>}
     </div>
   );
 }
@@ -53,19 +53,19 @@ export default function WealthSummaryStrip({ accounts }: Props) {
   const netWorth = accounts.reduce((s, a) => s + Number(a.current_value), 0);
 
   return (
-    <div className="space-y-3">
-      <div className="flex items-center justify-between">
-        <p className="label-muted">Wealth Summary</p>
-        <p className="text-sm font-bold tabular-nums text-card-foreground">
-          Net Worth: {formatCurrency(netWorth)}
+    <div className="space-y-6">
+      <div>
+        <h3 className="mb-2 text-2xl font-semibold text-foreground">Wealth Summary</h3>
+        <p className="text-sm text-muted-foreground">
+          Net worth {formatCurrency(netWorth)} across cash, pensions, investments, property, and debt.
         </p>
       </div>
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-        <SnapshotCard label="Cash" value={cash} icon={<Banknote className="h-4 w-4" />} />
-        <SnapshotCard label="Pensions" value={pensions} icon={<PiggyBank className="h-4 w-4" />} />
-        <SnapshotCard label="ISAs" value={isa} icon={<Wallet className="h-4 w-4" />} />
-        <SnapshotCard label="Property" value={property} icon={<Home className="h-4 w-4" />} />
-        <SnapshotCard label="Debt" value={debt} icon={<CreditCard className="h-4 w-4" />} variant="negative" />
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
+        <SnapshotCard label="Cash" value={cash} icon={<Banknote className="h-5 w-5" />} />
+        <SnapshotCard label="Pensions" value={pensions} icon={<PiggyBank className="h-5 w-5" />} />
+        <SnapshotCard label="ISAs" value={isa} icon={<Wallet className="h-5 w-5" />} />
+        <SnapshotCard label="Property" value={property} icon={<Home className="h-5 w-5" />} />
+        <SnapshotCard label="Debt" value={debt} icon={<CreditCard className="h-5 w-5" />} variant="negative" />
       </div>
     </div>
   );

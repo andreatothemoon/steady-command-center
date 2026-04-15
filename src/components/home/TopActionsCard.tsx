@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { Clock, AlertTriangle, TrendingUp, CheckCircle2, ArrowUpRight } from "lucide-react";
+import { Clock, AlertTriangle, TrendingUp, CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatCurrency, staleness, daysAgo } from "@/lib/format";
 import type { Account } from "@/hooks/useAccounts";
@@ -30,7 +30,6 @@ export default function TopActionsCard({ accounts, memberANIs = [], isaUsed = 0,
 
   const actions: ActionItem[] = [];
 
-  // Stale accounts
   const staleAccounts = accounts.filter((a) => staleness(a.last_updated) === "stale");
   staleAccounts.slice(0, 2).forEach((a) => {
     const days = daysAgo(a.last_updated);
@@ -44,7 +43,6 @@ export default function TopActionsCard({ accounts, memberANIs = [], isaUsed = 0,
     });
   });
 
-  // ANI alerts
   memberANIs.forEach((m) => {
     if (m.ani > 85000) {
       actions.push({
@@ -58,27 +56,25 @@ export default function TopActionsCard({ accounts, memberANIs = [], isaUsed = 0,
     }
   });
 
-  // ISA
   const isaRemaining = isaLimit - isaUsed;
   if (isaRemaining > 0 && isaRemaining < 5000) {
     actions.push({
       id: "isa-deadline",
-      title: `ISA — ${formatCurrency(isaRemaining)} remaining`,
-      context: "Tax year deadline approaching",
+      title: `Max out ISA allowance`,
+      context: `${formatCurrency(isaRemaining)} remaining this tax year`,
       severity: "medium",
       route: "/profile",
       category: "optimisation",
     });
   }
 
-  // Limit to top 3
   const severityOrder = { high: 0, medium: 1, low: 2 };
   actions.sort((a, b) => severityOrder[a.severity] - severityOrder[b.severity]);
-  const top = actions.slice(0, 3);
+  const top = actions.slice(0, 2);
 
   if (top.length === 0) {
     return (
-      <div className="card-insight p-5 flex items-center gap-3">
+      <div className="card-surface lg:col-span-2 min-h-[220px] p-8 flex items-center gap-3">
         <CheckCircle2 className="h-5 w-5 text-success flex-shrink-0" />
         <div>
           <p className="text-sm font-medium text-card-foreground">All clear</p>
@@ -89,27 +85,59 @@ export default function TopActionsCard({ accounts, memberANIs = [], isaUsed = 0,
   }
 
   return (
-    <div className="card-insight p-5 h-full flex flex-col">
-      <p className="label-muted mb-3" style={{ opacity: 1 }}>Top Actions</p>
-      <div className="space-y-2 flex-1">
+    <div className="card-surface h-full p-8 lg:col-span-2">
+      <div className="mb-6">
+        <h3 className="mb-2 text-2xl font-semibold text-foreground">Recommended Actions</h3>
+        <p className="text-sm text-muted-foreground">Highest-impact actions based on your latest data.</p>
+      </div>
+      <div className="space-y-4">
         {top.map((action) => (
           <button
             key={action.id}
             onClick={() => navigate(action.route)}
-            className={cn(
-              "w-full text-left px-3 py-2.5 rounded-lg flex items-start gap-2.5 group transition-colors",
-              "hover:bg-secondary/20 border-l-2",
-              action.severity === "high" ? "border-l-destructive" : action.severity === "medium" ? "border-l-warning" : "border-l-muted-foreground/30"
-            )}
+            className="group flex w-full items-start justify-between gap-5 rounded-3xl border border-border/60 bg-card px-6 py-6 text-left transition-all hover:shadow-sm"
           >
-            <div className={cn("mt-0.5 flex-shrink-0", action.severity === "high" ? "text-destructive" : action.severity === "medium" ? "text-warning" : "text-muted-foreground")}>
-              {action.category === "freshness" ? <Clock className="h-3.5 w-3.5" /> : action.category === "tax" ? <AlertTriangle className="h-3.5 w-3.5" /> : <TrendingUp className="h-3.5 w-3.5" />}
+            <div className="flex flex-1 items-start gap-4">
+              <div
+                className={cn(
+                  "flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl",
+                  action.severity === "high"
+                    ? "bg-[#fef3f2] text-destructive"
+                    : action.category === "optimisation"
+                      ? "bg-[#f0fdf4] text-success"
+                      : "bg-[#f5f7fb] text-primary"
+                )}
+              >
+                {action.category === "freshness" ? <Clock className="h-5 w-5" /> : action.category === "tax" ? <AlertTriangle className="h-5 w-5" /> : <TrendingUp className="h-5 w-5" />}
+              </div>
+              <div className="min-w-0 flex-1">
+                <h4 className="mb-2 text-xl font-semibold text-foreground">{action.title}</h4>
+                <div className="mb-2 flex flex-wrap items-center gap-4">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-muted-foreground">Impact:</span>
+                    <span
+                      className={cn(
+                        "text-base font-semibold",
+                        action.severity === "high" ? "text-destructive" : action.category === "optimisation" ? "text-success" : "text-foreground"
+                      )}
+                    >
+                      {action.context}
+                    </span>
+                  </div>
+                  <span className="text-sm capitalize text-muted-foreground">{action.category}</span>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  {action.category === "freshness"
+                    ? "Refreshing this account will make the model more accurate."
+                    : action.category === "tax"
+                      ? "Reviewing this could reduce tax drag and preserve allowances."
+                      : "This is one of the cleaner levers available in your current plan."}
+                </p>
+              </div>
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-[12px] font-medium text-card-foreground leading-tight">{action.title}</p>
-              <p className="text-[10px] text-muted-foreground mt-0.5">{action.context}</p>
+            <div className="rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground transition-colors group-hover:bg-primary/92">
+              Try this
             </div>
-            <ArrowUpRight className="h-3 w-3 text-primary opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 mt-0.5" />
           </button>
         ))}
       </div>

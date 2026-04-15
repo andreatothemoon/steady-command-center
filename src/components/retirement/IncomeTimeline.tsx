@@ -29,38 +29,39 @@ export default function IncomeTimeline({ timeline, retireAge, targetIncome }: Pr
   }, [timeline, retireAge]);
 
   return (
-    <motion.div variants={item} className="hero-surface p-5 lg:p-6">
-      <div className="flex items-center justify-between mb-4">
-        <div>
-          <p className="label-muted">Retirement Income Timeline</p>
-          <p className="text-[11px] text-muted-foreground mt-1">Annual income by source from age {retireAge} to 90</p>
-        </div>
-        <div className="flex items-center gap-4 text-[11px] font-semibold text-card-foreground">
-          <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-sm" style={{ background: "hsl(142, 71%, 45%)" }} /> DC</span>
-          <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-sm" style={{ background: "hsl(280, 67%, 55%)" }} /> ISA</span>
-          <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-sm" style={{ background: "hsl(217, 91%, 60%)" }} /> DB</span>
-          <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-sm" style={{ background: "hsl(38, 92%, 50%)" }} /> State</span>
-          <span className="flex items-center gap-1.5"><span className="w-6 border-t-2 border-dashed" style={{ borderColor: "hsl(220, 9%, 46%)" }} /> Target</span>
+    <motion.div variants={item} className="card-surface p-8 lg:p-10">
+      <div className="mb-8">
+        <h3 className="mb-2 text-2xl font-semibold text-foreground">Income Timeline</h3>
+        <p className="text-sm text-muted-foreground">Annual income by source from age {retireAge} onward.</p>
+      </div>
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+        <p className="text-sm text-muted-foreground">Sources</p>
+        <div className="flex flex-wrap items-center gap-4 text-[11px] font-semibold text-card-foreground">
+          <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-sm" style={{ background: "hsl(211 51% 24%)" }} /> DC</span>
+          <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-sm" style={{ background: "hsl(211 40% 38%)" }} /> ISA</span>
+          <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-sm" style={{ background: "hsl(160 84% 39%)" }} /> DB</span>
+          <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-sm" style={{ background: "hsl(33 89% 55%)" }} /> State</span>
+          <span className="flex items-center gap-1.5"><span className="w-6 border-t-2 border-dashed" style={{ borderColor: "hsl(220 8% 47%)" }} /> Target</span>
         </div>
       </div>
       <ResponsiveContainer width="100%" height={320}>
         <AreaChart data={chartData} stackOffset="none">
           <defs>
             <linearGradient id="dcGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="hsl(142, 71%, 45%)" stopOpacity={0.3} />
-              <stop offset="100%" stopColor="hsl(142, 71%, 45%)" stopOpacity={0.02} />
+              <stop offset="0%" stopColor="hsl(211 51% 24%)" stopOpacity={0.22} />
+              <stop offset="100%" stopColor="hsl(211 51% 24%)" stopOpacity={0.03} />
             </linearGradient>
             <linearGradient id="dbGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="hsl(217, 91%, 60%)" stopOpacity={0.3} />
-              <stop offset="100%" stopColor="hsl(217, 91%, 60%)" stopOpacity={0.02} />
+              <stop offset="0%" stopColor="hsl(160 84% 39%)" stopOpacity={0.24} />
+              <stop offset="100%" stopColor="hsl(160 84% 39%)" stopOpacity={0.03} />
             </linearGradient>
             <linearGradient id="spGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="hsl(38, 92%, 50%)" stopOpacity={0.3} />
-              <stop offset="100%" stopColor="hsl(38, 92%, 50%)" stopOpacity={0.02} />
+              <stop offset="0%" stopColor="hsl(33 89% 55%)" stopOpacity={0.28} />
+              <stop offset="100%" stopColor="hsl(33 89% 55%)" stopOpacity={0.03} />
             </linearGradient>
             <linearGradient id="isaGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="hsl(280, 67%, 55%)" stopOpacity={0.3} />
-              <stop offset="100%" stopColor="hsl(280, 67%, 55%)" stopOpacity={0.02} />
+              <stop offset="0%" stopColor="hsl(211 40% 38%)" stopOpacity={0.22} />
+              <stop offset="100%" stopColor="hsl(211 40% 38%)" stopOpacity={0.03} />
             </linearGradient>
           </defs>
           <XAxis
@@ -86,7 +87,7 @@ export default function IncomeTimeline({ timeline, retireAge, targetIncome }: Pr
               const sp = (payload.find((p) => p.dataKey === "statePension")?.value as number) ?? 0;
               const total = dc + isa + db + sp;
               return (
-                <div className="card-surface px-3 py-2.5 shadow-xl border border-border text-xs space-y-1">
+                <div className="card-surface space-y-1 border border-border px-3 py-2.5 text-xs">
                   <p className="font-semibold text-card-foreground">Age {label}</p>
                   <div className="flex justify-between gap-4">
                     <span className="text-muted-foreground">DC drawdown</span>
@@ -114,8 +115,8 @@ export default function IncomeTimeline({ timeline, retireAge, targetIncome }: Pr
           />
           <ReferenceLine
             y={targetIncome}
-            stroke="hsl(0, 0%, 100%)"
-            strokeOpacity={0.2}
+            stroke="hsl(220 8% 47%)"
+            strokeOpacity={0.55}
             strokeDasharray="6 4"
             label={{
               value: `Target ${formatCurrency(targetIncome)}`,
@@ -128,7 +129,7 @@ export default function IncomeTimeline({ timeline, retireAge, targetIncome }: Pr
             type="monotone"
             dataKey="statePension"
             stackId="income"
-            stroke="hsl(38, 92%, 50%)"
+            stroke="hsl(33 89% 55%)"
             strokeWidth={1}
             fill="url(#spGrad)"
             animationDuration={1200}
@@ -137,7 +138,7 @@ export default function IncomeTimeline({ timeline, retireAge, targetIncome }: Pr
             type="monotone"
             dataKey="dbPension"
             stackId="income"
-            stroke="hsl(217, 91%, 60%)"
+            stroke="hsl(160 84% 39%)"
             strokeWidth={1}
             fill="url(#dbGrad)"
             animationDuration={1400}
@@ -146,7 +147,7 @@ export default function IncomeTimeline({ timeline, retireAge, targetIncome }: Pr
             type="monotone"
             dataKey="isaWithdrawal"
             stackId="income"
-            stroke="hsl(280, 67%, 55%)"
+            stroke="hsl(211 40% 38%)"
             strokeWidth={1}
             fill="url(#isaGrad)"
             animationDuration={1500}
@@ -155,7 +156,7 @@ export default function IncomeTimeline({ timeline, retireAge, targetIncome }: Pr
             type="monotone"
             dataKey="dcDrawdown"
             stackId="income"
-            stroke="hsl(142, 71%, 45%)"
+            stroke="hsl(211 51% 24%)"
             strokeWidth={1.5}
             fill="url(#dcGrad)"
             animationDuration={1600}
