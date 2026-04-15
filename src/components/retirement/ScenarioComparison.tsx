@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { formatCurrency } from "@/lib/format";
 import { cn } from "@/lib/utils";
-import { CheckCircle2, AlertTriangle, ArrowRight } from "lucide-react";
+import { CheckCircle2 } from "lucide-react";
 import type { RetirementProjection } from "@/lib/retirementEngine";
 import {
   Table,
@@ -55,13 +55,13 @@ export default function ScenarioComparison({ scenarios }: Props) {
   ];
 
   return (
-    <motion.div variants={item} className="hero-surface p-5 lg:p-6">
-      <div className="mb-4">
-        <p className="label-muted">Scenario Comparison</p>
-        <p className="text-[11px] text-muted-foreground mt-1">Side-by-side view of your retirement scenarios</p>
+    <motion.div variants={item} className="card-surface p-6 lg:p-8">
+      <div className="mb-5">
+        <h2 className="text-2xl font-semibold text-foreground">Scenario Comparison</h2>
+        <p className="mt-2 text-sm text-muted-foreground">Side-by-side view of your retirement scenarios.</p>
       </div>
 
-      <div className="overflow-x-auto -mx-5 px-5">
+      <div className="overflow-x-auto -mx-2 px-2">
         <Table>
           <TableHeader>
             <TableRow className="border-border/50">

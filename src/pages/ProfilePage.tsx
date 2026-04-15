@@ -23,17 +23,17 @@ export default function ProfilePage() {
 
   return (
     <motion.div
-      className="space-y-5"
+      className="space-y-8"
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
     >
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight text-foreground">Profile</h1>
-        <p className="label-subtle mt-1">Household settings, tax position, and documents</p>
+        <h1 className="text-4xl font-semibold tracking-tight text-foreground">Profile</h1>
+        <p className="mt-2 text-muted-foreground">Household settings, tax position, and documents in one place.</p>
       </div>
 
-      <div className="flex items-center gap-1 bg-secondary/30 rounded-xl p-1 w-fit">
+      <div className="inline-flex items-center gap-1 rounded-2xl border border-border/60 bg-card p-1.5 shadow-[0_10px_28px_-24px_rgba(15,23,42,0.18)]">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           return (
@@ -41,10 +41,10 @@ export default function ProfilePage() {
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
               className={cn(
-                "flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200",
+                "flex items-center gap-2 rounded-xl px-5 py-3 text-sm font-medium transition-all duration-200",
                 activeTab === tab.key
-                  ? "bg-primary text-primary-foreground shadow-md shadow-primary/20"
-                  : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
+                  ? "bg-primary text-primary-foreground shadow-[0_12px_24px_-16px_rgba(30,58,95,0.45)]"
+                  : "text-muted-foreground hover:text-foreground hover:bg-secondary"
               )}
             >
               <Icon className="h-4 w-4" />

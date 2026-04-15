@@ -145,54 +145,51 @@ export default function WealthPage() {
   };
 
   return (
-    <motion.div className="space-y-5" variants={stagger.container} initial="initial" animate="animate">
-      {/* Header */}
-      <motion.div variants={stagger.item} className="flex items-center justify-between">
+    <motion.div className="space-y-8" variants={stagger.container} initial="initial" animate="animate">
+      <motion.div variants={stagger.item} className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-foreground">Wealth</h1>
-          <p className="label-subtle mt-1">
+          <h1 className="text-4xl font-semibold tracking-tight text-foreground">Wealth</h1>
+          <p className="mt-2 text-muted-foreground">
             {isLoading ? "Loading…" : `${accounts.length} assets mapped to your retirement income`}
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          <Button size="sm" variant="outline" className="gap-2" onClick={() => setImportOpen(true)}>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button size="sm" variant="outline" className="gap-2 rounded-xl" onClick={() => setImportOpen(true)}>
             <Upload className="h-4 w-4" /> Import
           </Button>
           {accounts.length > 0 && (
-            <Button size="sm" variant="outline" className="gap-2" onClick={() => exportAccountsCsv(accounts)}>
+            <Button size="sm" variant="outline" className="gap-2 rounded-xl" onClick={() => exportAccountsCsv(accounts)}>
               <Download className="h-4 w-4" /> Export
             </Button>
           )}
-          <Button size="sm" className="gap-2" onClick={() => setAddOpen(true)}>
+          <Button size="sm" className="gap-2 rounded-xl" onClick={() => setAddOpen(true)}>
             <Plus className="h-4 w-4" /> Add Account
           </Button>
         </div>
       </motion.div>
 
-      {/* Summary strip */}
       {!isLoading && accounts.length > 0 && (
-        <motion.div variants={stagger.item} className="grid grid-cols-1 gap-3 sm:grid-cols-4">
-          <div className="card-surface p-4">
-            <p className="label-muted">Total Assets</p>
-            <p className="value-large mt-1">{formatCurrency(totalAssets)}</p>
+        <motion.div variants={stagger.item} className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="card-surface p-6">
+            <p className="text-sm text-muted-foreground">Total Assets</p>
+            <p className="mt-2 text-3xl font-semibold tracking-tight text-foreground">{formatCurrency(totalAssets)}</p>
           </div>
-          <div className="card-surface p-4">
-            <p className="label-muted">Liabilities</p>
-            <p className="value-large mt-1 text-destructive">{formatCurrency(totalLiabilities)}</p>
+          <div className="card-surface p-6">
+            <p className="text-sm text-muted-foreground">Liabilities</p>
+            <p className="mt-2 text-3xl font-semibold tracking-tight text-destructive">{formatCurrency(totalLiabilities)}</p>
           </div>
-          <div className="hero-surface p-4">
-            <p className="label-muted">Net Worth</p>
-            <p className="value-large mt-1 text-primary">{formatCurrency(netWorth)}</p>
+          <div className="hero-surface p-6">
+            <p className="text-sm text-muted-foreground">Net Worth</p>
+            <p className="mt-2 text-3xl font-semibold tracking-tight text-primary">{formatCurrency(netWorth)}</p>
           </div>
-          <div className="card-surface p-4">
-            <p className="label-muted">Est. Annual Income</p>
-            <p className="value-large mt-1">{formatCurrency(Math.round(totalIncomeEstimate))}</p>
-            <p className="text-[10px] text-muted-foreground mt-0.5">≈ {formatCurrency(Math.round(totalIncomeEstimate / 12))}/mo</p>
+          <div className="card-surface p-6">
+            <p className="text-sm text-muted-foreground">Est. Annual Income</p>
+            <p className="mt-2 text-3xl font-semibold tracking-tight text-foreground">{formatCurrency(Math.round(totalIncomeEstimate))}</p>
+            <p className="text-xs text-muted-foreground mt-1">≈ {formatCurrency(Math.round(totalIncomeEstimate / 12))}/mo</p>
           </div>
         </motion.div>
       )}
 
-      {/* Loading / empty */}
       {isLoading ? (
         <div className="space-y-4">{[1, 2, 3].map((i) => <Skeleton key={i} className="h-20 w-full rounded-xl" />)}</div>
       ) : accounts.length === 0 ? (
@@ -207,7 +204,6 @@ export default function WealthPage() {
           </div>
         </motion.div>
       ) : (
-        /* Asset buckets */
         <div className="space-y-6">
           {(["guaranteed", "growth", "safety", "property"] as Bucket[]).map((bucket) => {
             const items = buckets[bucket];
@@ -227,27 +223,28 @@ export default function WealthPage() {
 
             return (
               <motion.div key={bucket} variants={stagger.item}>
-                <div className="flex items-center gap-2.5 mb-2.5">
-                  <Icon className={cn("h-4 w-4", meta.color)} />
+                <div className="mb-4 flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-secondary">
+                    <Icon className={cn("h-4 w-4", meta.color)} />
+                  </div>
                   <div className="flex-1">
                     <div className="flex items-center justify-between">
-                      <h2 className="text-sm font-semibold text-foreground">{meta.label}</h2>
-                      <span className="text-sm font-medium text-muted-foreground tabular-nums">
+                      <h2 className="text-lg font-semibold text-foreground">{meta.label}</h2>
+                      <span className="text-base font-semibold text-foreground tabular-nums">
                         {bucket === "guaranteed" && items.some(a => a.account_type === "db_pension")
                           ? `${formatCurrency(bucketTotal)}/yr`
                           : formatCurrency(bucketTotal)}
                       </span>
                     </div>
-                    <p className="text-[11px] text-muted-foreground">{meta.description}</p>
+                    <p className="text-sm text-muted-foreground">{meta.description}</p>
                   </div>
                 </div>
 
-                {/* Add DB Pension button for guaranteed bucket */}
                 {bucket === "guaranteed" && (
-                  <div className="flex justify-end mb-2">
+                  <div className="mb-3 flex justify-end">
                     <button
                       onClick={() => { setEditingDbPension(null); setDbDialogOpen(true); }}
-                      className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary hover:text-primary/80 transition-colors"
+                      className="inline-flex items-center gap-1 rounded-xl bg-secondary px-3 py-2 text-xs font-semibold text-primary hover:bg-secondary/80 transition-colors"
                     >
                       <Plus className="h-3.5 w-3.5" />
                       Add DB Pension
@@ -269,7 +266,7 @@ export default function WealthPage() {
                         return (
                           <div
                             key={account.id}
-                            className="flex items-center justify-between px-5 py-3.5 hover:bg-secondary/30 transition-colors cursor-pointer"
+                            className="flex items-center justify-between px-6 py-4 hover:bg-secondary/50 transition-colors cursor-pointer"
                             onClick={() => handleAccountClick(account)}
                           >
                             <div className="flex-1 min-w-0">
@@ -277,7 +274,7 @@ export default function WealthPage() {
                                 {isDbPension && (
                                   <Building2 className="h-3.5 w-3.5 text-primary flex-shrink-0" />
                                 )}
-                                <p className="text-sm font-medium text-card-foreground truncate">{account.name}</p>
+                                <p className="text-base font-semibold text-card-foreground truncate">{account.name}</p>
                                 {isDbPension && dbInfo && (
                                   <span className="text-[10px] font-medium text-muted-foreground bg-secondary/50 px-1.5 py-0.5 rounded">
                                     {dbInfo.pension.scheme_type === "CARE" ? "CARE" : "Final Salary"} · 1/{Number(dbInfo.pension.accrual_rate)}
@@ -289,7 +286,7 @@ export default function WealthPage() {
                                   </span>
                                 )}
                               </div>
-                              <p className="text-[11px] text-muted-foreground mt-0.5">
+                              <p className="text-sm text-muted-foreground mt-1">
                                 {isDbPension ? (
                                   <>
                                     {formatOwnerGroup(account.owner_name)} · {dbInfo?.pension.is_active_member ? "Active" : "Deferred"}

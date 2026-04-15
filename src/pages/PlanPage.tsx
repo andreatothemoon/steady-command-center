@@ -258,10 +258,10 @@ export default function PlanPage() {
   const scenarioMetas: ScenarioMeta[] = scenarios.map((s) => ({ id: s.id, name: s.name }));
 
   return (
-    <motion.div className="space-y-5" variants={stagger.container} initial="initial" animate="animate">
+    <motion.div className="space-y-8" variants={stagger.container} initial="initial" animate="animate">
       <motion.div variants={stagger.item}>
-        <h1 className="text-2xl font-semibold tracking-tight text-foreground">Plan</h1>
-        <p className="label-subtle mt-1">Model your retirement income — adjust assumptions and compare scenarios</p>
+        <h1 className="text-4xl font-semibold tracking-tight text-foreground">Plan</h1>
+        <p className="mt-2 text-muted-foreground">Model your retirement income, compare scenarios, and tune assumptions.</p>
       </motion.div>
 
       <motion.div variants={stagger.item}>
@@ -297,7 +297,7 @@ export default function PlanPage() {
             <HeroOutcome projection={projection} retireAge={activeValues.retireAge} targetIncome={activeValues.targetIncome} />
           </motion.div>
 
-          <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
             <div className="lg:col-span-2">
               <IncomeTimeline timeline={projection.timeline} retireAge={activeValues.retireAge} targetIncome={activeValues.targetIncome} />
             </div>
@@ -307,9 +307,9 @@ export default function PlanPage() {
           <ActionsPanel actions={actions} />
 
           <motion.div variants={stagger.item}>
-            <div className="mb-3">
-              <p className="label-muted">Income Sources</p>
-              <p className="text-[11px] text-muted-foreground mt-1">Breakdown of where your retirement income comes from</p>
+            <div className="mb-4">
+              <h2 className="text-2xl font-semibold text-foreground">Income Sources</h2>
+              <p className="mt-2 text-sm text-muted-foreground">Breakdown of where your retirement income comes from.</p>
             </div>
             <IncomeSourceCards
               projection={projection}
@@ -324,7 +324,7 @@ export default function PlanPage() {
       )}
 
       {compareMode && activeValues && (
-        <div className="max-w-sm">
+        <div className="max-w-md">
           <QuickControls quickSliders={quickSliders} advancedSliders={advancedSliders} isSaving={upsert.isPending} />
         </div>
       )}

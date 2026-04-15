@@ -3,8 +3,8 @@
  */
 import { motion } from "framer-motion";
 import {
-  Clock, ArrowUpRight, AlertTriangle, TrendingUp,
-  CheckCircle2, Zap, ChevronRight,
+  Clock, AlertTriangle, TrendingUp,
+  CheckCircle2, ChevronRight,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -155,39 +155,37 @@ export default function ActionsPage() {
   const highCount = actions.filter((a) => a.severity === "high").length;
 
   return (
-    <motion.div className="space-y-5" variants={stagger.container} initial="initial" animate="animate">
+    <motion.div className="space-y-8" variants={stagger.container} initial="initial" animate="animate">
       <motion.div variants={stagger.item}>
-        <h1 className="text-2xl font-semibold tracking-tight text-foreground">Actions</h1>
-        <p className="label-subtle mt-1">Prioritised actions ranked by income impact</p>
+        <h1 className="text-4xl font-semibold tracking-tight text-foreground">Actions</h1>
+        <p className="mt-2 text-muted-foreground">Prioritised next steps ranked by impact, urgency, and effort.</p>
       </motion.div>
 
-      {/* Summary */}
       {actions.length > 0 && (
-        <motion.div variants={stagger.item} className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-          <div className={cn("card-surface p-4", highCount > 0 && "border-destructive/20")}>
-            <p className="label-muted">Urgent</p>
-            <p className="value-large mt-1 text-destructive">{highCount}</p>
+        <motion.div variants={stagger.item} className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <div className={cn("card-surface p-6", highCount > 0 && "border-destructive/20")}>
+            <p className="text-sm text-muted-foreground">Urgent</p>
+            <p className="mt-2 text-3xl font-semibold tracking-tight text-destructive">{highCount}</p>
           </div>
-          <div className="card-surface p-4">
-            <p className="label-muted">Total Actions</p>
-            <p className="value-large mt-1">{actions.length}</p>
+          <div className="card-surface p-6">
+            <p className="text-sm text-muted-foreground">Total Actions</p>
+            <p className="mt-2 text-3xl font-semibold tracking-tight text-foreground">{actions.length}</p>
           </div>
-          <div className="card-surface p-4">
-            <p className="label-muted">Quick Wins</p>
-            <p className="value-large mt-1 text-success">{actions.filter(a => a.effort === "easy").length}</p>
+          <div className="card-surface p-6">
+            <p className="text-sm text-muted-foreground">Quick Wins</p>
+            <p className="mt-2 text-3xl font-semibold tracking-tight text-success">{actions.filter(a => a.effort === "easy").length}</p>
           </div>
         </motion.div>
       )}
 
-      {/* Action list */}
       {actions.length === 0 ? (
-        <motion.div variants={stagger.item} className="card-surface p-8 text-center">
+        <motion.div variants={stagger.item} className="card-surface p-12 text-center">
           <CheckCircle2 className="h-8 w-8 text-success mx-auto mb-3" />
           <p className="text-sm font-medium text-card-foreground">All clear</p>
           <p className="text-[11px] text-muted-foreground mt-1">No actions needed — everything is up to date</p>
         </motion.div>
       ) : (
-        <motion.div variants={stagger.container} className="space-y-2">
+        <motion.div variants={stagger.container} className="space-y-4">
           {actions.map((action) => {
             const sev = severityStyle[action.severity];
             const eff = effortStyle[action.effort];
@@ -197,31 +195,36 @@ export default function ActionsPage() {
                 variants={stagger.item}
                 onClick={() => navigate(action.route)}
                 className={cn(
-                  "w-full text-left card-surface px-5 py-4 flex items-start gap-3.5 group transition-colors duration-150",
-                  "hover:bg-secondary/30 border-l-2 rounded-xl",
-                  sev.border
+                  "group w-full rounded-[28px] border border-border/60 bg-card px-7 py-7 text-left transition-all duration-150 hover:shadow-sm",
+                  "flex items-start justify-between gap-5"
                 )}
               >
-                <div className={cn("mt-0.5 flex-shrink-0", sev.icon)}>
-                  {action.severity === "high" ? <AlertTriangle className="h-4.5 w-4.5" /> :
-                   action.severity === "medium" ? <Clock className="h-4.5 w-4.5" /> :
-                   <TrendingUp className="h-4.5 w-4.5" />}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-card-foreground leading-tight">{action.title}</p>
-                  <p className="text-[11px] text-muted-foreground mt-0.5">{action.context}</p>
-                  <div className="flex items-center gap-2 mt-2">
+                <div className="flex flex-1 items-start gap-4">
+                  <div className={cn(
+                    "flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl",
+                    action.severity === "high"
+                      ? "bg-[#fef3f2] text-destructive"
+                      : action.severity === "medium"
+                        ? "bg-[#fff7ed] text-warning"
+                        : "bg-[#f5f7fb] text-primary"
+                  )}>
+                    {action.severity === "high" ? <AlertTriangle className="h-5 w-5" /> :
+                     action.severity === "medium" ? <Clock className="h-5 w-5" /> :
+                     <TrendingUp className="h-5 w-5" />}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex flex-wrap items-center gap-2 mb-2">
+                      <p className="text-xl font-semibold text-card-foreground leading-tight">{action.title}</p>
+                      <span className={cn("text-[10px] font-semibold px-2 py-0.5 rounded-full", sev.badge)}>{action.severity}</span>
+                      <span className={cn("text-[10px] font-semibold px-2 py-0.5 rounded-full", eff.cls)}>{eff.label}</span>
+                    </div>
+                    <p className="text-sm text-muted-foreground">{action.context}</p>
                     {action.incomeImpact && (
-                      <span className="text-[10px] font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-full">
-                        {action.incomeImpact}
-                      </span>
+                      <p className="mt-3 text-sm font-semibold text-primary">{action.incomeImpact}</p>
                     )}
-                    <span className={cn("text-[10px] font-semibold px-2 py-0.5 rounded-full", eff.cls)}>
-                      {eff.label}
-                    </span>
                   </div>
                 </div>
-                <span className="flex-shrink-0 text-[11px] font-semibold text-primary opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-0.5 mt-0.5 whitespace-nowrap">
+                <span className="flex-shrink-0 text-sm font-semibold text-primary opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-0.5 mt-0.5 whitespace-nowrap">
                   {action.cta} <ChevronRight className="h-3 w-3" />
                 </span>
               </motion.button>

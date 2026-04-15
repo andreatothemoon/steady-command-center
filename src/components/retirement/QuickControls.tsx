@@ -1,9 +1,7 @@
 import { motion } from "framer-motion";
 import { Slider } from "@/components/ui/slider";
-import { formatCurrency } from "@/lib/format";
 import { Settings2 } from "lucide-react";
 import { useState } from "react";
-import { cn } from "@/lib/utils";
 
 const item = {
   initial: { opacity: 0, y: 12 },
@@ -30,19 +28,22 @@ export default function QuickControls({ quickSliders, advancedSliders, isSaving 
   const [showAdvanced, setShowAdvanced] = useState(false);
 
   return (
-    <motion.div variants={item} className="card-insight p-5 space-y-4">
+    <motion.div variants={item} className="card-surface space-y-5 p-6">
       <div className="flex items-center justify-between">
-        <p className="label-muted">Controls</p>
+        <div>
+          <p className="text-lg font-semibold text-foreground">Controls</p>
+          <p className="mt-1 text-sm text-muted-foreground">Adjust the assumptions driving this scenario.</p>
+        </div>
         {isSaving && (
-          <span className="text-[10px] text-muted-foreground/60 animate-pulse">Saving…</span>
+          <span className="text-[11px] text-muted-foreground animate-pulse">Saving…</span>
         )}
       </div>
 
       {quickSliders.map((s) => (
-        <div key={s.label}>
-          <div className="flex justify-between mb-1.5">
-            <span className="text-[11px] text-muted-foreground">{s.label}</span>
-            <span className="text-[11px] font-semibold text-card-foreground tabular-nums">{s.format(s.value)}</span>
+        <div key={s.label} className="rounded-2xl bg-secondary/60 p-4">
+          <div className="mb-2 flex justify-between">
+            <span className="text-sm text-muted-foreground">{s.label}</span>
+            <span className="text-sm font-semibold text-card-foreground tabular-nums">{s.format(s.value)}</span>
           </div>
           <Slider
             value={[s.value]}
@@ -57,7 +58,7 @@ export default function QuickControls({ quickSliders, advancedSliders, isSaving 
 
       <button
         onClick={() => setShowAdvanced(!showAdvanced)}
-        className="flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground hover:text-card-foreground transition-colors mt-2"
+        className="mt-2 flex items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-card-foreground"
       >
         <Settings2 className="w-3.5 h-3.5" />
         {showAdvanced ? "Hide" : "Show"} advanced settings
@@ -68,13 +69,13 @@ export default function QuickControls({ quickSliders, advancedSliders, isSaving 
           initial={{ opacity: 0, height: 0 }}
           animate={{ opacity: 1, height: "auto" }}
           exit={{ opacity: 0, height: 0 }}
-          className="space-y-4 pt-2 border-t border-border/50"
+          className="space-y-4 border-t border-border/60 pt-4"
         >
           {advancedSliders.map((s) => (
-            <div key={s.label}>
-              <div className="flex justify-between mb-1.5">
-                <span className="text-[11px] text-muted-foreground">{s.label}</span>
-                <span className="text-[11px] font-semibold text-card-foreground tabular-nums">{s.format(s.value)}</span>
+            <div key={s.label} className="rounded-2xl bg-secondary/60 p-4">
+              <div className="mb-2 flex justify-between">
+                <span className="text-sm text-muted-foreground">{s.label}</span>
+                <span className="text-sm font-semibold text-card-foreground tabular-nums">{s.format(s.value)}</span>
               </div>
               <Slider
                 value={[s.value]}

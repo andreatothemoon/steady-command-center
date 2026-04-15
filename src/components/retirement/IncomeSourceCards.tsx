@@ -26,14 +26,14 @@ export default function IncomeSourceCards({ projection, dbPensions, statePension
   );
 
   return (
-    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
       {/* DC Pensions */}
-      <motion.div variants={item} className="card-surface p-4 lg:p-5">
-        <div className="flex items-center gap-2 mb-3">
-          <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-primary/10 text-primary">
-            <Wallet className="w-3.5 h-3.5" />
+      <motion.div variants={item} className="card-surface p-6">
+        <div className="mb-4 flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+            <Wallet className="h-4.5 w-4.5" />
           </div>
-          <span className="text-xs font-semibold text-card-foreground">DC Pensions</span>
+          <span className="text-sm font-semibold text-card-foreground">DC Pensions</span>
         </div>
         <div className="space-y-2.5">
           <div>
@@ -58,17 +58,17 @@ export default function IncomeSourceCards({ projection, dbPensions, statePension
       </motion.div>
 
       {/* DB Pensions */}
-      <motion.div variants={item} className="card-surface p-4 lg:p-5">
-        <div className="flex items-center gap-2 mb-3">
-          <div className="flex items-center justify-center w-7 h-7 rounded-lg" style={{ background: "hsl(217, 91%, 60%, 0.1)", color: "hsl(217, 91%, 60%)" }}>
-            <Shield className="w-3.5 h-3.5" />
+      <motion.div variants={item} className="card-surface p-6">
+        <div className="mb-4 flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-2xl" style={{ background: "hsl(160 84% 39% / 0.1)", color: "hsl(160 84% 39%)" }}>
+            <Shield className="h-4.5 w-4.5" />
           </div>
-          <span className="text-xs font-semibold text-card-foreground">DB Pensions</span>
+          <span className="text-sm font-semibold text-card-foreground">DB Pensions</span>
         </div>
         <div className="space-y-2.5">
           <div>
             <p className="text-[11px] text-muted-foreground">Projected income</p>
-            <p className="text-lg font-bold tabular-nums" style={{ color: "hsl(217, 91%, 60%)" }}>{formatCurrency(projection.totalDBIncome)}</p>
+            <p className="text-lg font-bold tabular-nums" style={{ color: "hsl(160 84% 39%)" }}>{formatCurrency(projection.totalDBIncome)}</p>
           </div>
           {dbProjections.map((proj, i) => (
             <div key={dbPensions[i]?.id} className="pt-1.5 border-t border-border/50 space-y-1">
@@ -90,12 +90,12 @@ export default function IncomeSourceCards({ projection, dbPensions, statePension
       </motion.div>
 
       {/* State Pension */}
-      <motion.div variants={item} className="card-surface p-4 lg:p-5">
-        <div className="flex items-center gap-2 mb-3">
-          <div className="flex items-center justify-center w-7 h-7 rounded-lg" style={{ background: "hsl(38, 92%, 50%, 0.1)", color: "hsl(38, 92%, 50%)" }}>
-            <Building2 className="w-3.5 h-3.5" />
+      <motion.div variants={item} className="card-surface p-6">
+        <div className="mb-4 flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-2xl" style={{ background: "hsl(38 92% 50% / 0.1)", color: "hsl(38 92% 50%)" }}>
+            <Building2 className="h-4.5 w-4.5" />
           </div>
-          <span className="text-xs font-semibold text-card-foreground">State Pension</span>
+          <span className="text-sm font-semibold text-card-foreground">State Pension</span>
         </div>
         <div className="space-y-2.5">
           <div>
@@ -125,12 +125,12 @@ export default function IncomeSourceCards({ projection, dbPensions, statePension
       </motion.div>
 
       {/* Other Income */}
-      <motion.div variants={item} className="card-surface p-4 lg:p-5">
-        <div className="flex items-center gap-2 mb-3">
-          <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-muted text-muted-foreground">
-            <Landmark className="w-3.5 h-3.5" />
+      <motion.div variants={item} className="card-surface p-6">
+        <div className="mb-4 flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-secondary text-muted-foreground">
+            <Landmark className="h-4.5 w-4.5" />
           </div>
-          <span className="text-xs font-semibold text-card-foreground">Other Income</span>
+          <span className="text-sm font-semibold text-card-foreground">Other Income</span>
         </div>
         <div className="space-y-2.5">
           <p className="text-[11px] text-muted-foreground">

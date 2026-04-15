@@ -57,30 +57,30 @@ export default function HeroOutcome({ projection, retireAge, targetIncome }: Pro
   ];
 
   return (
-    <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
       {cards.map((card, i) => (
         <motion.div
           key={card.label}
           variants={item}
           className={cn(
-            "relative p-4 lg:p-5 overflow-hidden",
+            "relative overflow-hidden p-6",
             card.accent ? "hero-surface" : "card-surface"
           )}
         >
-          <div className="flex items-center gap-2 mb-3">
+          <div className="mb-4 flex items-center gap-3">
             <div className={cn(
-              "flex items-center justify-center w-7 h-7 rounded-lg",
+              "flex h-10 w-10 items-center justify-center rounded-2xl",
               card.accent
                 ? "bg-primary/10 text-primary"
-                : "bg-muted text-muted-foreground"
+                : "bg-secondary text-muted-foreground"
             )}>
-              <card.icon className="w-3.5 h-3.5" />
+              <card.icon className="h-4.5 w-4.5" />
             </div>
-            <span className="label-muted">{card.label}</span>
+            <span className="text-sm text-muted-foreground">{card.label}</span>
           </div>
           <p className={cn(
-            "font-bold tabular-nums tracking-tight",
-            card.accent ? "text-3xl lg:text-4xl text-primary" : "text-2xl lg:text-3xl text-card-foreground"
+            "font-semibold tabular-nums tracking-tight",
+            card.accent ? "text-4xl text-primary" : "text-3xl text-card-foreground"
           )}>
             {card.value}
           </p>
@@ -94,7 +94,7 @@ export default function HeroOutcome({ projection, retireAge, targetIncome }: Pro
                 {card.sub}
               </span>
             ) : (
-              <p className="text-[11px] text-muted-foreground">{card.sub}</p>
+              <p className="text-sm text-muted-foreground">{card.sub}</p>
             )}
           </div>
         </motion.div>

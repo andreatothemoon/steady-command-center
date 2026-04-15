@@ -40,16 +40,16 @@ export default function ScenarioTabs({
   onToggleCompare,
 }: Props) {
   return (
-    <div className="flex items-center gap-2 flex-wrap">
+    <div className="flex flex-wrap items-center gap-2 rounded-[28px] border border-border/60 bg-card p-3">
       {scenarios.map((s) => (
         <button
           key={s.id}
           onClick={() => onSelect(s.id)}
           className={cn(
-            "group relative flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all",
+            "group relative flex items-center gap-1.5 rounded-xl px-4 py-2.5 text-sm font-medium transition-all",
             activeId === s.id
               ? "bg-primary/10 text-primary border border-primary/20"
-              : "bg-muted/50 text-muted-foreground hover:bg-muted hover:text-card-foreground border border-transparent"
+              : "bg-secondary/70 text-muted-foreground hover:bg-secondary hover:text-card-foreground border border-transparent"
           )}
         >
           {s.name}
@@ -70,9 +70,9 @@ export default function ScenarioTabs({
       {scenarios.length < 3 && (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="sm" className="h-7 px-2 text-muted-foreground hover:text-card-foreground">
+            <Button variant="ghost" size="sm" className="h-10 rounded-xl px-3 text-muted-foreground hover:text-card-foreground">
               <Plus className="w-3.5 h-3.5 mr-1" />
-              <span className="text-[11px]">Add</span>
+              <span className="text-sm">Add</span>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="w-56">
@@ -92,7 +92,7 @@ export default function ScenarioTabs({
         <Button
           variant={compareMode ? "default" : "outline"}
           size="sm"
-          className="h-7 px-3 text-[11px] ml-auto"
+          className="ml-auto h-10 rounded-xl px-4 text-sm"
           onClick={onToggleCompare}
         >
           <Copy className="w-3 h-3 mr-1.5" />
