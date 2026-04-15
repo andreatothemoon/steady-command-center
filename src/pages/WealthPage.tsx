@@ -12,7 +12,7 @@ import {
   TrendingUp, Landmark, Home as HomeIcon, Building2,
 } from "lucide-react";
 import { useAccounts, type Account } from "@/hooks/useAccounts";
-import { useDBPensions, useUpsertDBPension, useDeleteDBPension } from "@/hooks/useDBPensions";
+import { useDBPensions, useUpsertDBPension } from "@/hooks/useDBPensions";
 import type { DBPension, DBPensionInput } from "@/hooks/useDBPensions";
 import { accountTypeLabels } from "@/data/types";
 import { formatCurrency, staleness, daysAgo, calcMonthlyPayment } from "@/lib/format";
@@ -70,7 +70,6 @@ export default function WealthPage() {
   const { data: accounts = [], isLoading } = useAccounts();
   const { data: dbPensions = [] } = useDBPensions();
   const upsertMutation = useUpsertDBPension();
-  const deleteMutation = useDeleteDBPension();
   const [addOpen, setAddOpen] = useState(false);
   const [editAccount, setEditAccount] = useState<Account | null>(null);
   const [importOpen, setImportOpen] = useState(false);
@@ -102,6 +101,24 @@ export default function WealthPage() {
     });
     return map;
   }, [dbPensions]);
+  const allocation = useMemo(() => {
+    const totals = (Object.keys(buckets) as Bucket[]).map((bucket) => {
+      const total = buckets[bucket].reduce((sum, account) => {
+        if (account.account_type === "db_pension") return sum + (dbProjections[account.id]?.projected ?? 0);
+        return sum + Math.abs(Number(account.current_value));
+      }, 0);
+      return { bucket, total, meta: bucketMeta[bucket] };
+    });
+    const grossTotal = totals.reduce((sum, item) => sum + item.total, 0);
+    return totals
+      .filter((item) => item.total > 0)
+      .sort((a, b) => b.total - a.total)
+      .map((item) => ({
+        ...item,
+        share: grossTotal > 0 ? (item.total / grossTotal) * 100 : 0,
+      }));
+  }, [buckets, dbProjections]);
+  const leadingAllocation = allocation[0] ?? null;
 
   // Income contribution estimate
   const dcIncome = accounts
@@ -150,7 +167,7 @@ export default function WealthPage() {
         <div>
           <h1 className="text-4xl font-semibold tracking-tight text-foreground">Wealth</h1>
           <p className="mt-2 text-muted-foreground">
-            {isLoading ? "Loading…" : `${accounts.length} assets mapped to your retirement income`}
+            {isLoading ? "Loading…" : "Your complete financial picture across pensions, investments, cash, property, and debt."}
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -169,25 +186,104 @@ export default function WealthPage() {
       </motion.div>
 
       {!isLoading && accounts.length > 0 && (
-        <motion.div variants={stagger.item} className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <div className="card-surface p-6">
-            <p className="text-sm text-muted-foreground">Total Assets</p>
-            <p className="mt-2 text-3xl font-semibold tracking-tight text-foreground">{formatCurrency(totalAssets)}</p>
-          </div>
-          <div className="card-surface p-6">
-            <p className="text-sm text-muted-foreground">Liabilities</p>
-            <p className="mt-2 text-3xl font-semibold tracking-tight text-destructive">{formatCurrency(totalLiabilities)}</p>
-          </div>
-          <div className="hero-surface p-6">
-            <p className="text-sm text-muted-foreground">Net Worth</p>
-            <p className="mt-2 text-3xl font-semibold tracking-tight text-primary">{formatCurrency(netWorth)}</p>
-          </div>
-          <div className="card-surface p-6">
-            <p className="text-sm text-muted-foreground">Est. Annual Income</p>
-            <p className="mt-2 text-3xl font-semibold tracking-tight text-foreground">{formatCurrency(Math.round(totalIncomeEstimate))}</p>
-            <p className="text-xs text-muted-foreground mt-1">≈ {formatCurrency(Math.round(totalIncomeEstimate / 12))}/mo</p>
-          </div>
-        </motion.div>
+        <>
+          <motion.div variants={stagger.item} className="card-surface p-10">
+            <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Total Net Worth</p>
+                <p className="mt-2 text-5xl font-semibold tracking-[-0.06em] text-foreground">{formatCurrency(netWorth)}</p>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  {accounts.length} account{accounts.length !== 1 ? "s" : ""} mapped into retirement income and liquidity.
+                </p>
+              </div>
+              <div className="grid gap-6 sm:grid-cols-3">
+                <div>
+                  <p className="text-sm text-muted-foreground">Retirement income estimate</p>
+                  <p className="mt-1 text-2xl font-semibold tracking-tight text-foreground">
+                    {formatCurrency(Math.round(totalIncomeEstimate / 12))}/mo
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Total assets</p>
+                  <p className="mt-1 text-2xl font-semibold tracking-tight text-foreground">{formatCurrency(totalAssets)}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Liabilities</p>
+                  <p className="mt-1 text-2xl font-semibold tracking-tight text-destructive">{formatCurrency(totalLiabilities)}</p>
+                </div>
+              </div>
+            </div>
+
+            {leadingAllocation && (
+              <div className="mt-8 border-t border-border/60 pt-6">
+                <div className="flex items-center justify-between gap-4">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Largest allocation</p>
+                    <p className="mt-1 text-lg font-semibold text-foreground">{leadingAllocation.meta.label}</p>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    {leadingAllocation.share.toFixed(0)}% of your gross balance footprint
+                  </p>
+                </div>
+              </div>
+            )}
+          </motion.div>
+
+          <motion.div variants={stagger.item} className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+            <div className="card-surface p-8">
+              <h2 className="text-2xl font-semibold text-foreground">Asset Allocation</h2>
+              <div className="mt-6 space-y-4">
+                {allocation.map((item) => (
+                  <div key={item.bucket} className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="h-3 w-3 rounded-full bg-primary" style={{ backgroundColor: item.bucket === "guaranteed" ? "#1e3a5f" : item.bucket === "growth" ? "#3b5f8a" : item.bucket === "safety" ? "#7fa3c7" : "#a8c5e2" }} />
+                        <span className="text-sm text-muted-foreground">{item.meta.label}</span>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm font-semibold text-foreground">{formatCurrency(Math.round(item.total))}</p>
+                        <p className="text-xs text-muted-foreground">{item.share.toFixed(1)}%</p>
+                      </div>
+                    </div>
+                    <div className="h-2 overflow-hidden rounded-full bg-secondary">
+                      <div
+                        className="h-full rounded-full bg-primary"
+                        style={{ width: `${Math.max(item.share, 4)}%`, backgroundColor: item.bucket === "guaranteed" ? "#1e3a5f" : item.bucket === "growth" ? "#3b5f8a" : item.bucket === "safety" ? "#7fa3c7" : "#a8c5e2" }}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="card-surface p-8">
+              <h2 className="text-2xl font-semibold text-foreground">Retirement Funding Mix</h2>
+              <div className="mt-6 space-y-5">
+                <div>
+                  <p className="text-sm text-muted-foreground">Guaranteed income</p>
+                  <p className="mt-1 text-3xl font-semibold tracking-tight text-foreground">
+                    {formatCurrency(Math.round((dbIncome + UK_STATE_PENSION_FULL) / 12))}/mo
+                  </p>
+                  <p className="mt-1 text-sm text-muted-foreground">DB pensions plus full State Pension estimate.</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Flexible drawdown capacity</p>
+                  <p className="mt-1 text-3xl font-semibold tracking-tight text-foreground">
+                    {formatCurrency(Math.round(dcIncome / 12))}/mo
+                  </p>
+                  <p className="mt-1 text-sm text-muted-foreground">From pensions, ISAs, and investment accounts at a 4% rule of thumb.</p>
+                </div>
+                <div className="border-t border-border/60 pt-5">
+                  <p className="text-sm text-muted-foreground">What this means</p>
+                  <p className="mt-2 text-base text-foreground">
+                    Your current balance mix supports an estimated {formatCurrency(Math.round(totalIncomeEstimate / 12))}/month,
+                    with {formatCurrency(Math.round((dbIncome + UK_STATE_PENSION_FULL) / 12))}/month coming from more stable sources.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        </>
       )}
 
       {isLoading ? (

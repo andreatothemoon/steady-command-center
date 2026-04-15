@@ -3,8 +3,8 @@
  */
 import { motion } from "framer-motion";
 import {
-  Clock, AlertTriangle, TrendingUp,
-  CheckCircle2, ChevronRight,
+  Clock, TrendingUp,
+  CheckCircle2, Circle, ArrowRight,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -20,22 +20,26 @@ type Effort = "easy" | "moderate" | "involved";
 interface ActionItem {
   id: string;
   title: string;
-  context: string;
-  incomeImpact: string | null;
+  description: string;
+  impact: string;
+  secondaryImpact: string | null;
+  monthlyGain: number | null;
   effort: Effort;
   severity: Severity;
   cta: string;
   route: string;
+  category: string;
+  status: "recommended" | "pending";
 }
 
 interface MemberANI { name: string; ani: number; pensionContributions: number }
 
 const TAX_YEAR = "2025/26";
 
-const severityStyle: Record<Severity, { border: string; icon: string; badge: string }> = {
-  high:   { border: "border-l-destructive", icon: "text-destructive", badge: "bg-destructive/15 text-destructive" },
-  medium: { border: "border-l-warning", icon: "text-warning", badge: "bg-warning/15 text-warning" },
-  low:    { border: "border-l-muted-foreground/30", icon: "text-muted-foreground", badge: "bg-secondary text-muted-foreground" },
+const severityStyle: Record<Severity, { badge: string }> = {
+  high:   { badge: "bg-destructive/15 text-destructive" },
+  medium: { badge: "bg-warning/15 text-warning" },
+  low:    { badge: "bg-secondary text-muted-foreground" },
 };
 
 const effortStyle: Record<Effort, { label: string; cls: string }> = {
@@ -59,12 +63,16 @@ function buildActions(accounts: Account[], memberANIs: MemberANI[], isaUsed: num
     actions.push({
       id: `stale-${a.id}`,
       title: `Update ${a.name}`,
-      context: `Last updated ${days} days ago — affects net worth accuracy`,
-      incomeImpact: null,
+      description: `Refresh this account so your wealth and retirement model reflects current balances and debt.`,
+      impact: "Sharper planning accuracy",
+      secondaryImpact: `${days} days old`,
+      monthlyGain: null,
       effort: "easy",
       severity: days > 180 ? "high" : "medium",
       cta: "Update now",
       route: "/wealth",
+      category: "Planning",
+      status: days > 180 ? "recommended" : "pending",
     });
   });
 
@@ -76,24 +84,32 @@ function buildActions(accounts: Account[], memberANIs: MemberANI[], isaUsed: num
         actions.push({
           id: `ani-${m.name}`,
           title: `${m.name}'s ANI approaching £100k`,
-          context: `${formatCurrency(buffer)} buffer remaining — risk of losing personal allowance`,
-          incomeImpact: `+${formatCurrency(Math.round(12570 / 12))}/mo if optimised`,
+          description: `${formatCurrency(buffer)} buffer remains before personal allowance taper starts to bite harder.`,
+          impact: "Stay ahead of the £100k taper",
+          secondaryImpact: `${formatCurrency(Math.round(12570 / 12))}/mo if optimised`,
+          monthlyGain: Math.round(12570 / 12),
           effort: "moderate",
           severity: buffer < 5000 ? "high" : "medium",
           cta: "Review tax position",
           route: "/profile",
+          category: "Tax Efficiency",
+          status: buffer < 5000 ? "recommended" : "pending",
         });
       }
     } else if (m.ani >= 100000) {
       actions.push({
         id: `ani-exceeded-${m.name}`,
         title: `${m.name}'s ANI exceeds £100k`,
-        context: `Currently ${formatCurrency(m.ani)} — personal allowance tapering in effect`,
-        incomeImpact: `+${formatCurrency(Math.round(12570 / 12))}/mo if reduced below £100k`,
+        description: `Currently ${formatCurrency(m.ani)}, so personal allowance tapering is already in effect.`,
+        impact: "Restore personal allowance",
+        secondaryImpact: `+${formatCurrency(Math.round(12570 / 12))}/mo if reduced below £100k`,
+        monthlyGain: Math.round(12570 / 12),
         effort: "involved",
         severity: "high",
         cta: "Review options",
         route: "/profile",
+        category: "Tax Efficiency",
+        status: "recommended",
       });
     }
   });
@@ -105,12 +121,16 @@ function buildActions(accounts: Account[], memberANIs: MemberANI[], isaUsed: num
     actions.push({
       id: "isa-deadline",
       title: `ISA allowance — ${formatCurrency(isaRemaining)} remaining`,
-      context: "Tax year deadline approaching — use it or lose it",
-      incomeImpact: incomeGain > 0 ? `+${formatCurrency(incomeGain)}/mo potential income` : null,
+      description: "Tax year deadline approaching. Using the remainder now keeps more future growth sheltered.",
+      impact: `Shelter ${formatCurrency(isaRemaining)} before year end`,
+      secondaryImpact: incomeGain > 0 ? `+${formatCurrency(incomeGain)}/mo potential income` : "Tax-free growth",
+      monthlyGain: incomeGain > 0 ? incomeGain : null,
       effort: "easy",
       severity: "medium",
       cta: "View allowances",
       route: "/profile",
+      category: "High Impact",
+      status: "recommended",
     });
   }
 
@@ -120,12 +140,16 @@ function buildActions(accounts: Account[], memberANIs: MemberANI[], isaUsed: num
     actions.push({
       id: "aging-batch",
       title: `${agingAccounts.length} accounts aging`,
-      context: "Between 30–91 days since last update",
-      incomeImpact: null,
+      description: "Several balances are getting stale and will gradually weaken the quality of your projections.",
+      impact: "Keep the model current",
+      secondaryImpact: "Between 30–91 days since last update",
+      monthlyGain: null,
       effort: "moderate",
       severity: "low",
       cta: "View accounts",
       route: "/wealth",
+      category: "Maintenance",
+      status: "pending",
     });
   }
 
@@ -153,28 +177,74 @@ export default function ActionsPage() {
 
   const actions = buildActions(accounts, memberANIs, isaUsed, isaLimit);
   const highCount = actions.filter((a) => a.severity === "high").length;
+  const recommendedCount = actions.filter((a) => a.status === "recommended").length;
+  const pendingCount = actions.filter((a) => a.status === "pending").length;
+  const quickWins = actions.filter((a) => a.effort === "easy").length;
+  const totalMonthlyImpact = actions.reduce((sum, action) => sum + (action.monthlyGain ?? 0), 0);
+  const categoryCounts = Array.from(
+    actions.reduce((map, action) => {
+      map.set(action.category, (map.get(action.category) ?? 0) + 1);
+      return map;
+    }, new Map<string, number>())
+  );
 
   return (
     <motion.div className="space-y-8" variants={stagger.container} initial="initial" animate="animate">
       <motion.div variants={stagger.item}>
         <h1 className="text-4xl font-semibold tracking-tight text-foreground">Actions</h1>
-        <p className="mt-2 text-muted-foreground">Prioritised next steps ranked by impact, urgency, and effort.</p>
+        <p className="mt-2 text-muted-foreground">Personalized steps to improve your plan, reduce tax drag, and keep your numbers current.</p>
       </motion.div>
 
       {actions.length > 0 && (
         <motion.div variants={stagger.item} className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-          <div className={cn("card-surface p-6", highCount > 0 && "border-destructive/20")}>
-            <p className="text-sm text-muted-foreground">Urgent</p>
-            <p className="mt-2 text-3xl font-semibold tracking-tight text-destructive">{highCount}</p>
+          <div className="card-surface p-8">
+            <div className="mb-3 flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#fef3f2]">
+                <Circle className="h-5 w-5 text-destructive" />
+              </div>
+              <h2 className="text-lg font-semibold text-foreground">Recommended</h2>
+            </div>
+            <p className="text-4xl font-semibold tracking-[-0.05em] text-foreground">{recommendedCount}</p>
+            <p className="mt-1 text-sm text-muted-foreground">{highCount} high-priority right now</p>
           </div>
-          <div className="card-surface p-6">
-            <p className="text-sm text-muted-foreground">Total Actions</p>
-            <p className="mt-2 text-3xl font-semibold tracking-tight text-foreground">{actions.length}</p>
+          <div className="card-surface p-8">
+            <div className="mb-3 flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#fff7ed]">
+                <Clock className="h-5 w-5 text-warning" />
+              </div>
+              <h2 className="text-lg font-semibold text-foreground">Pending</h2>
+            </div>
+            <p className="text-4xl font-semibold tracking-[-0.05em] text-foreground">{pendingCount}</p>
+            <p className="mt-1 text-sm text-muted-foreground">{quickWins} quick wins available</p>
           </div>
-          <div className="card-surface p-6">
-            <p className="text-sm text-muted-foreground">Quick Wins</p>
-            <p className="mt-2 text-3xl font-semibold tracking-tight text-success">{actions.filter(a => a.effort === "easy").length}</p>
+          <div className="card-surface p-8">
+            <div className="mb-3 flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#f0fdf4]">
+                <CheckCircle2 className="h-5 w-5 text-success" />
+              </div>
+              <h2 className="text-lg font-semibold text-foreground">Potential Impact</h2>
+            </div>
+            <p className="text-4xl font-semibold tracking-[-0.05em] text-foreground">
+              {totalMonthlyImpact > 0 ? `+${formatCurrency(totalMonthlyImpact)}` : "—"}
+            </p>
+            <p className="mt-1 text-sm text-muted-foreground">Estimated extra monthly retirement income</p>
           </div>
+        </motion.div>
+      )}
+
+      {actions.length > 0 && (
+        <motion.div variants={stagger.item} className="flex flex-wrap gap-3">
+          <span className="rounded-full bg-primary px-4 py-2 text-sm font-medium text-primary-foreground">
+            All <span className="opacity-75">({actions.length})</span>
+          </span>
+          {categoryCounts.map(([category, count]) => (
+            <span
+              key={category}
+              className="rounded-full border border-border/60 bg-card px-4 py-2 text-sm text-muted-foreground"
+            >
+              {category} <span className="opacity-70">({count})</span>
+            </span>
+          ))}
         </motion.div>
       )}
 
@@ -202,34 +272,71 @@ export default function ActionsPage() {
                 <div className="flex flex-1 items-start gap-4">
                   <div className={cn(
                     "flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl",
-                    action.severity === "high"
+                    action.status === "recommended"
                       ? "bg-[#fef3f2] text-destructive"
                       : action.severity === "medium"
                         ? "bg-[#fff7ed] text-warning"
-                        : "bg-[#f5f7fb] text-primary"
+                      : "bg-[#f5f7fb] text-primary"
                   )}>
-                    {action.severity === "high" ? <AlertTriangle className="h-5 w-5" /> :
+                    {action.status === "recommended" ? <Circle className="h-5 w-5" /> :
                      action.severity === "medium" ? <Clock className="h-5 w-5" /> :
                      <TrendingUp className="h-5 w-5" />}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex flex-wrap items-center gap-2 mb-2">
                       <p className="text-xl font-semibold text-card-foreground leading-tight">{action.title}</p>
-                      <span className={cn("text-[10px] font-semibold px-2 py-0.5 rounded-full", sev.badge)}>{action.severity}</span>
+                      <span className={cn("text-[10px] font-semibold px-2 py-0.5 rounded-full", sev.badge)}>
+                        {action.status === "recommended" ? "recommended" : action.severity}
+                      </span>
                       <span className={cn("text-[10px] font-semibold px-2 py-0.5 rounded-full", eff.cls)}>{eff.label}</span>
+                      <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-secondary text-muted-foreground">{action.category}</span>
                     </div>
-                    <p className="text-sm text-muted-foreground">{action.context}</p>
-                    {action.incomeImpact && (
-                      <p className="mt-3 text-sm font-semibold text-primary">{action.incomeImpact}</p>
-                    )}
+                    <p className="text-sm text-muted-foreground">{action.description}</p>
+                    <div className="mt-4 flex flex-wrap items-center gap-x-6 gap-y-2">
+                      <div>
+                        <p className="text-[11px] uppercase tracking-[0.12em] text-muted-foreground">Impact</p>
+                        <p className="text-sm font-semibold text-success">{action.impact}</p>
+                      </div>
+                      {action.secondaryImpact && (
+                        <div>
+                          <p className="text-[11px] uppercase tracking-[0.12em] text-muted-foreground">Additional benefit</p>
+                          <p className="text-sm font-medium text-foreground">{action.secondaryImpact}</p>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
-                <span className="flex-shrink-0 text-sm font-semibold text-primary opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-0.5 mt-0.5 whitespace-nowrap">
-                  {action.cta} <ChevronRight className="h-3 w-3" />
+                <span className="flex-shrink-0 whitespace-nowrap rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground flex items-center gap-1.5 transition-colors group-hover:bg-primary/92">
+                  {action.cta} <ArrowRight className="h-4 w-4" />
                 </span>
               </motion.button>
             );
           })}
+        </motion.div>
+      )}
+
+      {actions.length > 0 && (
+        <motion.div variants={stagger.item} className="card-surface p-8">
+          <h2 className="text-2xl font-semibold text-foreground">Total Potential Impact</h2>
+          <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-3">
+            <div>
+              <p className="text-sm text-muted-foreground">Additional monthly retirement income</p>
+              <p className="mt-2 text-4xl font-semibold tracking-[-0.05em] text-success">
+                {totalMonthlyImpact > 0 ? `+${formatCurrency(totalMonthlyImpact)}` : "—"}
+              </p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Recommended actions</p>
+              <p className="mt-2 text-4xl font-semibold tracking-[-0.05em] text-foreground">{recommendedCount}</p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Quick wins</p>
+              <p className="mt-2 text-4xl font-semibold tracking-[-0.05em] text-foreground">{quickWins}</p>
+            </div>
+          </div>
+          <p className="mt-6 text-sm text-muted-foreground">
+            The strongest gains come from tax efficiency, ISA usage, and keeping source balances up to date.
+          </p>
         </motion.div>
       )}
     </motion.div>
