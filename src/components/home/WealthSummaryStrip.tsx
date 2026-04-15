@@ -15,7 +15,7 @@ function SnapshotCard({ label, value, icon, sub, variant = "default" }: Snapshot
     <div className="card-surface-hover min-w-[140px] flex-1 snap-start p-6">
       <div className="mb-2">
         <p className="mb-2 text-sm text-muted-foreground">{label}</p>
-        <div className="text-muted-foreground/45">{icon}</div>
+        <div className="text-muted-foreground/70">{icon}</div>
       </div>
       <p className={`text-3xl font-semibold tracking-tight tabular-nums ${variant === "negative" ? "text-destructive" : "text-foreground"}`}>
         {formatCurrency(value)}
