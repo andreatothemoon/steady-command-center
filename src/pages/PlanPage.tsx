@@ -26,6 +26,7 @@ import {
   STATE_PENSION_AGE,
   DEFAULT_TAX_FREE_CASH_PCT,
   type RetirementInputs,
+  type OtherIncomeSource,
 } from "@/lib/retirementEngine";
 import type { DBPensionParams } from "@/lib/dbPensionEngine";
 import { toDBPensionParams } from "@/lib/dbPensionRates";
@@ -47,6 +48,38 @@ const stagger = {
   },
 };
 
+function buildOtherIncomeSources(values: {
+  retireAge: number;
+  isaBridgeIncome: number;
+  propertyIncome: number;
+  partTimeIncome: number;
+}): OtherIncomeSource[] {
+  const bridgeEndAge = Math.max(values.retireAge, STATE_PENSION_AGE - 1);
+  return [
+    {
+      id: "isa_bridge",
+      label: "ISA bridge",
+      annualAmount: values.retireAge < STATE_PENSION_AGE ? values.isaBridgeIncome : 0,
+      startAge: values.retireAge,
+      endAge: bridgeEndAge,
+    },
+    {
+      id: "property",
+      label: "Property income",
+      annualAmount: values.propertyIncome,
+      startAge: values.retireAge,
+      endAge: DEFAULT_LONGEVITY,
+    },
+    {
+      id: "part_time",
+      label: "Part-time work",
+      annualAmount: values.retireAge < STATE_PENSION_AGE ? values.partTimeIncome : 0,
+      startAge: values.retireAge,
+      endAge: bridgeEndAge,
+    },
+  ];
+}
+
 export default function PlanPage() {
   const { householdId } = useAuth();
   const qc = useQueryClient();
@@ -59,6 +92,7 @@ export default function PlanPage() {
   const { data: accounts = [] } = useAccounts();
   const canPersistTaxFreeCash = scenarios.some((scenario) => "tax_free_cash_pct" in scenario);
   const canPersistTaxFreeCashOptions = scenarios.some((scenario) => "tax_free_cash_enabled" in scenario);
+  const canPersistOtherIncome = scenarios.some((scenario) => "property_income_annual" in scenario);
 
   const totalIsaPot = useMemo(() =>
     accounts
@@ -107,6 +141,15 @@ export default function PlanPage() {
         ("tax_free_cash_age" in scenario && scenario.tax_free_cash_age != null
           ? Number(scenario.tax_free_cash_age)
           : retireAge),
+      isaBridgeIncome:
+        edits.isa_bridge_income_annual ??
+        ("isa_bridge_income_annual" in scenario ? Number(scenario.isa_bridge_income_annual) : 0),
+      propertyIncome:
+        edits.property_income_annual ??
+        ("property_income_annual" in scenario ? Number(scenario.property_income_annual) : 0),
+      partTimeIncome:
+        edits.part_time_income_annual ??
+        ("part_time_income_annual" in scenario ? Number(scenario.part_time_income_annual) : 0),
     };
   }, [localEdits]);
 
@@ -139,6 +182,7 @@ export default function PlanPage() {
         isaPot: totalIsaPot,
         isaDrawdownRate: drawdownRate / 100,
         isaGrowthRate: v.expectedReturn,
+        otherIncomeSources: buildOtherIncomeSources(v),
       };
       const projection = computeRetirement(inputs, dbPensionParams);
       return { scenario: s, values: v, inputs, projection };
@@ -219,11 +263,18 @@ export default function PlanPage() {
                 tax_free_cash_age: valuesToSave.taxFreeCashAge,
               }
             : {}),
+          ...(canPersistOtherIncome
+            ? {
+                isa_bridge_income_annual: valuesToSave.isaBridgeIncome,
+                property_income_annual: valuesToSave.propertyIncome,
+                part_time_income_annual: valuesToSave.partTimeIncome,
+              }
+            : {}),
         },
       });
     }, 800);
     return () => { if (saveTimer.current) clearTimeout(saveTimer.current); };
-  }, [activeEdits, activeScenario, canPersistTaxFreeCash, canPersistTaxFreeCashOptions, getScenarioValues, isLoading]);
+  }, [activeEdits, activeScenario, canPersistOtherIncome, canPersistTaxFreeCash, canPersistTaxFreeCashOptions, getScenarioValues, isLoading]);
 
   const createdDefault = useRef(false);
   useEffect(() => {
@@ -244,6 +295,13 @@ export default function PlanPage() {
           ...(canPersistTaxFreeCash ? { tax_free_cash_pct: DEFAULT_TAX_FREE_CASH_PCT } : {}),
           ...(canPersistTaxFreeCashOptions
             ? { tax_free_cash_enabled: true, tax_free_cash_age: 57 }
+            : {}),
+          ...(canPersistOtherIncome
+            ? {
+                isa_bridge_income_annual: 0,
+                property_income_annual: 0,
+                part_time_income_annual: 0,
+              }
             : {}),
           target_income: 30000,
         },
@@ -274,10 +332,17 @@ export default function PlanPage() {
               tax_free_cash_age: values.taxFreeCashAge,
             }
           : {}),
+        ...(canPersistOtherIncome
+          ? {
+              isa_bridge_income_annual: values.isaBridgeIncome,
+              property_income_annual: values.propertyIncome,
+              part_time_income_annual: values.partTimeIncome,
+            }
+          : {}),
         target_income: values.targetIncome,
       },
     });
-  }, [householdId, activeValues, scenarios.length, upsert, canPersistTaxFreeCash, canPersistTaxFreeCashOptions]);
+  }, [householdId, activeValues, scenarios.length, upsert, canPersistOtherIncome, canPersistTaxFreeCash, canPersistTaxFreeCashOptions]);
 
   const handleDelete = useCallback(async (id: string) => {
     if (scenarios.length <= 1) return;
@@ -308,6 +373,9 @@ export default function PlanPage() {
     { label: "Inflation", value: activeValues.inflation, onChange: (v: number) => setField("inflation_rate", v), min: 0, max: 6, step: 0.5, format: (v: number) => `${v}%` },
     { label: "Tax-Free Cash", value: activeValues.taxFreeCashPct, onChange: (v: number) => setField("tax_free_cash_pct", v), min: 0, max: 25, step: 1, format: (v: number) => activeValues.taxFreeCashEnabled ? `${v}%` : "Not taken", disabled: !activeValues.taxFreeCashEnabled },
     { label: "Tax-Free Cash Age", value: Math.max(activeValues.taxFreeCashAge, activeValues.retireAge), onChange: (v: number) => setField("tax_free_cash_age", v), min: activeValues.retireAge, max: 75, step: 1, format: (v: number) => activeValues.taxFreeCashEnabled ? `${v}` : "Not taken", disabled: !activeValues.taxFreeCashEnabled },
+    { label: "ISA Bridge Income", value: activeValues.isaBridgeIncome, onChange: (v: number) => setField("isa_bridge_income_annual", v), min: 0, max: 100000, step: 1000, format: (v: number) => v > 0 ? `${formatCurrency(v)}/yr` : "Not configured", disabled: activeValues.retireAge >= STATE_PENSION_AGE },
+    { label: "Property Income", value: activeValues.propertyIncome, onChange: (v: number) => setField("property_income_annual", v), min: 0, max: 100000, step: 1000, format: (v: number) => v > 0 ? `${formatCurrency(v)}/yr` : "Not configured" },
+    { label: "Part-Time Income", value: activeValues.partTimeIncome, onChange: (v: number) => setField("part_time_income_annual", v), min: 0, max: 100000, step: 1000, format: (v: number) => v > 0 ? `${formatCurrency(v)}/yr` : "Not configured", disabled: activeValues.retireAge >= STATE_PENSION_AGE },
     { label: "State Pension %", value: statePensionPct, onChange: setStatePensionPct, min: 0, max: 100, step: 5, format: (v: number) => `${v}%` },
     { label: "Drawdown Rate", value: drawdownRate, onChange: setDrawdownRate, min: 2, max: 8, step: 0.5, format: (v: number) => `${v}%` },
   ] : [];
@@ -345,6 +413,13 @@ export default function PlanPage() {
       value: activeValues?.taxFreeCashEnabled
         ? `${activeValues.taxFreeCashPct.toFixed(0)}% at age ${activeValues.taxFreeCashAge}`
         : "Not taken",
+      adjustable: true,
+    },
+    {
+      label: "Other income",
+      value: activeValues
+        ? `${formatCurrency(activeValues.isaBridgeIncome + activeValues.propertyIncome + activeValues.partTimeIncome)}/yr configured`
+        : "—",
       adjustable: true,
     },
     { label: "Drawdown rate", value: `${drawdownRate.toFixed(1)}%`, adjustable: true },

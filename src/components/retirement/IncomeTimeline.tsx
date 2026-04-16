@@ -23,6 +23,7 @@ const chartColors = {
   db: "#efcb68",
   state: "#e1efe6",
   isa: "#aeb7b3",
+  other: "#895b1e",
   taxFreeCash: "#895b1e",
   grid: "rgba(9, 21, 64, 0.07)",
   axis: "rgba(0, 4, 17, 0.42)",
@@ -43,6 +44,7 @@ export default function IncomeTimeline({ timeline, retireAge, targetIncome }: Pr
       db: Math.round(point.dbPension / 12),
       state: Math.round(point.statePension / 12),
       isa: Math.round(point.isaWithdrawal / 12),
+      other: Math.round(point.otherIncome / 12),
       taxFreeCash: point.taxFreeCash,
     }));
   }, [timeline]);
@@ -57,7 +59,7 @@ export default function IncomeTimeline({ timeline, retireAge, targetIncome }: Pr
 
   const yMax = useMemo(() => {
     const maxTotal = chartData.reduce((max, point) => {
-      const total = point.dc + point.db + point.state + point.isa;
+      const total = point.dc + point.db + point.state + point.isa + point.other;
       return Math.max(max, total);
     }, 0);
     const step = 1500;
@@ -94,6 +96,11 @@ export default function IncomeTimeline({ timeline, retireAge, targetIncome }: Pr
               <stop offset="60%" stopColor={chartColors.isa} stopOpacity={0.66} />
               <stop offset="95%" stopColor={chartColors.isa} stopOpacity={0.38} />
             </linearGradient>
+            <linearGradient id="incomeOther" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor={chartColors.other} stopOpacity={0.9} />
+              <stop offset="60%" stopColor={chartColors.other} stopOpacity={0.66} />
+              <stop offset="95%" stopColor={chartColors.other} stopOpacity={0.38} />
+            </linearGradient>
           </defs>
           <CartesianGrid strokeDasharray="3 3" stroke={chartColors.grid} vertical={false} />
           <XAxis
@@ -116,14 +123,15 @@ export default function IncomeTimeline({ timeline, retireAge, targetIncome }: Pr
             cursor={{ stroke: chartColors.dc, strokeWidth: 1.5, strokeDasharray: "5 5" }}
             content={({ active, payload }) => {
               if (!active || !payload?.length) return null;
-              const data = payload[0]?.payload as { age: number; dc: number; db: number; state: number; isa: number; taxFreeCash: number };
+              const data = payload[0]?.payload as { age: number; dc: number; db: number; state: number; isa: number; other: number; taxFreeCash: number };
               if (!data) return null;
               const dc = data.dc ?? 0;
               const db = data.db ?? 0;
               const sp = data.state ?? 0;
               const isa = data.isa ?? 0;
+              const other = data.other ?? 0;
               const taxFreeCash = data.taxFreeCash ?? 0;
-              const total = dc + isa + db + sp;
+              const total = dc + isa + db + sp + other;
               return (
                 <div className="min-w-[290px] rounded-[28px] border border-[rgba(0,0,0,0.08)] bg-white px-6 py-5 shadow-[0_18px_36px_-24px_rgba(15,23,42,0.32)]">
                   <p className="mb-5 text-[2rem] font-semibold tracking-[-0.05em] text-foreground">Age {data.age}</p>
@@ -143,6 +151,10 @@ export default function IncomeTimeline({ timeline, retireAge, targetIncome }: Pr
                     <div className="flex justify-between gap-6">
                       <span className="text-xl text-muted-foreground">ISA</span>
                       <span className="text-xl font-semibold tabular-nums text-foreground">{formatCurrency(isa)}</span>
+                    </div>
+                    <div className="flex justify-between gap-6">
+                      <span className="text-xl text-muted-foreground">Other Income</span>
+                      <span className="text-xl font-semibold tabular-nums text-foreground">{formatCurrency(other)}</span>
                     </div>
                     {taxFreeCash > 0 && (
                       <div className="flex justify-between gap-6 rounded-2xl bg-secondary/60 px-4 py-3">
@@ -176,6 +188,15 @@ export default function IncomeTimeline({ timeline, retireAge, targetIncome }: Pr
             />
           )}
           <ReferenceLine x={statePensionAge} stroke={chartColors.db} strokeDasharray="3 3" strokeWidth={1.75} />
+          <Area
+            type="monotone"
+            dataKey="other"
+            stackId="income"
+            stroke={chartColors.other}
+            fill="url(#incomeOther)"
+            strokeWidth={0}
+            activeDot={{ r: 6, fill: chartColors.other, stroke: "#ffffff", strokeWidth: 3 }}
+          />
           <Area
             type="monotone"
             dataKey="isa"
@@ -231,6 +252,10 @@ export default function IncomeTimeline({ timeline, retireAge, targetIncome }: Pr
         <div className="flex items-center gap-2">
           <div className="h-3 w-3 rounded-full" style={{ backgroundColor: chartColors.isa }} />
           <span className="text-sm text-muted-foreground">ISA Withdrawals</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="h-3 w-3 rounded-full" style={{ backgroundColor: chartColors.other }} />
+          <span className="text-sm text-muted-foreground">Other Income</span>
         </div>
         {taxFreeCashEvent && (
           <div className="flex items-center gap-2">

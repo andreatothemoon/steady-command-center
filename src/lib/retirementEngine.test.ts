@@ -125,3 +125,53 @@ describe("computeRetirement tax-free cash", () => {
     expect(projection.timeline.find((point) => point.age === 62)?.dcDrawdown).toBe(2_760);
   });
 });
+
+describe("computeRetirement other income", () => {
+  it("adds configured other income to retirement income and the timeline", () => {
+    const projection = computeRetirement(
+      {
+        ...baseInputs,
+        retireAge: 60,
+        targetIncome: 30_000,
+        otherIncomeSources: [
+          {
+            id: "property",
+            label: "Property income",
+            annualAmount: 12_000,
+            startAge: 60,
+            endAge: 90,
+          },
+        ],
+      },
+      []
+    );
+
+    expect(projection.otherIncomeAtRetirement).toBe(12_000);
+    expect(projection.totalIncome).toBe(12_000);
+    expect(projection.timeline.find((point) => point.age === 60)?.otherIncome).toBe(12_000);
+  });
+
+  it("only includes other income inside its configured age window", () => {
+    const projection = computeRetirement(
+      {
+        ...baseInputs,
+        retireAge: 60,
+        otherIncomeSources: [
+          {
+            id: "part_time",
+            label: "Part-time work",
+            annualAmount: 6_000,
+            startAge: 62,
+            endAge: 64,
+          },
+        ],
+      },
+      []
+    );
+
+    expect(projection.otherIncomeAtRetirement).toBe(0);
+    expect(projection.timeline.find((point) => point.age === 61)?.otherIncome).toBe(0);
+    expect(projection.timeline.find((point) => point.age === 62)?.otherIncome).toBe(6_000);
+    expect(projection.timeline.find((point) => point.age === 65)?.otherIncome).toBe(0);
+  });
+});

@@ -6,7 +6,14 @@ import { useTaxSummaries, computeANI, summaryToForm } from "@/hooks/useTaxSummar
 import { useDBPensions } from "@/hooks/useDBPensions";
 import { useSelectedRetirementScenario } from "@/hooks/useRetirementScenarios";
 import { toDBPensionParams } from "@/lib/dbPensionRates";
-import { computeRetirement, DEFAULT_TAX_FREE_CASH_PCT, type RetirementInputs } from "@/lib/retirementEngine";
+import {
+  computeRetirement,
+  DEFAULT_LONGEVITY,
+  DEFAULT_TAX_FREE_CASH_PCT,
+  STATE_PENSION_AGE,
+  type OtherIncomeSource,
+  type RetirementInputs,
+} from "@/lib/retirementEngine";
 import type { DBPensionParams } from "@/lib/dbPensionEngine";
 import IncomeTimeline from "@/components/retirement/IncomeTimeline";
 import IncomeHeroCard from "@/components/home/IncomeHeroCard";
@@ -26,6 +33,45 @@ const stagger = {
     animate: { opacity: 1, y: 0, transition: { duration: 0.45, ease: [0.25, 0.46, 0.45, 0.94] } },
   },
 };
+
+function buildOtherIncomeSources(scenario: {
+  retirement_age: number;
+  isa_bridge_income_annual?: number;
+  property_income_annual?: number;
+  part_time_income_annual?: number;
+}): OtherIncomeSource[] {
+  const bridgeEndAge = Math.max(scenario.retirement_age, STATE_PENSION_AGE - 1);
+  const isaBridgeIncome =
+    "isa_bridge_income_annual" in scenario ? Number(scenario.isa_bridge_income_annual ?? 0) : 0;
+  const propertyIncome =
+    "property_income_annual" in scenario ? Number(scenario.property_income_annual ?? 0) : 0;
+  const partTimeIncome =
+    "part_time_income_annual" in scenario ? Number(scenario.part_time_income_annual ?? 0) : 0;
+
+  return [
+    {
+      id: "isa_bridge",
+      label: "ISA bridge",
+      annualAmount: scenario.retirement_age < STATE_PENSION_AGE ? isaBridgeIncome : 0,
+      startAge: scenario.retirement_age,
+      endAge: bridgeEndAge,
+    },
+    {
+      id: "property",
+      label: "Property income",
+      annualAmount: propertyIncome,
+      startAge: scenario.retirement_age,
+      endAge: DEFAULT_LONGEVITY,
+    },
+    {
+      id: "part_time",
+      label: "Part-time work",
+      annualAmount: scenario.retirement_age < STATE_PENSION_AGE ? partTimeIncome : 0,
+      startAge: scenario.retirement_age,
+      endAge: bridgeEndAge,
+    },
+  ];
+}
 
 export default function HomePage() {
   const { data: accounts = [] } = useAccounts();
@@ -87,6 +133,7 @@ export default function HomePage() {
       isaPot: totalIsaPot,
       isaDrawdownRate: 0.04,
       isaGrowthRate: Number(scenario.expected_return),
+      otherIncomeSources: buildOtherIncomeSources(scenario),
     };
     return { result: computeRetirement(inputs, dbPensionParams), inputs };
   }, [scenario, dbPensionParams, totalIsaPot]);

@@ -12,6 +12,16 @@ export const DEFAULT_LONGEVITY = 90;
 export const DEFAULT_TAX_FREE_CASH_PCT = 25;
 export const MAX_TAX_FREE_CASH_PCT = 25;
 
+export type OtherIncomeSourceId = "isa_bridge" | "property" | "part_time";
+
+export interface OtherIncomeSource {
+  id: OtherIncomeSourceId;
+  label: string;
+  annualAmount: number;
+  startAge: number;
+  endAge: number;
+}
+
 export interface RetirementInputs {
   currentAge: number;
   retireAge: number;
@@ -29,6 +39,7 @@ export interface RetirementInputs {
   isaPot: number; // total ISA balance at today
   isaDrawdownRate: number; // decimal e.g. 0.04
   isaGrowthRate: number; // % annual growth for ISA
+  otherIncomeSources?: OtherIncomeSource[];
 }
 
 export interface IncomeTimelinePoint {
@@ -52,6 +63,8 @@ export interface RetirementProjection {
   dcDrawdown: number;
   totalDBIncome: number;
   statePensionIncome: number;
+  otherIncomeAtRetirement: number;
+  otherIncomeSources: OtherIncomeSource[];
   totalIncome: number;
   gap: number; // positive = shortfall
   readinessPct: number;
@@ -69,6 +82,37 @@ function resolveTaxFreeCashAge(inputs: RetirementInputs, longevity: number): num
   if (inputs.taxFreeCashEnabled === false) return null;
   const requestedAge = Number.isFinite(inputs.taxFreeCashAge) ? Number(inputs.taxFreeCashAge) : inputs.retireAge;
   return Math.min(Math.max(Math.round(requestedAge), inputs.retireAge), longevity);
+}
+
+function normalizeOtherIncomeSources(inputs: RetirementInputs, longevity: number): OtherIncomeSource[] {
+  return (inputs.otherIncomeSources ?? [])
+    .map((source) => {
+      const annualAmount = Math.max(0, Math.round(Number(source.annualAmount) || 0));
+      const startAge = Math.min(
+        Math.max(Math.round(Number(source.startAge) || inputs.retireAge), inputs.retireAge),
+        longevity
+      );
+      const endAge = Math.min(
+        Math.max(Math.round(Number(source.endAge) || longevity), startAge),
+        longevity
+      );
+
+      return {
+        id: source.id,
+        label: source.label,
+        annualAmount,
+        startAge,
+        endAge,
+      };
+    })
+    .filter((source) => source.annualAmount > 0);
+}
+
+function otherIncomeAtAge(sources: OtherIncomeSource[], age: number): number {
+  return sources.reduce((sum, source) => {
+    if (age < source.startAge || age > source.endAge) return sum;
+    return sum + source.annualAmount;
+  }, 0);
 }
 
 export interface RetirementAction {
@@ -111,6 +155,7 @@ export function buildIncomeTimeline(
   const { currentAge, retireAge, currentPot, monthlyContrib, employerContrib, expectedReturn, inflation, statePensionPct, drawdownRate, isaPot, isaDrawdownRate, isaGrowthRate } = inputs;
   const taxFreeCashPct = inputs.taxFreeCashEnabled === false ? 0 : normalizeTaxFreeCashPct(inputs.taxFreeCashPct);
   const taxFreeCashAge = resolveTaxFreeCashAge(inputs, longevity);
+  const otherIncomeSources = normalizeOtherIncomeSources(inputs, longevity);
   const statePensionAnnual = Math.round(UK_STATE_PENSION_FULL * (statePensionPct / 100));
 
   const dbIncomeAtScenarioRetirement = dbPensionParams.map((p) =>
@@ -147,7 +192,7 @@ export function buildIncomeTimeline(
 
   // Compute ISA pot at retirement (grows but no contributions assumed)
   const isaRealReturn = (isaGrowthRate - inflation) / 100;
-  let isaAtRetire = isaPot * Math.pow(1 + Math.max(isaRealReturn, 0), yearsToRetire);
+  const isaAtRetire = isaPot * Math.pow(1 + Math.max(isaRealReturn, 0), yearsToRetire);
   
   // Phase 2: Decumulation (retirement to longevity)
   let remainingPot = dcPotReal;
@@ -175,7 +220,8 @@ export function buildIncomeTimeline(
     
     const db = dbByAge[age] ?? 0;
     const sp = age >= STATE_PENSION_AGE ? statePensionAnnual : 0;
-    const total = dc + db + sp + isa;
+    const otherIncome = otherIncomeAtAge(otherIncomeSources, age);
+    const total = dc + db + sp + isa + otherIncome;
     
     timeline.push({
       age,
@@ -183,7 +229,7 @@ export function buildIncomeTimeline(
       dbPension: db,
       statePension: sp,
       isaWithdrawal: isa,
-      otherIncome: 0,
+      otherIncome,
       totalIncome: total,
       dcPot: remainingPot,
       taxFreeCash,
@@ -214,6 +260,7 @@ export function computeRetirement(
   );
   const taxFreeCashAge = resolveTaxFreeCashAge(inputs, DEFAULT_LONGEVITY);
   const taxFreeCashTaken = timeline.reduce((sum, point) => sum + point.taxFreeCash, 0);
+  const otherIncomeSources = normalizeOtherIncomeSources(inputs, DEFAULT_LONGEVITY);
   const taxFreeCashPct = inputs.taxFreeCashEnabled === false ? 0 : normalizeTaxFreeCashPct(inputs.taxFreeCashPct);
   const dcPotAfterTaxFreeCash =
     taxFreeCashTaken > 0 && taxFreeCashPct > 0
@@ -226,12 +273,13 @@ export function computeRetirement(
     return sum + proj.projected_annual_income;
   }, 0);
   const statePensionIncome = Math.round(UK_STATE_PENSION_FULL * (inputs.statePensionPct / 100));
+  const otherIncomeAtRetirement = retirePoint?.otherIncome ?? otherIncomeAtAge(otherIncomeSources, inputs.retireAge);
   // ISA income at retirement
   const isaRealReturn = (inputs.isaGrowthRate - inputs.inflation) / 100;
   const isaAtRetire = inputs.isaPot * Math.pow(1 + Math.max(isaRealReturn, 0), yearsToRetire);
   const isaDrawdown = Math.round(isaAtRetire * inputs.isaDrawdownRate);
   // At retirement, state pension only counts if retire age >= 67
-  const incomeAtRetirement = dcDrawdown + isaDrawdown + totalDBIncome + (inputs.retireAge >= STATE_PENSION_AGE ? statePensionIncome : 0);
+  const incomeAtRetirement = dcDrawdown + isaDrawdown + totalDBIncome + otherIncomeAtRetirement + (inputs.retireAge >= STATE_PENSION_AGE ? statePensionIncome : 0);
   const gap = inputs.targetIncome - incomeAtRetirement;
   const pct = Math.min(Math.round((incomeAtRetirement / inputs.targetIncome) * 100), 150);
   
@@ -253,6 +301,8 @@ export function computeRetirement(
     dcDrawdown,
     totalDBIncome,
     statePensionIncome,
+    otherIncomeAtRetirement,
+    otherIncomeSources,
     totalIncome: incomeAtRetirement,
     gap,
     readinessPct: pct,

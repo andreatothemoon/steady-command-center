@@ -48,6 +48,7 @@ export default function ScenarioComparison({ scenarios }: Props) {
     { label: "DC Drawdown (p.a.)", key: "dcDraw", format: (s) => formatCurrency(s.projection.dcDrawdown), highlight: "highest" },
     { label: "DB Income (p.a.)", key: "dbIncome", format: (s) => formatCurrency(s.projection.totalDBIncome) },
     { label: "State Pension (p.a.)", key: "spIncome", format: (s) => formatCurrency(s.projection.statePensionIncome) },
+    { label: "Other Income (p.a.)", key: "otherIncome", format: (s) => formatCurrency(s.projection.otherIncomeAtRetirement), highlight: "highest" },
     { label: "Total Income (p.a.)", key: "totalIncome", format: (s) => formatCurrency(s.projection.totalIncome), highlight: "highest" },
     { label: "Gap / Surplus", key: "gap", format: (s) => {
       const v = s.projection.gap;

@@ -762,8 +762,11 @@ export type Database = {
           household_id: string
           id: string
           inflation_rate: number
+          isa_bridge_income_annual: number
           monthly_contribution: number
           name: string
+          part_time_income_annual: number
+          property_income_annual: number
           retirement_age: number
           tax_free_cash_age: number | null
           tax_free_cash_enabled: boolean
@@ -780,8 +783,11 @@ export type Database = {
           household_id: string
           id?: string
           inflation_rate?: number
+          isa_bridge_income_annual?: number
           monthly_contribution?: number
           name?: string
+          part_time_income_annual?: number
+          property_income_annual?: number
           retirement_age?: number
           tax_free_cash_age?: number | null
           tax_free_cash_enabled?: boolean
@@ -798,8 +804,11 @@ export type Database = {
           household_id?: string
           id?: string
           inflation_rate?: number
+          isa_bridge_income_annual?: number
           monthly_contribution?: number
           name?: string
+          part_time_income_annual?: number
+          property_income_annual?: number
           retirement_age?: number
           tax_free_cash_age?: number | null
           tax_free_cash_enabled?: boolean

@@ -24,6 +24,14 @@ export default function IncomeSourceCards({ projection, dbPensions, statePension
   const dbProjections = dbPensions.map((p) =>
     projectDBPensionAtAge(toDBPensionParams(p), retireAge)
   );
+  const otherIncomeById = new Map(
+    projection.otherIncomeSources.map((source) => [source.id, source])
+  );
+  const formatOtherIncome = (id: "isa_bridge" | "property" | "part_time") => {
+    const source = otherIncomeById.get(id);
+    if (!source) return "Not configured";
+    return `${formatCurrency(source.annualAmount)}/yr`;
+  };
 
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -157,16 +165,27 @@ export default function IncomeSourceCards({ projection, dbPensions, statePension
           </p>
           <div className="flex items-center justify-between text-[11px]">
             <span className="text-muted-foreground">ISA bridge</span>
-            <span className="text-muted-foreground/70">Not configured</span>
+            <span className="font-medium tabular-nums text-card-foreground">{formatOtherIncome("isa_bridge")}</span>
           </div>
           <div className="flex items-center justify-between text-[11px]">
             <span className="text-muted-foreground">Property income</span>
-            <span className="text-muted-foreground/70">Not configured</span>
+            <span className="font-medium tabular-nums text-card-foreground">{formatOtherIncome("property")}</span>
           </div>
           <div className="flex items-center justify-between text-[11px]">
             <span className="text-muted-foreground">Part-time work</span>
-            <span className="text-muted-foreground/70">Not configured</span>
+            <span className="font-medium tabular-nums text-card-foreground">{formatOtherIncome("part_time")}</span>
           </div>
+          {projection.otherIncomeAtRetirement > 0 && (
+            <div className="flex items-center justify-between border-t border-border/50 pt-2 text-[11px]">
+              <span className="font-medium text-card-foreground">Active at retirement</span>
+              <span className="font-semibold tabular-nums text-primary">{formatCurrency(projection.otherIncomeAtRetirement)}/yr</span>
+            </div>
+          )}
+          {projection.otherIncomeSources.length === 0 && (
+            <p className="rounded-lg bg-secondary/50 px-2 py-1.5 text-[10px] text-muted-foreground">
+              Configure annual amounts in Plan controls.
+            </p>
+          )}
         </div>
       </motion.div>
     </div>

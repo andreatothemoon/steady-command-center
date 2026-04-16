@@ -10,6 +10,9 @@ export interface RetirementScenario {
   tax_free_cash_enabled?: boolean;
   tax_free_cash_age?: number | null;
   tax_free_cash_pct?: number;
+  isa_bridge_income_annual?: number;
+  property_income_annual?: number;
+  part_time_income_annual?: number;
   current_pot: number;
   monthly_contribution: number;
   employer_contribution: number;
