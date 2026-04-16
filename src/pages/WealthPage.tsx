@@ -297,9 +297,12 @@ export default function WealthPage() {
             if (items.length === 0 && bucket !== "guaranteed") return null;
 
             const bucketTotal = items.reduce((s, a) => {
-              // For DB pensions, use projected income in the total
               if (a.account_type === "db_pension") {
                 return s + (dbProjections[a.id]?.projected ?? 0);
+              }
+              if (bucket === "guaranteed") {
+                const val = Number(a.current_value);
+                return val > 0 ? s + Math.round(val * DEFAULT_DRAWDOWN_RATE) : s;
               }
               return s + Number(a.current_value);
             }, 0);
