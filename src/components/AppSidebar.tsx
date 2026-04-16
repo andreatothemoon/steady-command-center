@@ -41,8 +41,10 @@ function SidebarContent({ collapsed, toggle, onNavigate }: { collapsed: boolean;
   return (
     <>
       <div className={cn("flex h-20 items-center", collapsed ? "justify-center px-4" : "px-5")}>
-        <div className="h-10 w-10 rounded-xl bg-primary flex items-center justify-center flex-shrink-0">
-          <span className="text-primary-foreground font-semibold text-lg">W</span>
+        <div className="h-10 w-10 rounded-xl bg-[#0B0F14] flex items-center justify-center flex-shrink-0">
+          <svg viewBox="0 0 64 64" className="h-6 w-6" fill="none">
+            <path d="M8 14 L20 50 L32 28 L44 50 L56 14" stroke="#F9FAFB" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
         </div>
         {!collapsed && (
           <span className="ml-3 text-sidebar-accent-foreground font-semibold text-[15px] tracking-tight">
