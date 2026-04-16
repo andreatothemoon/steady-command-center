@@ -47,6 +47,8 @@ const typeToWrapper: Partial<Record<AccountType, WrapperType>> = {
   db_pension: "db_pension",
 };
 
+const hiddenAddAccountTypes = new Set<AccountType>(["credit_card", "db_pension"]);
+
 interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -128,7 +130,7 @@ export default function AddAccountDialog({ open, onOpenChange }: Props) {
               <Select onValueChange={handleTypeChange} value={form.watch("account_type")}>
                 <SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
                 <SelectContent>
-                  {Object.entries(accountTypeLabels).filter(([key]) => key !== "db_pension").sort(([, a], [, b]) => a.localeCompare(b)).map(([key, label]) => (
+                  {Object.entries(accountTypeLabels).filter(([key]) => !hiddenAddAccountTypes.has(key as AccountType)).sort(([, a], [, b]) => a.localeCompare(b)).map(([key, label]) => (
                     <SelectItem key={key} value={key}>{label}</SelectItem>
                   ))}
                 </SelectContent>

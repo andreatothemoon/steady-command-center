@@ -6,7 +6,7 @@ import { useTaxSummaries, computeANI, summaryToForm } from "@/hooks/useTaxSummar
 import { useDBPensions } from "@/hooks/useDBPensions";
 import { useSelectedRetirementScenario } from "@/hooks/useRetirementScenarios";
 import { toDBPensionParams } from "@/lib/dbPensionRates";
-import { computeRetirement, type RetirementInputs } from "@/lib/retirementEngine";
+import { computeRetirement, DEFAULT_TAX_FREE_CASH_PCT, type RetirementInputs } from "@/lib/retirementEngine";
 import type { DBPensionParams } from "@/lib/dbPensionEngine";
 import IncomeTimeline from "@/components/retirement/IncomeTimeline";
 import IncomeHeroCard from "@/components/home/IncomeHeroCard";
@@ -72,6 +72,10 @@ export default function HomePage() {
       targetIncome: Number(scenario.target_income),
       statePensionPct: 100,
       drawdownRate: 0.04,
+      taxFreeCashPct:
+        "tax_free_cash_pct" in scenario
+          ? Number(scenario.tax_free_cash_pct)
+          : DEFAULT_TAX_FREE_CASH_PCT,
       isaPot: totalIsaPot,
       isaDrawdownRate: 0.04,
       isaGrowthRate: Number(scenario.expected_return),

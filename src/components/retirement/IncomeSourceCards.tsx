@@ -37,8 +37,16 @@ export default function IncomeSourceCards({ projection, dbPensions, statePension
         </div>
         <div className="space-y-2.5">
           <div>
-            <p className="text-[11px] text-muted-foreground">Projected pot</p>
+            <p className="text-[11px] text-muted-foreground">Projected pot before cash</p>
             <p className="text-lg font-bold tabular-nums text-card-foreground">{formatCurrency(projection.dcPotAtRetirement)}</p>
+          </div>
+          <div>
+            <p className="text-[11px] text-muted-foreground">Tax-free cash</p>
+            <p className="text-lg font-bold tabular-nums text-success">{formatCurrency(projection.taxFreeCashTaken)}</p>
+          </div>
+          <div>
+            <p className="text-[11px] text-muted-foreground">Remaining drawdown pot</p>
+            <p className="text-lg font-bold tabular-nums text-card-foreground">{formatCurrency(projection.dcPotAfterTaxFreeCash)}</p>
           </div>
           <div>
             <p className="text-[11px] text-muted-foreground">Annual drawdown</p>

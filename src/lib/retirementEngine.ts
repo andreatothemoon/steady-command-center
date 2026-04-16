@@ -9,6 +9,8 @@ export const UK_STATE_PENSION_FULL = 11502;
 export const STATE_PENSION_AGE = 67;
 export const DEFAULT_DRAWDOWN_RATE = 0.04;
 export const DEFAULT_LONGEVITY = 90;
+export const DEFAULT_TAX_FREE_CASH_PCT = 25;
+export const MAX_TAX_FREE_CASH_PCT = 25;
 
 export interface RetirementInputs {
   currentAge: number;
@@ -21,6 +23,7 @@ export interface RetirementInputs {
   targetIncome: number;
   statePensionPct: number; // 0-100
   drawdownRate: number; // decimal e.g. 0.04
+  taxFreeCashPct?: number; // 0-25, standard UK pension commencement lump sum percentage
   isaPot: number; // total ISA balance at today
   isaDrawdownRate: number; // decimal e.g. 0.04
   isaGrowthRate: number; // % annual growth for ISA
@@ -40,6 +43,8 @@ export interface IncomeTimelinePoint {
 export interface RetirementProjection {
   dcPotAtRetirement: number;
   dcPotAtRetirementNominal: number;
+  dcPotAfterTaxFreeCash: number;
+  taxFreeCashTaken: number;
   dcDrawdown: number;
   totalDBIncome: number;
   statePensionIncome: number;
@@ -49,6 +54,11 @@ export interface RetirementProjection {
   status: "on_track" | "close" | "gap";
   timeline: IncomeTimelinePoint[];
   dcDepletionAge: number | null; // age when DC pot runs out
+}
+
+function normalizeTaxFreeCashPct(value: number | undefined): number {
+  if (!Number.isFinite(value)) return DEFAULT_TAX_FREE_CASH_PCT;
+  return Math.min(Math.max(value ?? DEFAULT_TAX_FREE_CASH_PCT, 0), MAX_TAX_FREE_CASH_PCT);
 }
 
 export interface RetirementAction {
@@ -89,6 +99,7 @@ export function buildIncomeTimeline(
   longevity: number = DEFAULT_LONGEVITY
 ): IncomeTimelinePoint[] {
   const { currentAge, retireAge, currentPot, monthlyContrib, employerContrib, expectedReturn, inflation, statePensionPct, drawdownRate, isaPot, isaDrawdownRate, isaGrowthRate } = inputs;
+  const taxFreeCashPct = normalizeTaxFreeCashPct(inputs.taxFreeCashPct);
   const statePensionAnnual = Math.round(UK_STATE_PENSION_FULL * (statePensionPct / 100));
 
   const dbIncomeAtScenarioRetirement = dbPensionParams.map((p) =>
@@ -121,14 +132,16 @@ export function buildIncomeTimeline(
   // Compute DC pot at retirement
   const yearsToRetire = Math.max(0, retireAge - currentAge);
   const { real: dcPotReal } = projectDCPot(currentPot, monthlyContrib, employerContrib, expectedReturn, inflation, yearsToRetire);
+  const taxFreeCashTaken = Math.round(dcPotReal * (taxFreeCashPct / 100));
+  const dcPotAfterTaxFreeCash = Math.max(0, dcPotReal - taxFreeCashTaken);
 
   // Compute ISA pot at retirement (grows but no contributions assumed)
   const isaRealReturn = (isaGrowthRate - inflation) / 100;
   let isaAtRetire = isaPot * Math.pow(1 + Math.max(isaRealReturn, 0), yearsToRetire);
   
   // Phase 2: Decumulation (retirement to longevity)
-  let remainingPot = dcPotReal;
-  const annualDrawdown = Math.round(dcPotReal * drawdownRate);
+  let remainingPot = dcPotAfterTaxFreeCash;
+  const annualDrawdown = Math.round(dcPotAfterTaxFreeCash * drawdownRate);
   let dcDepletionAge: number | null = null;
   let remainingIsa = isaAtRetire;
   const isaAnnualDrawdown = Math.round(isaAtRetire * isaDrawdownRate);
@@ -181,8 +194,11 @@ export function computeRetirement(
     inputs.currentPot, inputs.monthlyContrib, inputs.employerContrib,
     inputs.expectedReturn, inputs.inflation, yearsToRetire
   );
+  const taxFreeCashPct = normalizeTaxFreeCashPct(inputs.taxFreeCashPct);
+  const taxFreeCashTaken = Math.round(real * (taxFreeCashPct / 100));
+  const dcPotAfterTaxFreeCash = Math.max(0, real - taxFreeCashTaken);
 
-  const dcDrawdown = Math.round(real * inputs.drawdownRate);
+  const dcDrawdown = Math.round(dcPotAfterTaxFreeCash * inputs.drawdownRate);
   const totalDBIncome = dbPensionParams.reduce((sum, p) => {
     const proj = projectDBPensionAtAge(p, inputs.retireAge);
     return sum + proj.projected_annual_income;
@@ -209,6 +225,8 @@ export function computeRetirement(
   return {
     dcPotAtRetirement: real,
     dcPotAtRetirementNominal: nominal,
+    dcPotAfterTaxFreeCash,
+    taxFreeCashTaken,
     dcDrawdown,
     totalDBIncome,
     statePensionIncome,

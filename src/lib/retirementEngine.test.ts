@@ -48,3 +48,39 @@ describe("computeRetirement DB pension integration", () => {
     expect(projection.timeline.find((point) => point.age === 67)?.dbPension).toBe(9_000);
   });
 });
+
+describe("computeRetirement tax-free cash", () => {
+  it("takes 25% tax-free cash by default and draws income from the remaining DC pot", () => {
+    const projection = computeRetirement(
+      {
+        ...baseInputs,
+        retireAge: 60,
+        currentPot: 100_000,
+        targetIncome: 10_000,
+      },
+      []
+    );
+
+    expect(projection.dcPotAtRetirement).toBe(100_000);
+    expect(projection.taxFreeCashTaken).toBe(25_000);
+    expect(projection.dcPotAfterTaxFreeCash).toBe(75_000);
+    expect(projection.dcDrawdown).toBe(3_000);
+  });
+
+  it("allows scenarios to reduce tax-free cash to preserve more drawdown income", () => {
+    const projection = computeRetirement(
+      {
+        ...baseInputs,
+        retireAge: 60,
+        currentPot: 100_000,
+        targetIncome: 10_000,
+        taxFreeCashPct: 0,
+      },
+      []
+    );
+
+    expect(projection.taxFreeCashTaken).toBe(0);
+    expect(projection.dcPotAfterTaxFreeCash).toBe(100_000);
+    expect(projection.dcDrawdown).toBe(4_000);
+  });
+});

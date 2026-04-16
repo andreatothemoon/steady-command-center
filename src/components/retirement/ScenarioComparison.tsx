@@ -42,6 +42,8 @@ export default function ScenarioComparison({ scenarios }: Props) {
     { label: "Monthly Contribution", key: "monthly", format: (s) => formatCurrency(s.monthlyContrib + s.employerContrib) },
     { label: "Target Income", key: "target", format: (s) => formatCurrency(s.targetIncome) },
     { label: "DC Pot at Retirement", key: "dcPot", format: (s) => formatCurrency(s.projection.dcPotAtRetirement), highlight: "highest" },
+    { label: "Tax-Free Cash", key: "taxFreeCash", format: (s) => formatCurrency(s.projection.taxFreeCashTaken), highlight: "highest" },
+    { label: "DC Pot After Cash", key: "dcPotAfterCash", format: (s) => formatCurrency(s.projection.dcPotAfterTaxFreeCash), highlight: "highest" },
     { label: "DC Drawdown (p.a.)", key: "dcDraw", format: (s) => formatCurrency(s.projection.dcDrawdown), highlight: "highest" },
     { label: "DB Income (p.a.)", key: "dbIncome", format: (s) => formatCurrency(s.projection.totalDBIncome) },
     { label: "State Pension (p.a.)", key: "spIncome", format: (s) => formatCurrency(s.projection.statePensionIncome) },

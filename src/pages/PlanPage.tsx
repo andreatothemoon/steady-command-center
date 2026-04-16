@@ -24,6 +24,7 @@ import {
   generateActions,
   DEFAULT_LONGEVITY,
   STATE_PENSION_AGE,
+  DEFAULT_TAX_FREE_CASH_PCT,
   type RetirementInputs,
 } from "@/lib/retirementEngine";
 import type { DBPensionParams } from "@/lib/dbPensionEngine";
@@ -56,6 +57,7 @@ export default function PlanPage() {
 
   const { data: dbPensions = [] } = useDBPensions();
   const { data: accounts = [] } = useAccounts();
+  const canPersistTaxFreeCash = scenarios.some((scenario) => "tax_free_cash_pct" in scenario);
 
   const totalIsaPot = useMemo(() =>
     accounts
@@ -88,6 +90,11 @@ export default function PlanPage() {
       expectedReturn: edits.expected_return ?? Number(scenario.expected_return),
       inflation: edits.inflation_rate ?? Number(scenario.inflation_rate),
       targetIncome: edits.target_income ?? Number(scenario.target_income),
+      taxFreeCashPct:
+        edits.tax_free_cash_pct ??
+        ("tax_free_cash_pct" in scenario
+          ? Number(scenario.tax_free_cash_pct)
+          : DEFAULT_TAX_FREE_CASH_PCT),
     };
   }, [localEdits]);
 
@@ -114,6 +121,7 @@ export default function PlanPage() {
         retireAge: v.retireAge,
         statePensionPct,
         drawdownRate: drawdownRate / 100,
+        taxFreeCashPct: v.taxFreeCashPct,
         isaPot: totalIsaPot,
         isaDrawdownRate: drawdownRate / 100,
         isaGrowthRate: v.expectedReturn,
@@ -190,11 +198,12 @@ export default function PlanPage() {
           expected_return: valuesToSave.expectedReturn,
           inflation_rate: valuesToSave.inflation,
           target_income: valuesToSave.targetIncome,
+          ...(canPersistTaxFreeCash ? { tax_free_cash_pct: valuesToSave.taxFreeCashPct } : {}),
         },
       });
     }, 800);
     return () => { if (saveTimer.current) clearTimeout(saveTimer.current); };
-  }, [activeEdits, activeScenario, getScenarioValues, isLoading]);
+  }, [activeEdits, activeScenario, canPersistTaxFreeCash, getScenarioValues, isLoading]);
 
   const createdDefault = useRef(false);
   useEffect(() => {
@@ -212,6 +221,7 @@ export default function PlanPage() {
           employer_contribution: 500,
           expected_return: 5,
           inflation_rate: 2.5,
+          ...(canPersistTaxFreeCash ? { tax_free_cash_pct: DEFAULT_TAX_FREE_CASH_PCT } : {}),
           target_income: 30000,
         },
       });
@@ -233,10 +243,12 @@ export default function PlanPage() {
         current_age: values.currentAge, retirement_age: values.retireAge,
         current_pot: values.currentPot, monthly_contribution: values.monthlyContrib,
         employer_contribution: values.employerContrib, expected_return: values.expectedReturn,
-        inflation_rate: values.inflation, target_income: values.targetIncome,
+        inflation_rate: values.inflation,
+        ...(canPersistTaxFreeCash ? { tax_free_cash_pct: values.taxFreeCashPct } : {}),
+        target_income: values.targetIncome,
       },
     });
-  }, [householdId, activeValues, scenarios.length, upsert]);
+  }, [householdId, activeValues, scenarios.length, upsert, canPersistTaxFreeCash]);
 
   const handleDelete = useCallback(async (id: string) => {
     if (scenarios.length <= 1) return;
@@ -265,6 +277,7 @@ export default function PlanPage() {
     { label: "Current Pot", value: activeValues.currentPot, onChange: (v: number) => setField("current_pot", v), min: 0, max: 1000000, step: 5000, format: formatCurrency },
     { label: "Employer Monthly", value: activeValues.employerContrib, onChange: (v: number) => setField("employer_contribution", v), min: 0, max: 5000, step: 50, format: formatCurrency },
     { label: "Inflation", value: activeValues.inflation, onChange: (v: number) => setField("inflation_rate", v), min: 0, max: 6, step: 0.5, format: (v: number) => `${v}%` },
+    { label: "Tax-Free Cash", value: activeValues.taxFreeCashPct, onChange: (v: number) => setField("tax_free_cash_pct", v), min: 0, max: 25, step: 1, format: (v: number) => `${v}%` },
     { label: "State Pension %", value: statePensionPct, onChange: setStatePensionPct, min: 0, max: 100, step: 5, format: (v: number) => `${v}%` },
     { label: "Drawdown Rate", value: drawdownRate, onChange: setDrawdownRate, min: 2, max: 8, step: 0.5, format: (v: number) => `${v}%` },
   ] : [];
@@ -286,6 +299,7 @@ export default function PlanPage() {
     { label: "Inflation", value: activeValues ? `${activeValues.inflation.toFixed(1)}% p.a.` : "—", adjustable: true },
     { label: "State Pension age", value: `${STATE_PENSION_AGE}`, adjustable: false },
     { label: "Life expectancy", value: `${DEFAULT_LONGEVITY} years`, adjustable: false },
+    { label: "Tax-free cash", value: activeValues ? `${activeValues.taxFreeCashPct.toFixed(0)}% of DC pot` : "—", adjustable: true },
     { label: "Drawdown rate", value: `${drawdownRate.toFixed(1)}%`, adjustable: true },
   ];
 
