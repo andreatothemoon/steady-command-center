@@ -83,6 +83,23 @@ export default function PlanPage() {
       .reduce((sum, a) => sum + Number(a.current_value), 0),
     [accounts]);
 
+  // Retirement Funding Mix calculations
+  const dcIncome = useMemo(() =>
+    accounts
+      .filter(a => ["sipp", "workplace_pension", "stocks_and_shares_isa", "cash_isa", "gia", "crypto", "employer_share_scheme"].includes(a.account_type) && Number(a.current_value) > 0)
+      .reduce((s, a) => s + Number(a.current_value) * DEFAULT_DRAWDOWN_RATE, 0),
+    [accounts]);
+
+  const dbIncomeTotal = useMemo(() => {
+    const params = dbPensions.map((p) => toDBPensionParams(p));
+    return params.reduce((s, p) => {
+      const result = projectDBPension(p);
+      return s + result.projected_annual_income;
+    }, 0);
+  }, [dbPensions]);
+
+  const totalIncomeEstimate = dcIncome + dbIncomeTotal + UK_STATE_PENSION_FULL;
+
   const [activeId, setActiveId] = useState<string | null>(null);
   const [compareMode, setCompareMode] = useState(false);
   const [localEdits, setLocalEdits] = useState<Record<string, Partial<ScenarioRow>>>({});
