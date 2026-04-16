@@ -255,7 +255,7 @@ export default function WealthPage() {
                         <span className="text-sm text-muted-foreground">{item.meta.label}</span>
                       </div>
                       <div className="text-right">
-                        <p className="text-sm font-semibold text-foreground">{formatCurrency(Math.round(item.total))}</p>
+                        <p className="text-sm font-semibold text-foreground">{formatCurrency(Math.round(item.total))}{item.bucket === "guaranteed" ? "/yr" : ""}</p>
                         <p className="text-xs text-muted-foreground">{item.share.toFixed(1)}%</p>
                       </div>
                     </div>
