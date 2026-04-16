@@ -3,10 +3,8 @@ import { motion } from "framer-motion";
 import { useAccounts } from "@/hooks/useAccounts";
 import { useHouseholdProfiles } from "@/hooks/useHouseholdProfiles";
 import { useTaxSummaries, computeANI, summaryToForm } from "@/hooks/useTaxSummaries";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
 import { useDBPensions } from "@/hooks/useDBPensions";
+import { useSelectedRetirementScenario } from "@/hooks/useRetirementScenarios";
 import { toDBPensionParams } from "@/lib/dbPensionRates";
 import { computeRetirement, type RetirementInputs } from "@/lib/retirementEngine";
 import type { DBPensionParams } from "@/lib/dbPensionEngine";
@@ -30,7 +28,6 @@ const stagger = {
 };
 
 export default function HomePage() {
-  const { householdId } = useAuth();
   const { data: accounts = [] } = useAccounts();
   const { data: profiles = [] } = useHouseholdProfiles();
   const { data: taxSummaries = [] } = useTaxSummaries(TAX_YEAR);
@@ -48,23 +45,7 @@ export default function HomePage() {
   const householdIsaUsed = taxSummaries.reduce((sum, s) => sum + Number(s.isa_contributions ?? 0), 0);
   const isaLimit = adults.length > 0 ? adults.length * 20000 : 20000;
 
-  // Load primary scenario
-  const { data: scenario } = useQuery({
-    queryKey: ["retirement_scenario_primary", householdId],
-    queryFn: async () => {
-      if (!householdId) return null;
-      const { data, error } = await supabase
-        .from("retirement_scenarios")
-        .select("*")
-        .eq("household_id", householdId)
-        .order("created_at", { ascending: true })
-        .limit(1)
-        .maybeSingle();
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!householdId,
-  });
+  const { scenario } = useSelectedRetirementScenario();
 
   // DB pension params
   const dbPensionParams: DBPensionParams[] = useMemo(() =>

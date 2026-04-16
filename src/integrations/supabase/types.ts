@@ -608,21 +608,32 @@ export type Database = {
           created_at: string
           id: string
           name: string
+          selected_retirement_scenario_id: string | null
           updated_at: string
         }
         Insert: {
           created_at?: string
           id?: string
           name?: string
+          selected_retirement_scenario_id?: string | null
           updated_at?: string
         }
         Update: {
           created_at?: string
           id?: string
           name?: string
+          selected_retirement_scenario_id?: string | null
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "households_selected_retirement_scenario_id_fkey"
+            columns: ["selected_retirement_scenario_id"]
+            isOneToOne: false
+            referencedRelation: "retirement_scenarios"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       import_jobs: {
         Row: {

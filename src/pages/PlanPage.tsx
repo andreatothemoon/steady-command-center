@@ -5,12 +5,18 @@
 import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import { motion } from "framer-motion";
 import { formatCurrency } from "@/lib/format";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { useDBPensions } from "@/hooks/useDBPensions";
 import { useAccounts } from "@/hooks/useAccounts";
+import {
+  useRetirementScenarios,
+  useSelectedRetirementScenario,
+  useSetSelectedRetirementScenario,
+  type RetirementScenario,
+} from "@/hooks/useRetirementScenarios";
 import { Check, ChevronRight, TrendingDown, TrendingUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -42,37 +48,13 @@ const stagger = {
   },
 };
 
-interface ScenarioRow {
-  id: string;
-  name: string;
-  current_age: number;
-  retirement_age: number;
-  current_pot: number;
-  monthly_contribution: number;
-  employer_contribution: number;
-  expected_return: number;
-  inflation_rate: number;
-  target_income: number;
-}
-
 export default function PlanPage() {
   const { householdId } = useAuth();
   const qc = useQueryClient();
 
-  const { data: scenarios = [], isLoading } = useQuery({
-    queryKey: ["retirement_scenarios", householdId],
-    queryFn: async () => {
-      if (!householdId) return [];
-      const { data, error } = await supabase
-        .from("retirement_scenarios")
-        .select("*")
-        .eq("household_id", householdId)
-        .order("created_at", { ascending: true });
-      if (error) throw error;
-      return (data ?? []) as ScenarioRow[];
-    },
-    enabled: !!householdId,
-  });
+  const { data: scenarios = [] } = useRetirementScenarios();
+  const { scenario: selectedScenario, isLoading } = useSelectedRetirementScenario();
+  const setSelectedScenario = useSetSelectedRetirementScenario();
 
   const { data: dbPensions = [] } = useDBPensions();
   const { data: accounts = [] } = useAccounts();
@@ -102,17 +84,19 @@ export default function PlanPage() {
 
   const [activeId, setActiveId] = useState<string | null>(null);
   const [compareMode, setCompareMode] = useState(false);
-  const [localEdits, setLocalEdits] = useState<Record<string, Partial<ScenarioRow>>>({});
+  const [localEdits, setLocalEdits] = useState<Record<string, Partial<RetirementScenario>>>({});
   const [statePensionPct, setStatePensionPct] = useState(100);
   const [drawdownRate, setDrawdownRate] = useState(4);
 
   useEffect(() => {
-    if (scenarios.length > 0 && (!activeId || !scenarios.find((s) => s.id === activeId))) {
-      setActiveId(scenarios[0].id);
+    if (selectedScenario && activeId !== selectedScenario.id) {
+      setActiveId(selectedScenario.id);
+    } else if (!selectedScenario && activeId && !scenarios.find((s) => s.id === activeId)) {
+      setActiveId(null);
     }
-  }, [scenarios, activeId]);
+  }, [scenarios, selectedScenario, activeId]);
 
-  const getScenarioValues = useCallback((scenario: ScenarioRow) => {
+  const getScenarioValues = useCallback((scenario: RetirementScenario) => {
     const edits = localEdits[scenario.id] ?? {};
     return {
       currentAge: edits.current_age ?? scenario.current_age,
@@ -129,7 +113,7 @@ export default function PlanPage() {
   const activeScenario = scenarios.find((s) => s.id === activeId);
   const activeValues = activeScenario ? getScenarioValues(activeScenario) : null;
 
-  const setField = useCallback((field: keyof ScenarioRow, value: number) => {
+  const setField = useCallback((field: keyof RetirementScenario, value: number) => {
     if (!activeId) return;
     setLocalEdits((prev) => ({
       ...prev,
@@ -164,6 +148,13 @@ export default function PlanPage() {
     () => inputs && projection ? generateActions(inputs, projection, dbPensionParams) : [],
     [inputs, projection, dbPensionParams]
   );
+
+  const handleSelectScenario = useCallback((id: string) => {
+    setActiveId(id);
+    setSelectedScenario.mutate(id, {
+      onError: () => toast.error("Failed to remember selected scenario"),
+    });
+  }, [setSelectedScenario]);
 
   const upsert = useMutation({
     mutationFn: async ({ id, values }: { id: string | null; values: Record<string, unknown> }) => {
@@ -249,9 +240,15 @@ export default function PlanPage() {
     const { error } = await supabase.from("retirement_scenarios").delete().eq("id", id);
     if (error) { toast.error("Failed to delete"); return; }
     setLocalEdits((prev) => { const n = { ...prev }; delete n[id]; return n; });
-    if (activeId === id) setActiveId(scenarios.find((s) => s.id !== id)?.id ?? null);
+    if (activeId === id) {
+      const nextScenarioId = scenarios.find((s) => s.id !== id)?.id ?? null;
+      setActiveId(nextScenarioId);
+      setSelectedScenario.mutate(nextScenarioId, {
+        onError: () => toast.error("Failed to remember selected scenario"),
+      });
+    }
     qc.invalidateQueries({ queryKey: ["retirement_scenarios", householdId] });
-  }, [scenarios, activeId, householdId, qc]);
+  }, [scenarios, activeId, householdId, qc, setSelectedScenario]);
 
   const quickSliders = activeValues ? [
     { label: "Retirement Age", value: activeValues.retireAge, onChange: (v: number) => setField("retirement_age", v), min: 50, max: 75, step: 1, format: (v: number) => `${v}` },
@@ -302,7 +299,7 @@ export default function PlanPage() {
           scenarios={scenarioMetas}
           activeId={activeId ?? ""}
           compareMode={compareMode}
-          onSelect={setActiveId}
+          onSelect={handleSelectScenario}
           onAdd={handleAdd}
           onDelete={handleDelete}
           onToggleCompare={() => setCompareMode(!compareMode)}
@@ -322,7 +319,7 @@ export default function PlanPage() {
               <button
                 key={scenario.id}
                 onClick={() => {
-                  setActiveId(scenario.id);
+                  handleSelectScenario(scenario.id);
                   if (compareMode) setCompareMode(false);
                 }}
                 className={cn(
