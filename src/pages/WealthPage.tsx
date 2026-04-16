@@ -108,9 +108,16 @@ export default function WealthPage() {
         // Show net equity: property values minus linked mortgages/loans/credit cards
         total = buckets[bucket].reduce((sum, account) => sum + Number(account.current_value), 0);
         total = Math.max(total, 0);
-      } else {
+      } else if (bucket === "guaranteed") {
+        // Show estimated annual income: DB projected income + DC drawdown
         total = buckets[bucket].reduce((sum, account) => {
           if (account.account_type === "db_pension") return sum + (dbProjections[account.id]?.projected ?? 0);
+          const val = Number(account.current_value);
+          if (val > 0) return sum + Math.round(val * DEFAULT_DRAWDOWN_RATE);
+          return sum;
+        }, 0);
+      } else {
+        total = buckets[bucket].reduce((sum, account) => {
           return sum + Math.abs(Number(account.current_value));
         }, 0);
       }
