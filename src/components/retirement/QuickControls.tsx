@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { Slider } from "@/components/ui/slider";
+import { Switch } from "@/components/ui/switch";
 import { Settings2 } from "lucide-react";
 import { useState } from "react";
 
@@ -16,15 +17,24 @@ interface SliderConfig {
   max: number;
   step: number;
   format: (v: number) => string;
+  disabled?: boolean;
+}
+
+interface ToggleConfig {
+  label: string;
+  description?: string;
+  checked: boolean;
+  onChange: (checked: boolean) => void;
 }
 
 interface Props {
   quickSliders: SliderConfig[];
   advancedSliders: SliderConfig[];
+  advancedToggles?: ToggleConfig[];
   isSaving: boolean;
 }
 
-export default function QuickControls({ quickSliders, advancedSliders, isSaving }: Props) {
+export default function QuickControls({ quickSliders, advancedSliders, advancedToggles = [], isSaving }: Props) {
   const [showAdvanced, setShowAdvanced] = useState(false);
 
   return (
@@ -71,19 +81,31 @@ export default function QuickControls({ quickSliders, advancedSliders, isSaving 
           exit={{ opacity: 0, height: 0 }}
           className="space-y-4 border-t border-border/60 pt-4"
         >
+          {advancedToggles.map((toggle) => (
+            <div key={toggle.label} className="flex items-center justify-between gap-4 rounded-2xl bg-secondary/60 p-4">
+              <div>
+                <p className="text-sm text-muted-foreground">{toggle.label}</p>
+                {toggle.description && <p className="mt-1 text-xs text-muted-foreground/80">{toggle.description}</p>}
+              </div>
+              <Switch checked={toggle.checked} onCheckedChange={toggle.onChange} />
+            </div>
+          ))}
           {advancedSliders.map((s) => (
-            <div key={s.label} className="rounded-2xl bg-secondary/60 p-4">
+            <div key={s.label} className="rounded-2xl bg-secondary/60 p-4 opacity-100 data-[disabled=true]:opacity-45" data-disabled={s.disabled}>
               <div className="mb-2 flex justify-between">
                 <span className="text-sm text-muted-foreground">{s.label}</span>
                 <span className="text-sm font-semibold text-card-foreground tabular-nums">{s.format(s.value)}</span>
               </div>
               <Slider
                 value={[s.value]}
-                onValueChange={([v]) => s.onChange(v)}
+                onValueChange={([v]) => {
+                  if (!s.disabled) s.onChange(v);
+                }}
                 min={s.min}
                 max={s.max}
                 step={s.step}
                 className="w-full"
+                disabled={s.disabled}
               />
             </div>
           ))}

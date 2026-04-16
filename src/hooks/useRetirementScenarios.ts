@@ -7,6 +7,8 @@ export interface RetirementScenario {
   name: string;
   current_age: number;
   retirement_age: number;
+  tax_free_cash_enabled?: boolean;
+  tax_free_cash_age?: number | null;
   tax_free_cash_pct?: number;
   current_pot: number;
   monthly_contribution: number;

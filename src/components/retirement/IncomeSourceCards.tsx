@@ -42,7 +42,12 @@ export default function IncomeSourceCards({ projection, dbPensions, statePension
           </div>
           <div>
             <p className="text-[11px] text-muted-foreground">Tax-free cash</p>
-            <p className="text-lg font-bold tabular-nums text-success">{formatCurrency(projection.taxFreeCashTaken)}</p>
+            <p className="text-lg font-bold tabular-nums text-success">
+              {projection.taxFreeCashTaken > 0 ? formatCurrency(projection.taxFreeCashTaken) : "Not taken"}
+            </p>
+            {projection.taxFreeCashAge && projection.taxFreeCashTaken > 0 && (
+              <p className="text-[11px] text-muted-foreground">At age {projection.taxFreeCashAge}</p>
+            )}
           </div>
           <div>
             <p className="text-[11px] text-muted-foreground">Remaining drawdown pot</p>

@@ -63,8 +63,10 @@ describe("computeRetirement tax-free cash", () => {
 
     expect(projection.dcPotAtRetirement).toBe(100_000);
     expect(projection.taxFreeCashTaken).toBe(25_000);
+    expect(projection.taxFreeCashAge).toBe(60);
     expect(projection.dcPotAfterTaxFreeCash).toBe(75_000);
     expect(projection.dcDrawdown).toBe(3_000);
+    expect(projection.timeline.find((point) => point.age === 60)?.taxFreeCash).toBe(25_000);
   });
 
   it("allows scenarios to reduce tax-free cash to preserve more drawdown income", () => {
@@ -80,7 +82,46 @@ describe("computeRetirement tax-free cash", () => {
     );
 
     expect(projection.taxFreeCashTaken).toBe(0);
+    expect(projection.taxFreeCashAge).toBe(60);
     expect(projection.dcPotAfterTaxFreeCash).toBe(100_000);
     expect(projection.dcDrawdown).toBe(4_000);
+  });
+
+  it("lets scenarios switch tax-free cash off explicitly", () => {
+    const projection = computeRetirement(
+      {
+        ...baseInputs,
+        retireAge: 60,
+        currentPot: 100_000,
+        targetIncome: 10_000,
+        taxFreeCashEnabled: false,
+      },
+      []
+    );
+
+    expect(projection.taxFreeCashTaken).toBe(0);
+    expect(projection.taxFreeCashAge).toBeNull();
+    expect(projection.dcPotAfterTaxFreeCash).toBe(100_000);
+    expect(projection.dcDrawdown).toBe(4_000);
+  });
+
+  it("can take tax-free cash after retirement and recalculates DC drawdown from that age", () => {
+    const projection = computeRetirement(
+      {
+        ...baseInputs,
+        retireAge: 60,
+        currentPot: 100_000,
+        targetIncome: 10_000,
+        taxFreeCashAge: 62,
+      },
+      []
+    );
+
+    expect(projection.taxFreeCashAge).toBe(62);
+    expect(projection.taxFreeCashTaken).toBe(23_000);
+    expect(projection.dcPotAfterTaxFreeCash).toBe(69_000);
+    expect(projection.timeline.find((point) => point.age === 60)?.dcDrawdown).toBe(4_000);
+    expect(projection.timeline.find((point) => point.age === 62)?.taxFreeCash).toBe(23_000);
+    expect(projection.timeline.find((point) => point.age === 62)?.dcDrawdown).toBe(2_760);
   });
 });

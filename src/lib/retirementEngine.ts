@@ -23,7 +23,9 @@ export interface RetirementInputs {
   targetIncome: number;
   statePensionPct: number; // 0-100
   drawdownRate: number; // decimal e.g. 0.04
+  taxFreeCashEnabled?: boolean;
   taxFreeCashPct?: number; // 0-25, standard UK pension commencement lump sum percentage
+  taxFreeCashAge?: number;
   isaPot: number; // total ISA balance at today
   isaDrawdownRate: number; // decimal e.g. 0.04
   isaGrowthRate: number; // % annual growth for ISA
@@ -38,6 +40,7 @@ export interface IncomeTimelinePoint {
   otherIncome: number;
   totalIncome: number;
   dcPot: number; // remaining DC pot at this age
+  taxFreeCash: number; // one-off DC pension commencement lump sum in this year
 }
 
 export interface RetirementProjection {
@@ -45,6 +48,7 @@ export interface RetirementProjection {
   dcPotAtRetirementNominal: number;
   dcPotAfterTaxFreeCash: number;
   taxFreeCashTaken: number;
+  taxFreeCashAge: number | null;
   dcDrawdown: number;
   totalDBIncome: number;
   statePensionIncome: number;
@@ -59,6 +63,12 @@ export interface RetirementProjection {
 function normalizeTaxFreeCashPct(value: number | undefined): number {
   if (!Number.isFinite(value)) return DEFAULT_TAX_FREE_CASH_PCT;
   return Math.min(Math.max(value ?? DEFAULT_TAX_FREE_CASH_PCT, 0), MAX_TAX_FREE_CASH_PCT);
+}
+
+function resolveTaxFreeCashAge(inputs: RetirementInputs, longevity: number): number | null {
+  if (inputs.taxFreeCashEnabled === false) return null;
+  const requestedAge = Number.isFinite(inputs.taxFreeCashAge) ? Number(inputs.taxFreeCashAge) : inputs.retireAge;
+  return Math.min(Math.max(Math.round(requestedAge), inputs.retireAge), longevity);
 }
 
 export interface RetirementAction {
@@ -99,7 +109,8 @@ export function buildIncomeTimeline(
   longevity: number = DEFAULT_LONGEVITY
 ): IncomeTimelinePoint[] {
   const { currentAge, retireAge, currentPot, monthlyContrib, employerContrib, expectedReturn, inflation, statePensionPct, drawdownRate, isaPot, isaDrawdownRate, isaGrowthRate } = inputs;
-  const taxFreeCashPct = normalizeTaxFreeCashPct(inputs.taxFreeCashPct);
+  const taxFreeCashPct = inputs.taxFreeCashEnabled === false ? 0 : normalizeTaxFreeCashPct(inputs.taxFreeCashPct);
+  const taxFreeCashAge = resolveTaxFreeCashAge(inputs, longevity);
   const statePensionAnnual = Math.round(UK_STATE_PENSION_FULL * (statePensionPct / 100));
 
   const dbIncomeAtScenarioRetirement = dbPensionParams.map((p) =>
@@ -126,27 +137,33 @@ export function buildIncomeTimeline(
       otherIncome: 0,
       totalIncome: 0,
       dcPot: 0, // will fill below
+      taxFreeCash: 0,
     });
   }
 
   // Compute DC pot at retirement
   const yearsToRetire = Math.max(0, retireAge - currentAge);
   const { real: dcPotReal } = projectDCPot(currentPot, monthlyContrib, employerContrib, expectedReturn, inflation, yearsToRetire);
-  const taxFreeCashTaken = Math.round(dcPotReal * (taxFreeCashPct / 100));
-  const dcPotAfterTaxFreeCash = Math.max(0, dcPotReal - taxFreeCashTaken);
 
   // Compute ISA pot at retirement (grows but no contributions assumed)
   const isaRealReturn = (isaGrowthRate - inflation) / 100;
   let isaAtRetire = isaPot * Math.pow(1 + Math.max(isaRealReturn, 0), yearsToRetire);
   
   // Phase 2: Decumulation (retirement to longevity)
-  let remainingPot = dcPotAfterTaxFreeCash;
-  const annualDrawdown = Math.round(dcPotAfterTaxFreeCash * drawdownRate);
+  let remainingPot = dcPotReal;
+  let annualDrawdown = Math.round(dcPotReal * drawdownRate);
   let dcDepletionAge: number | null = null;
   let remainingIsa = isaAtRetire;
   const isaAnnualDrawdown = Math.round(isaAtRetire * isaDrawdownRate);
   
   for (let age = retireAge; age <= longevity; age++) {
+    let taxFreeCash = 0;
+    if (taxFreeCashAge === age && taxFreeCashPct > 0) {
+      taxFreeCash = Math.round(remainingPot * (taxFreeCashPct / 100));
+      remainingPot = Math.max(0, remainingPot - taxFreeCash);
+      annualDrawdown = Math.round(remainingPot * drawdownRate);
+    }
+
     const dc = remainingPot > 0 ? Math.min(annualDrawdown, remainingPot) : 0;
     remainingPot = Math.max(0, remainingPot - dc);
     if (remainingPot === 0 && dcDepletionAge === null && age > retireAge) {
@@ -169,6 +186,7 @@ export function buildIncomeTimeline(
       otherIncome: 0,
       totalIncome: total,
       dcPot: remainingPot,
+      taxFreeCash,
     });
   }
 
@@ -194,11 +212,15 @@ export function computeRetirement(
     inputs.currentPot, inputs.monthlyContrib, inputs.employerContrib,
     inputs.expectedReturn, inputs.inflation, yearsToRetire
   );
-  const taxFreeCashPct = normalizeTaxFreeCashPct(inputs.taxFreeCashPct);
-  const taxFreeCashTaken = Math.round(real * (taxFreeCashPct / 100));
-  const dcPotAfterTaxFreeCash = Math.max(0, real - taxFreeCashTaken);
+  const taxFreeCashAge = resolveTaxFreeCashAge(inputs, DEFAULT_LONGEVITY);
+  const taxFreeCashTaken = timeline.reduce((sum, point) => sum + point.taxFreeCash, 0);
+  const taxFreeCashPct = inputs.taxFreeCashEnabled === false ? 0 : normalizeTaxFreeCashPct(inputs.taxFreeCashPct);
+  const dcPotAfterTaxFreeCash =
+    taxFreeCashTaken > 0 && taxFreeCashPct > 0
+      ? Math.max(0, Math.round(taxFreeCashTaken / (taxFreeCashPct / 100) - taxFreeCashTaken))
+      : real;
 
-  const dcDrawdown = Math.round(dcPotAfterTaxFreeCash * inputs.drawdownRate);
+  const dcDrawdown = retirePoint?.dcDrawdown ?? Math.round(dcPotAfterTaxFreeCash * inputs.drawdownRate);
   const totalDBIncome = dbPensionParams.reduce((sum, p) => {
     const proj = projectDBPensionAtAge(p, inputs.retireAge);
     return sum + proj.projected_annual_income;
@@ -227,6 +249,7 @@ export function computeRetirement(
     dcPotAtRetirementNominal: nominal,
     dcPotAfterTaxFreeCash,
     taxFreeCashTaken,
+    taxFreeCashAge,
     dcDrawdown,
     totalDBIncome,
     statePensionIncome,

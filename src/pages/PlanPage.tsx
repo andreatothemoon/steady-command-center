@@ -58,6 +58,7 @@ export default function PlanPage() {
   const { data: dbPensions = [] } = useDBPensions();
   const { data: accounts = [] } = useAccounts();
   const canPersistTaxFreeCash = scenarios.some((scenario) => "tax_free_cash_pct" in scenario);
+  const canPersistTaxFreeCashOptions = scenarios.some((scenario) => "tax_free_cash_enabled" in scenario);
 
   const totalIsaPot = useMemo(() =>
     accounts
@@ -81,9 +82,10 @@ export default function PlanPage() {
 
   const getScenarioValues = useCallback((scenario: RetirementScenario) => {
     const edits = localEdits[scenario.id] ?? {};
+    const retireAge = edits.retirement_age ?? scenario.retirement_age;
     return {
       currentAge: edits.current_age ?? scenario.current_age,
-      retireAge: edits.retirement_age ?? scenario.retirement_age,
+      retireAge,
       currentPot: edits.current_pot ?? Number(scenario.current_pot),
       monthlyContrib: edits.monthly_contribution ?? Number(scenario.monthly_contribution),
       employerContrib: edits.employer_contribution ?? Number(scenario.employer_contribution),
@@ -95,6 +97,16 @@ export default function PlanPage() {
         ("tax_free_cash_pct" in scenario
           ? Number(scenario.tax_free_cash_pct)
           : DEFAULT_TAX_FREE_CASH_PCT),
+      taxFreeCashEnabled:
+        edits.tax_free_cash_enabled ??
+        ("tax_free_cash_enabled" in scenario
+          ? Boolean(scenario.tax_free_cash_enabled)
+          : true),
+      taxFreeCashAge:
+        edits.tax_free_cash_age ??
+        ("tax_free_cash_age" in scenario && scenario.tax_free_cash_age != null
+          ? Number(scenario.tax_free_cash_age)
+          : retireAge),
     };
   }, [localEdits]);
 
@@ -102,7 +114,7 @@ export default function PlanPage() {
   const activeValues = activeScenario ? getScenarioValues(activeScenario) : null;
   const activeEdits = activeId ? localEdits[activeId] : undefined;
 
-  const setField = useCallback((field: keyof RetirementScenario, value: number) => {
+  const setField = useCallback((field: keyof RetirementScenario, value: number | boolean | null) => {
     if (!activeId) return;
     setLocalEdits((prev) => ({
       ...prev,
@@ -121,7 +133,9 @@ export default function PlanPage() {
         retireAge: v.retireAge,
         statePensionPct,
         drawdownRate: drawdownRate / 100,
+        taxFreeCashEnabled: v.taxFreeCashEnabled,
         taxFreeCashPct: v.taxFreeCashPct,
+        taxFreeCashAge: v.taxFreeCashAge,
         isaPot: totalIsaPot,
         isaDrawdownRate: drawdownRate / 100,
         isaGrowthRate: v.expectedReturn,
@@ -199,11 +213,17 @@ export default function PlanPage() {
           inflation_rate: valuesToSave.inflation,
           target_income: valuesToSave.targetIncome,
           ...(canPersistTaxFreeCash ? { tax_free_cash_pct: valuesToSave.taxFreeCashPct } : {}),
+          ...(canPersistTaxFreeCashOptions
+            ? {
+                tax_free_cash_enabled: valuesToSave.taxFreeCashEnabled,
+                tax_free_cash_age: valuesToSave.taxFreeCashAge,
+              }
+            : {}),
         },
       });
     }, 800);
     return () => { if (saveTimer.current) clearTimeout(saveTimer.current); };
-  }, [activeEdits, activeScenario, canPersistTaxFreeCash, getScenarioValues, isLoading]);
+  }, [activeEdits, activeScenario, canPersistTaxFreeCash, canPersistTaxFreeCashOptions, getScenarioValues, isLoading]);
 
   const createdDefault = useRef(false);
   useEffect(() => {
@@ -222,6 +242,9 @@ export default function PlanPage() {
           expected_return: 5,
           inflation_rate: 2.5,
           ...(canPersistTaxFreeCash ? { tax_free_cash_pct: DEFAULT_TAX_FREE_CASH_PCT } : {}),
+          ...(canPersistTaxFreeCashOptions
+            ? { tax_free_cash_enabled: true, tax_free_cash_age: 57 }
+            : {}),
           target_income: 30000,
         },
       });
@@ -245,10 +268,16 @@ export default function PlanPage() {
         employer_contribution: values.employerContrib, expected_return: values.expectedReturn,
         inflation_rate: values.inflation,
         ...(canPersistTaxFreeCash ? { tax_free_cash_pct: values.taxFreeCashPct } : {}),
+        ...(canPersistTaxFreeCashOptions
+          ? {
+              tax_free_cash_enabled: values.taxFreeCashEnabled,
+              tax_free_cash_age: values.taxFreeCashAge,
+            }
+          : {}),
         target_income: values.targetIncome,
       },
     });
-  }, [householdId, activeValues, scenarios.length, upsert, canPersistTaxFreeCash]);
+  }, [householdId, activeValues, scenarios.length, upsert, canPersistTaxFreeCash, canPersistTaxFreeCashOptions]);
 
   const handleDelete = useCallback(async (id: string) => {
     if (scenarios.length <= 1) return;
@@ -277,9 +306,21 @@ export default function PlanPage() {
     { label: "Current Pot", value: activeValues.currentPot, onChange: (v: number) => setField("current_pot", v), min: 0, max: 1000000, step: 5000, format: formatCurrency },
     { label: "Employer Monthly", value: activeValues.employerContrib, onChange: (v: number) => setField("employer_contribution", v), min: 0, max: 5000, step: 50, format: formatCurrency },
     { label: "Inflation", value: activeValues.inflation, onChange: (v: number) => setField("inflation_rate", v), min: 0, max: 6, step: 0.5, format: (v: number) => `${v}%` },
-    { label: "Tax-Free Cash", value: activeValues.taxFreeCashPct, onChange: (v: number) => setField("tax_free_cash_pct", v), min: 0, max: 25, step: 1, format: (v: number) => `${v}%` },
+    { label: "Tax-Free Cash", value: activeValues.taxFreeCashPct, onChange: (v: number) => setField("tax_free_cash_pct", v), min: 0, max: 25, step: 1, format: (v: number) => activeValues.taxFreeCashEnabled ? `${v}%` : "Not taken", disabled: !activeValues.taxFreeCashEnabled },
+    { label: "Tax-Free Cash Age", value: Math.max(activeValues.taxFreeCashAge, activeValues.retireAge), onChange: (v: number) => setField("tax_free_cash_age", v), min: activeValues.retireAge, max: 75, step: 1, format: (v: number) => activeValues.taxFreeCashEnabled ? `${v}` : "Not taken", disabled: !activeValues.taxFreeCashEnabled },
     { label: "State Pension %", value: statePensionPct, onChange: setStatePensionPct, min: 0, max: 100, step: 5, format: (v: number) => `${v}%` },
     { label: "Drawdown Rate", value: drawdownRate, onChange: setDrawdownRate, min: 2, max: 8, step: 0.5, format: (v: number) => `${v}%` },
+  ] : [];
+
+  const advancedToggles = activeValues ? [
+    {
+      label: "Take tax-free cash",
+      description: activeValues.taxFreeCashEnabled
+        ? "Model a one-off DC pension lump sum."
+        : "Keep the full DC pot invested for drawdown.",
+      checked: activeValues.taxFreeCashEnabled,
+      onChange: (checked: boolean) => setField("tax_free_cash_enabled", checked),
+    },
   ] : [];
 
   if (isLoading) {
@@ -299,7 +340,13 @@ export default function PlanPage() {
     { label: "Inflation", value: activeValues ? `${activeValues.inflation.toFixed(1)}% p.a.` : "—", adjustable: true },
     { label: "State Pension age", value: `${STATE_PENSION_AGE}`, adjustable: false },
     { label: "Life expectancy", value: `${DEFAULT_LONGEVITY} years`, adjustable: false },
-    { label: "Tax-free cash", value: activeValues ? `${activeValues.taxFreeCashPct.toFixed(0)}% of DC pot` : "—", adjustable: true },
+    {
+      label: "Tax-free cash",
+      value: activeValues?.taxFreeCashEnabled
+        ? `${activeValues.taxFreeCashPct.toFixed(0)}% at age ${activeValues.taxFreeCashAge}`
+        : "Not taken",
+      adjustable: true,
+    },
     { label: "Drawdown rate", value: `${drawdownRate.toFixed(1)}%`, adjustable: true },
   ];
 
@@ -542,7 +589,7 @@ export default function PlanPage() {
               <IncomeTimeline timeline={projection.timeline} retireAge={activeValues.retireAge} targetIncome={activeValues.targetIncome} />
               <ActionsPanel actions={actions} />
             </div>
-            <QuickControls quickSliders={quickSliders} advancedSliders={advancedSliders} isSaving={upsert.isPending} />
+            <QuickControls quickSliders={quickSliders} advancedSliders={advancedSliders} advancedToggles={advancedToggles} isSaving={upsert.isPending} />
           </div>
 
           <motion.div variants={stagger.item}>
@@ -563,7 +610,7 @@ export default function PlanPage() {
 
       {compareMode && activeValues && (
         <div className="max-w-md">
-          <QuickControls quickSliders={quickSliders} advancedSliders={advancedSliders} isSaving={upsert.isPending} />
+          <QuickControls quickSliders={quickSliders} advancedSliders={advancedSliders} advancedToggles={advancedToggles} isSaving={upsert.isPending} />
         </div>
       )}
     </motion.div>

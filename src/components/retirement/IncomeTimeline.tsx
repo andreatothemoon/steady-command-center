@@ -23,6 +23,7 @@ const chartColors = {
   db: "#efcb68",
   state: "#e1efe6",
   isa: "#aeb7b3",
+  taxFreeCash: "#895b1e",
   grid: "rgba(9, 21, 64, 0.07)",
   axis: "rgba(0, 4, 17, 0.42)",
 };
@@ -42,7 +43,12 @@ export default function IncomeTimeline({ timeline, retireAge, targetIncome }: Pr
       db: Math.round(point.dbPension / 12),
       state: Math.round(point.statePension / 12),
       isa: Math.round(point.isaWithdrawal / 12),
+      taxFreeCash: point.taxFreeCash,
     }));
+  }, [timeline]);
+
+  const taxFreeCashEvent = useMemo(() => {
+    return timeline.find((point) => point.taxFreeCash > 0) ?? null;
   }, [timeline]);
 
   const statePensionAge = useMemo(() => {
@@ -110,12 +116,13 @@ export default function IncomeTimeline({ timeline, retireAge, targetIncome }: Pr
             cursor={{ stroke: chartColors.dc, strokeWidth: 1.5, strokeDasharray: "5 5" }}
             content={({ active, payload }) => {
               if (!active || !payload?.length) return null;
-              const data = payload[0]?.payload as { age: number; dc: number; db: number; state: number; isa: number };
+              const data = payload[0]?.payload as { age: number; dc: number; db: number; state: number; isa: number; taxFreeCash: number };
               if (!data) return null;
               const dc = data.dc ?? 0;
               const db = data.db ?? 0;
               const sp = data.state ?? 0;
               const isa = data.isa ?? 0;
+              const taxFreeCash = data.taxFreeCash ?? 0;
               const total = dc + isa + db + sp;
               return (
                 <div className="min-w-[290px] rounded-[28px] border border-[rgba(0,0,0,0.08)] bg-white px-6 py-5 shadow-[0_18px_36px_-24px_rgba(15,23,42,0.32)]">
@@ -137,6 +144,12 @@ export default function IncomeTimeline({ timeline, retireAge, targetIncome }: Pr
                       <span className="text-xl text-muted-foreground">ISA</span>
                       <span className="text-xl font-semibold tabular-nums text-foreground">{formatCurrency(isa)}</span>
                     </div>
+                    {taxFreeCash > 0 && (
+                      <div className="flex justify-between gap-6 rounded-2xl bg-secondary/60 px-4 py-3">
+                        <span className="text-xl text-muted-foreground">Tax-free cash</span>
+                        <span className="text-xl font-semibold tabular-nums" style={{ color: chartColors.taxFreeCash }}>{formatCurrency(taxFreeCash)}</span>
+                      </div>
+                    )}
                     <div className="mt-4 flex justify-between gap-6 border-t border-[rgba(0,0,0,0.06)] pt-4">
                       <span className="text-xl font-semibold text-foreground">Total</span>
                       <span className="text-xl font-semibold tabular-nums text-foreground">{formatCurrency(total)}/mo</span>
@@ -147,6 +160,21 @@ export default function IncomeTimeline({ timeline, retireAge, targetIncome }: Pr
             }}
           />
           <ReferenceLine x={retireAge} stroke={chartColors.dc} strokeDasharray="3 3" strokeWidth={2.25} />
+          {taxFreeCashEvent && (
+            <ReferenceLine
+              x={taxFreeCashEvent.age}
+              stroke={chartColors.taxFreeCash}
+              strokeDasharray="6 4"
+              strokeWidth={2}
+              label={{
+                value: `Tax-free cash ${formatCurrency(taxFreeCashEvent.taxFreeCash)}`,
+                position: "insideTopRight",
+                fill: chartColors.taxFreeCash,
+                fontSize: 12,
+                fontWeight: 600,
+              }}
+            />
+          )}
           <ReferenceLine x={statePensionAge} stroke={chartColors.db} strokeDasharray="3 3" strokeWidth={1.75} />
           <Area
             type="monotone"
@@ -204,6 +232,12 @@ export default function IncomeTimeline({ timeline, retireAge, targetIncome }: Pr
           <div className="h-3 w-3 rounded-full" style={{ backgroundColor: chartColors.isa }} />
           <span className="text-sm text-muted-foreground">ISA Withdrawals</span>
         </div>
+        {taxFreeCashEvent && (
+          <div className="flex items-center gap-2">
+            <div className="h-3 w-3 rounded-full" style={{ backgroundColor: chartColors.taxFreeCash }} />
+            <span className="text-sm text-muted-foreground">Tax-Free Cash</span>
+          </div>
+        )}
       </div>
     </motion.div>
   );

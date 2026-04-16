@@ -765,6 +765,8 @@ export type Database = {
           monthly_contribution: number
           name: string
           retirement_age: number
+          tax_free_cash_age: number | null
+          tax_free_cash_enabled: boolean
           tax_free_cash_pct: number
           target_income: number
           updated_at: string
@@ -781,6 +783,8 @@ export type Database = {
           monthly_contribution?: number
           name?: string
           retirement_age?: number
+          tax_free_cash_age?: number | null
+          tax_free_cash_enabled?: boolean
           tax_free_cash_pct?: number
           target_income?: number
           updated_at?: string
@@ -797,6 +801,8 @@ export type Database = {
           monthly_contribution?: number
           name?: string
           retirement_age?: number
+          tax_free_cash_age?: number | null
+          tax_free_cash_enabled?: boolean
           tax_free_cash_pct?: number
           target_income?: number
           updated_at?: string

@@ -72,10 +72,18 @@ export default function HomePage() {
       targetIncome: Number(scenario.target_income),
       statePensionPct: 100,
       drawdownRate: 0.04,
+      taxFreeCashEnabled:
+        "tax_free_cash_enabled" in scenario
+          ? Boolean(scenario.tax_free_cash_enabled)
+          : true,
       taxFreeCashPct:
         "tax_free_cash_pct" in scenario
           ? Number(scenario.tax_free_cash_pct)
           : DEFAULT_TAX_FREE_CASH_PCT,
+      taxFreeCashAge:
+        "tax_free_cash_age" in scenario && scenario.tax_free_cash_age != null
+          ? Number(scenario.tax_free_cash_age)
+          : scenario.retirement_age,
       isaPot: totalIsaPot,
       isaDrawdownRate: 0.04,
       isaGrowthRate: Number(scenario.expected_return),
