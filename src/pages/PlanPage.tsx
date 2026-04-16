@@ -21,8 +21,8 @@ import {
   type RetirementInputs,
   DEFAULT_DRAWDOWN_RATE,
   UK_STATE_PENSION_FULL,
-import type { DBPensionParams } from "@/lib/dbPensionEngine";
-import { projectDBPension } from "@/lib/dbPensionEngine";
+} from "@/lib/retirementEngine";
+import { projectDBPension, type DBPensionParams } from "@/lib/dbPensionEngine";
 import { toDBPensionParams } from "@/lib/dbPensionRates";
 
 import HeroOutcome from "@/components/retirement/HeroOutcome";
