@@ -3,7 +3,7 @@
  * Computes income-first retirement projections across all sources.
  */
 
-import { projectDBPension, type DBPensionParams } from "./dbPensionEngine";
+import { projectDBPensionAtAge, type DBPensionParams } from "./dbPensionEngine";
 
 export const UK_STATE_PENSION_FULL = 11502;
 export const STATE_PENSION_AGE = 67;
@@ -91,28 +91,13 @@ export function buildIncomeTimeline(
   const { currentAge, retireAge, currentPot, monthlyContrib, employerContrib, expectedReturn, inflation, statePensionPct, drawdownRate, isaPot, isaDrawdownRate, isaGrowthRate } = inputs;
   const statePensionAnnual = Math.round(UK_STATE_PENSION_FULL * (statePensionPct / 100));
 
-  // Pre-compute DB projections
-  const dbProjections = dbPensionParams.map((p) => ({
-    projection: projectDBPension(p),
-    schemeRetireAge: p.retirement_age,
-    earlyFactor: p.early_retirement_factor, // decimal e.g. 0.03
-  }));
-  
-  // Build DB income by age lookup (sum across all schemes)
-  // If user takes DB early, apply early retirement penalty
+  const dbIncomeAtScenarioRetirement = dbPensionParams.map((p) =>
+    projectDBPensionAtAge(p, retireAge).projected_annual_income
+  );
+
   const dbByAge: Record<number, number> = {};
-  for (const { projection: proj, schemeRetireAge, earlyFactor } of dbProjections) {
-    const projectedIncome = proj.projected_annual_income;
-    // DB income can start at user's retire age or scheme NRA, whichever is earlier
-    const startAge = Math.min(retireAge, schemeRetireAge);
-    for (let age = startAge; age <= longevity; age++) {
-      let income = projectedIncome;
-      // Apply early retirement penalty if taking before scheme NRA
-      if (age < schemeRetireAge && earlyFactor > 0) {
-        const yearsEarly = schemeRetireAge - age;
-        const penalty = Math.min(yearsEarly * earlyFactor, 1); // cap at 100%
-        income = Math.round(income * (1 - penalty));
-      }
+  for (const income of dbIncomeAtScenarioRetirement) {
+    for (let age = retireAge; age <= longevity; age++) {
       dbByAge[age] = (dbByAge[age] ?? 0) + income;
     }
   }
@@ -199,7 +184,7 @@ export function computeRetirement(
 
   const dcDrawdown = Math.round(real * inputs.drawdownRate);
   const totalDBIncome = dbPensionParams.reduce((sum, p) => {
-    const proj = projectDBPension(p);
+    const proj = projectDBPensionAtAge(p, inputs.retireAge);
     return sum + proj.projected_annual_income;
   }, 0);
   const statePensionIncome = Math.round(UK_STATE_PENSION_FULL * (inputs.statePensionPct / 100));

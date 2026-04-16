@@ -137,3 +137,59 @@ export function projectDBPension(params: DBPensionParams, cpi: number = DEFAULT_
     slices,
   };
 }
+
+export function applyEarlyRetirementPenalty(
+  annualIncome: number,
+  normalRetirementAge: number,
+  claimAge: number,
+  earlyRetirementFactor: number
+): number {
+  if (claimAge >= normalRetirementAge || earlyRetirementFactor <= 0) {
+    return Math.round(annualIncome);
+  }
+
+  const yearsEarly = normalRetirementAge - claimAge;
+  const penalty = Math.min(yearsEarly * earlyRetirementFactor, 1);
+  return Math.round(annualIncome * (1 - penalty));
+}
+
+export function projectDBPensionAtAge(
+  params: DBPensionParams,
+  claimAge: number,
+  cpi: number = DEFAULT_CPI
+): DBProjectionResult {
+  const normalRetirementAge = params.retirement_age;
+  const projectionAge = Math.max(params.current_age, claimAge);
+  const baseProjection = projectDBPension({ ...params, retirement_age: projectionAge }, cpi);
+  const projectedAnnualIncome = applyEarlyRetirementPenalty(
+    baseProjection.projected_annual_income,
+    normalRetirementAge,
+    claimAge,
+    params.early_retirement_factor
+  );
+
+  const unreducedTotal =
+    baseProjection.breakdown.existing_entitlement + baseProjection.breakdown.future_accrual;
+  const reductionRatio = unreducedTotal > 0 ? projectedAnnualIncome / unreducedTotal : 1;
+
+  return {
+    ...baseProjection,
+    projected_annual_income: projectedAnnualIncome,
+    breakdown: {
+      existing_entitlement: Math.round(baseProjection.breakdown.existing_entitlement * reductionRatio),
+      future_accrual: Math.round(baseProjection.breakdown.future_accrual * reductionRatio),
+    },
+    yearly_projection: baseProjection.yearly_projection.map((point) => ({
+      ...point,
+      total_income:
+        point.age >= claimAge
+          ? applyEarlyRetirementPenalty(
+              point.total_income,
+              normalRetirementAge,
+              claimAge,
+              params.early_retirement_factor
+            )
+          : point.total_income,
+    })),
+  };
+}

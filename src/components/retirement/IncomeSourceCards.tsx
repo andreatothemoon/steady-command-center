@@ -3,7 +3,7 @@ import { formatCurrency } from "@/lib/format";
 import { Landmark, Shield, Building2, Wallet } from "lucide-react";
 import type { RetirementProjection } from "@/lib/retirementEngine";
 import type { DBPension } from "@/hooks/useDBPensions";
-import { projectDBPension } from "@/lib/dbPensionEngine";
+import { projectDBPensionAtAge } from "@/lib/dbPensionEngine";
 import { toDBPensionParams } from "@/lib/dbPensionRates";
 import { STATE_PENSION_AGE, UK_STATE_PENSION_FULL } from "@/lib/retirementEngine";
 
@@ -22,7 +22,7 @@ interface Props {
 
 export default function IncomeSourceCards({ projection, dbPensions, statePensionPct, retireAge, drawdownRate }: Props) {
   const dbProjections = dbPensions.map((p) =>
-    projectDBPension(toDBPensionParams(p))
+    projectDBPensionAtAge(toDBPensionParams(p), retireAge)
   );
 
   return (
@@ -73,6 +73,12 @@ export default function IncomeSourceCards({ projection, dbPensions, statePension
           {dbProjections.map((proj, i) => (
             <div key={dbPensions[i]?.id} className="pt-1.5 border-t border-border/50 space-y-1">
               <p className="text-[11px] font-medium text-card-foreground">{dbPensions[i]?.name}</p>
+              {retireAge < (dbPensions[i]?.retirement_age ?? retireAge) && (
+                <div className="flex justify-between text-[11px]">
+                  <span className="text-muted-foreground">Early claim age</span>
+                  <span className="tabular-nums text-warning">Age {retireAge}</span>
+                </div>
+              )}
               <div className="flex justify-between text-[11px]">
                 <span className="text-muted-foreground">Existing</span>
                 <span className="tabular-nums text-muted-foreground">{formatCurrency(proj.breakdown.existing_entitlement)}</span>

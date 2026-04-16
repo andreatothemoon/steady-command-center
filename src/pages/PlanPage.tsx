@@ -25,10 +25,8 @@ import {
   DEFAULT_LONGEVITY,
   STATE_PENSION_AGE,
   type RetirementInputs,
-  DEFAULT_DRAWDOWN_RATE,
-  UK_STATE_PENSION_FULL,
 } from "@/lib/retirementEngine";
-import { projectDBPension, type DBPensionParams } from "@/lib/dbPensionEngine";
+import type { DBPensionParams } from "@/lib/dbPensionEngine";
 import { toDBPensionParams } from "@/lib/dbPensionRates";
 
 import HeroOutcome from "@/components/retirement/HeroOutcome";
@@ -64,23 +62,6 @@ export default function PlanPage() {
       .filter((a) => a.account_type === "cash_isa" || a.account_type === "stocks_and_shares_isa")
       .reduce((sum, a) => sum + Number(a.current_value), 0),
     [accounts]);
-
-  // Retirement Funding Mix calculations
-  const dcIncome = useMemo(() =>
-    accounts
-      .filter(a => ["sipp", "workplace_pension", "stocks_and_shares_isa", "cash_isa", "gia", "crypto", "employer_share_scheme"].includes(a.account_type) && Number(a.current_value) > 0)
-      .reduce((s, a) => s + Number(a.current_value) * DEFAULT_DRAWDOWN_RATE, 0),
-    [accounts]);
-
-  const dbIncomeTotal = useMemo(() => {
-    const params = dbPensions.map((p) => toDBPensionParams(p));
-    return params.reduce((s, p) => {
-      const result = projectDBPension(p);
-      return s + result.projected_annual_income;
-    }, 0);
-  }, [dbPensions]);
-
-  const totalIncomeEstimate = dcIncome + dbIncomeTotal + UK_STATE_PENSION_FULL;
 
   const [activeId, setActiveId] = useState<string | null>(null);
   const [compareMode, setCompareMode] = useState(false);
@@ -145,6 +126,15 @@ export default function PlanPage() {
   const activeProjectionData = allProjections.find((p) => p.scenario.id === activeId);
   const projection = activeProjectionData?.projection;
   const inputs = activeProjectionData?.inputs;
+  const fundingMix = projection
+    ? {
+        stableIncome: projection.totalDBIncome + projection.statePensionIncome,
+        flexibleIncome:
+          projection.dcDrawdown +
+          (projection.timeline.find((point) => point.age === activeValues?.retireAge)?.isaWithdrawal ?? 0),
+        totalIncome: projection.totalIncome,
+      }
+    : null;
   const actions = useMemo(
     () => inputs && projection ? generateActions(inputs, projection, dbPensionParams) : [],
     [inputs, projection, dbPensionParams]
@@ -512,22 +502,22 @@ export default function PlanPage() {
               <div>
                 <p className="text-sm text-muted-foreground">Guaranteed income</p>
                 <p className="mt-1 text-3xl font-semibold tracking-tight text-foreground">
-                  {formatCurrency(Math.round((dbIncomeTotal + UK_STATE_PENSION_FULL) / 12))}/mo
+                  {formatCurrency(Math.round((fundingMix?.stableIncome ?? 0) / 12))}/mo
                 </p>
-                <p className="mt-1 text-sm text-muted-foreground">DB pensions plus full State Pension estimate.</p>
+                <p className="mt-1 text-sm text-muted-foreground">Scenario-adjusted DB pensions plus State Pension when available.</p>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Flexible drawdown capacity</p>
                 <p className="mt-1 text-3xl font-semibold tracking-tight text-foreground">
-                  {formatCurrency(Math.round(dcIncome / 12))}/mo
+                  {formatCurrency(Math.round((fundingMix?.flexibleIncome ?? 0) / 12))}/mo
                 </p>
-                <p className="mt-1 text-sm text-muted-foreground">From pensions, ISAs, and investment accounts at a 4% rule of thumb.</p>
+                <p className="mt-1 text-sm text-muted-foreground">From DC pensions and ISA drawdown in the selected scenario.</p>
               </div>
               <div className="border-t border-border/60 pt-5">
                 <p className="text-sm text-muted-foreground">What this means</p>
                 <p className="mt-2 text-base text-foreground">
-                  Your current balance mix supports an estimated {formatCurrency(Math.round(totalIncomeEstimate / 12))}/month,
-                  with {formatCurrency(Math.round((dbIncomeTotal + UK_STATE_PENSION_FULL) / 12))}/month coming from more stable sources.
+                  Your selected scenario supports an estimated {formatCurrency(Math.round((fundingMix?.totalIncome ?? 0) / 12))}/month,
+                  with {formatCurrency(Math.round((fundingMix?.stableIncome ?? 0) / 12))}/month coming from more stable sources.
                 </p>
               </div>
             </div>
