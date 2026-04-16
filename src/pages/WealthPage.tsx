@@ -279,12 +279,7 @@ export default function WealthPage() {
         <motion.div variants={stagger.item} className="card-surface p-12 flex flex-col items-center gap-3 text-center">
           <Inbox className="h-10 w-10 text-muted-foreground/40" />
           <p className="text-sm text-muted-foreground">No accounts yet. Add your first account to get started.</p>
-          <div className="flex gap-2">
-            <Button size="sm" variant="outline" onClick={() => setAddOpen(true)}><Plus className="h-4 w-4 mr-1" /> Add Account</Button>
-            <Button size="sm" variant="outline" onClick={() => { setEditingDbPension(null); setDbDialogOpen(true); }}>
-              <Building2 className="h-4 w-4 mr-1" /> Add DB Pension
-            </Button>
-          </div>
+          <Button size="sm" variant="outline" onClick={() => setAddOpen(true)}><Plus className="h-4 w-4 mr-1" /> Add Account</Button>
         </motion.div>
       ) : (
         <div className="space-y-6">
@@ -293,8 +288,7 @@ export default function WealthPage() {
             const meta = bucketMeta[bucket];
             const Icon = meta.icon;
 
-            // For guaranteed bucket, show even if empty (to allow adding DB pension)
-            if (items.length === 0 && bucket !== "guaranteed") return null;
+            if (items.length === 0) return null;
 
             const bucketTotal = items.reduce((s, a) => {
               if (a.account_type === "db_pension") {
@@ -325,18 +319,6 @@ export default function WealthPage() {
                     <p className="text-sm text-muted-foreground">{meta.description}</p>
                   </div>
                 </div>
-
-                {bucket === "guaranteed" && (
-                  <div className="mb-3 flex justify-end">
-                    <button
-                      onClick={() => { setEditingDbPension(null); setDbDialogOpen(true); }}
-                      className="inline-flex items-center gap-1 rounded-xl bg-secondary px-3 py-2 text-xs font-semibold text-primary hover:bg-secondary/80 transition-colors"
-                    >
-                      <Plus className="h-3.5 w-3.5" />
-                      Add DB Pension
-                    </button>
-                  </div>
-                )}
 
                 {items.length > 0 && (
                   <div className="card-surface divide-y divide-border overflow-hidden">
