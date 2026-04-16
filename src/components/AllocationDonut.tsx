@@ -35,8 +35,22 @@ export default function AllocationDonut({ accounts }: Props) {
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
 
   const data = useMemo(() => {
+    const mortgages = accounts.filter((a) => a.account_type === "mortgage");
+
     return ASSET_CLASSES
       .map((cls) => {
+        if (cls.key === "property") {
+          // Show equity: property value minus linked mortgage balance
+          const properties = accounts.filter((a) => a.account_type === "property");
+          const total = properties.reduce((s, prop) => {
+            const propValue = Number(prop.current_value);
+            const linkedMortgage = mortgages.find((m) => m.linked_account_id === prop.id);
+            const mortgageBalance = linkedMortgage ? Math.abs(Number(linkedMortgage.current_value)) : 0;
+            const equity = propValue - mortgageBalance;
+            return s + Math.max(equity, 0);
+          }, 0);
+          return { name: cls.label, value: total, color: cls.color, key: cls.key };
+        }
         const total = accounts
           .filter((a) => cls.types.includes(a.account_type) && Number(a.current_value) > 0)
           .reduce((s, a) => s + Number(a.current_value), 0);
