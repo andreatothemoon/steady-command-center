@@ -317,7 +317,7 @@ export default function WealthPage() {
                     <div className="flex items-center justify-between">
                       <h2 className="text-lg font-semibold text-foreground">{meta.label}</h2>
                       <span className="text-base font-semibold text-foreground tabular-nums">
-                        {bucket === "guaranteed" && items.some(a => a.account_type === "db_pension")
+                        {bucket === "guaranteed"
                           ? `${formatCurrency(bucketTotal)}/yr`
                           : formatCurrency(bucketTotal)}
                       </span>
