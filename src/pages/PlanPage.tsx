@@ -503,6 +503,33 @@ export default function PlanPage() {
             <HeroOutcome projection={projection} retireAge={activeValues.retireAge} targetIncome={activeValues.targetIncome} />
           </motion.div>
 
+          <motion.div variants={stagger.item} className="card-surface p-8">
+            <h2 className="text-2xl font-semibold text-foreground">Retirement Funding Mix</h2>
+            <div className="mt-6 space-y-5">
+              <div>
+                <p className="text-sm text-muted-foreground">Guaranteed income</p>
+                <p className="mt-1 text-3xl font-semibold tracking-tight text-foreground">
+                  {formatCurrency(Math.round((dbIncomeTotal + UK_STATE_PENSION_FULL) / 12))}/mo
+                </p>
+                <p className="mt-1 text-sm text-muted-foreground">DB pensions plus full State Pension estimate.</p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Flexible drawdown capacity</p>
+                <p className="mt-1 text-3xl font-semibold tracking-tight text-foreground">
+                  {formatCurrency(Math.round(dcIncome / 12))}/mo
+                </p>
+                <p className="mt-1 text-sm text-muted-foreground">From pensions, ISAs, and investment accounts at a 4% rule of thumb.</p>
+              </div>
+              <div className="border-t border-border/60 pt-5">
+                <p className="text-sm text-muted-foreground">What this means</p>
+                <p className="mt-2 text-base text-foreground">
+                  Your current balance mix supports an estimated {formatCurrency(Math.round(totalIncomeEstimate / 12))}/month,
+                  with {formatCurrency(Math.round((dbIncomeTotal + UK_STATE_PENSION_FULL) / 12))}/month coming from more stable sources.
+                </p>
+              </div>
+            </div>
+          </motion.div>
+
           <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
             <div className="xl:col-span-2 space-y-6">
               <IncomeTimeline timeline={projection.timeline} retireAge={activeValues.retireAge} targetIncome={activeValues.targetIncome} />
