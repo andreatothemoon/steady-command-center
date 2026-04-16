@@ -112,6 +112,7 @@ export default function PlanPage() {
 
   const activeScenario = scenarios.find((s) => s.id === activeId);
   const activeValues = activeScenario ? getScenarioValues(activeScenario) : null;
+  const activeEdits = activeId ? localEdits[activeId] : undefined;
 
   const setField = useCallback((field: keyof RetirementScenario, value: number) => {
     if (!activeId) return;
@@ -157,7 +158,7 @@ export default function PlanPage() {
   }, [setSelectedScenario]);
 
   const upsert = useMutation({
-    mutationFn: async ({ id, values }: { id: string | null; values: Record<string, unknown> }) => {
+    mutationFn: async ({ id, values }: { id: string | null; values: Record<string, unknown>; clearLocalEdits?: Partial<RetirementScenario> }) => {
       if (!householdId) throw new Error("No household");
       if (id) {
         const { error } = await supabase.from("retirement_scenarios").update(values).eq("id", id);
@@ -167,31 +168,43 @@ export default function PlanPage() {
         if (error) throw error;
       }
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["retirement_scenarios", householdId] }),
+    onSuccess: (_data, variables) => {
+      if (variables.id && variables.clearLocalEdits) {
+        setLocalEdits((prev) => {
+          if (prev[variables.id!] !== variables.clearLocalEdits) return prev;
+          const next = { ...prev };
+          delete next[variables.id!];
+          return next;
+        });
+      }
+      qc.invalidateQueries({ queryKey: ["retirement_scenarios", householdId] });
+    },
     onError: () => toast.error("Failed to save scenario"),
   });
 
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => {
-    if (isLoading || !activeScenario || !activeValues) return;
+    if (isLoading || !activeScenario || !activeEdits || Object.keys(activeEdits).length === 0) return;
     if (saveTimer.current) clearTimeout(saveTimer.current);
     saveTimer.current = setTimeout(() => {
+      const valuesToSave = getScenarioValues(activeScenario);
       upsert.mutate({
         id: activeScenario.id,
+        clearLocalEdits: activeEdits,
         values: {
-          current_age: activeValues.currentAge,
-          retirement_age: activeValues.retireAge,
-          current_pot: activeValues.currentPot,
-          monthly_contribution: activeValues.monthlyContrib,
-          employer_contribution: activeValues.employerContrib,
-          expected_return: activeValues.expectedReturn,
-          inflation_rate: activeValues.inflation,
-          target_income: activeValues.targetIncome,
+          current_age: valuesToSave.currentAge,
+          retirement_age: valuesToSave.retireAge,
+          current_pot: valuesToSave.currentPot,
+          monthly_contribution: valuesToSave.monthlyContrib,
+          employer_contribution: valuesToSave.employerContrib,
+          expected_return: valuesToSave.expectedReturn,
+          inflation_rate: valuesToSave.inflation,
+          target_income: valuesToSave.targetIncome,
         },
       });
     }, 800);
     return () => { if (saveTimer.current) clearTimeout(saveTimer.current); };
-  }, [activeValues, activeScenario?.id, isLoading]);
+  }, [activeEdits, activeScenario, getScenarioValues, isLoading]);
 
   const createdDefault = useRef(false);
   useEffect(() => {
@@ -278,7 +291,6 @@ export default function PlanPage() {
   const sortedProjections = [...allProjections].sort((a, b) => b.projection.readinessPct - a.projection.readinessPct);
   const bestScenario = sortedProjections[0] ?? null;
   const downsideScenario = sortedProjections[sortedProjections.length - 1] ?? null;
-  const recommendedScenarioId = sortedProjections.find((item) => item.scenario.id !== activeId)?.scenario.id ?? null;
   const planningAssumptions = [
     { label: "Investment returns", value: activeValues ? `${activeValues.expectedReturn.toFixed(1)}% p.a. (nominal)` : "—", adjustable: true },
     { label: "Inflation", value: activeValues ? `${activeValues.inflation.toFixed(1)}% p.a.` : "—", adjustable: true },
@@ -314,7 +326,6 @@ export default function PlanPage() {
         <div className="space-y-4">
           {allProjections.map(({ scenario, values, projection: scenarioProjection }) => {
             const isActive = scenario.id === activeId;
-            const isRecommended = scenario.id === recommendedScenarioId;
             return (
               <button
                 key={scenario.id}
@@ -334,11 +345,6 @@ export default function PlanPage() {
                       {isActive && (
                         <span className="rounded-full bg-primary px-3 py-1 text-xs font-semibold text-primary-foreground">
                           Active
-                        </span>
-                      )}
-                      {isRecommended && !isActive && (
-                        <span className="rounded-full bg-success px-3 py-1 text-xs font-semibold text-white">
-                          Recommended
                         </span>
                       )}
                     </div>
