@@ -103,10 +103,17 @@ export default function WealthPage() {
   }, [dbPensions]);
   const allocation = useMemo(() => {
     const totals = (Object.keys(buckets) as Bucket[]).map((bucket) => {
-      const total = buckets[bucket].reduce((sum, account) => {
-        if (account.account_type === "db_pension") return sum + (dbProjections[account.id]?.projected ?? 0);
-        return sum + Math.abs(Number(account.current_value));
-      }, 0);
+      let total: number;
+      if (bucket === "property") {
+        // Show net equity: property values minus linked mortgages/loans/credit cards
+        total = buckets[bucket].reduce((sum, account) => sum + Number(account.current_value), 0);
+        total = Math.max(total, 0);
+      } else {
+        total = buckets[bucket].reduce((sum, account) => {
+          if (account.account_type === "db_pension") return sum + (dbProjections[account.id]?.projected ?? 0);
+          return sum + Math.abs(Number(account.current_value));
+        }, 0);
+      }
       return { bucket, total, meta: bucketMeta[bucket] };
     });
     const grossTotal = totals.reduce((sum, item) => sum + item.total, 0);
