@@ -14,7 +14,7 @@ export default function GuaranteedIncomeCard({ projection }: Props) {
   return (
     <div className="card-surface h-full p-5">
       <div className="mb-6">
-        <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#eef9f1]">
+        <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-secondary">
           <Shield className="h-5 w-5 text-success" />
         </div>
       </div>

@@ -65,7 +65,7 @@ export default function ProfilePage() {
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-2 self-start rounded-full bg-[#f0fdf4] px-4 py-2 text-sm font-medium text-success">
+          <div className="flex items-center gap-2 self-start rounded-full bg-secondary px-4 py-2 text-sm font-medium text-success">
             <span className="h-2 w-2 rounded-full bg-success" />
             Active
           </div>

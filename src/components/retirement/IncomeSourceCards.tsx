@@ -60,7 +60,7 @@ export default function IncomeSourceCards({ projection, dbPensions, statePension
       {/* DB Pensions */}
       <motion.div variants={item} className="card-surface p-6">
         <div className="mb-4 flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-2xl" style={{ background: "hsl(160 84% 39% / 0.1)", color: "hsl(160 84% 39%)" }}>
+          <div className="flex h-10 w-10 items-center justify-center rounded-2xl" style={{ background: "hsl(44 81% 67% / 0.18)", color: "#895b1e" }}>
             <Shield className="h-4.5 w-4.5" />
           </div>
           <span className="text-sm font-semibold text-card-foreground">DB Pensions</span>
@@ -68,7 +68,7 @@ export default function IncomeSourceCards({ projection, dbPensions, statePension
         <div className="space-y-2.5">
           <div>
             <p className="text-[11px] text-muted-foreground">Projected income</p>
-            <p className="text-lg font-bold tabular-nums" style={{ color: "hsl(160 84% 39%)" }}>{formatCurrency(projection.totalDBIncome)}</p>
+            <p className="text-lg font-bold tabular-nums" style={{ color: "#895b1e" }}>{formatCurrency(projection.totalDBIncome)}</p>
           </div>
           {dbProjections.map((proj, i) => (
             <div key={dbPensions[i]?.id} className="pt-1.5 border-t border-border/50 space-y-1">
@@ -92,7 +92,7 @@ export default function IncomeSourceCards({ projection, dbPensions, statePension
       {/* State Pension */}
       <motion.div variants={item} className="card-surface p-6">
         <div className="mb-4 flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-2xl" style={{ background: "hsl(38 92% 50% / 0.1)", color: "hsl(38 92% 50%)" }}>
+          <div className="flex h-10 w-10 items-center justify-center rounded-2xl" style={{ background: "hsl(141 30% 91%)", color: "#091540" }}>
             <Building2 className="h-4.5 w-4.5" />
           </div>
           <span className="text-sm font-semibold text-card-foreground">State Pension</span>
@@ -100,7 +100,7 @@ export default function IncomeSourceCards({ projection, dbPensions, statePension
         <div className="space-y-2.5">
           <div>
             <p className="text-[11px] text-muted-foreground">Estimated annual</p>
-            <p className="text-lg font-bold tabular-nums" style={{ color: "hsl(38, 92%, 50%)" }}>{formatCurrency(projection.statePensionIncome)}</p>
+            <p className="text-lg font-bold tabular-nums" style={{ color: "#091540" }}>{formatCurrency(projection.statePensionIncome)}</p>
           </div>
           <div className="flex items-center justify-between text-[11px]">
             <span className="text-muted-foreground">Starts at</span>

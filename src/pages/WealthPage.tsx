@@ -251,7 +251,7 @@ export default function WealthPage() {
                   <div key={item.bucket} className="space-y-2">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <div className="h-3 w-3 rounded-full bg-primary" style={{ backgroundColor: item.bucket === "guaranteed" ? "#1e3a5f" : item.bucket === "growth" ? "#3b5f8a" : item.bucket === "safety" ? "#7fa3c7" : "#a8c5e2" }} />
+                        <div className="h-3 w-3 rounded-full bg-primary" style={{ backgroundColor: item.bucket === "guaranteed" ? "#091540" : item.bucket === "growth" ? "#efcb68" : item.bucket === "safety" ? "#aeb7b3" : "#895b1e" }} />
                         <span className="text-sm text-muted-foreground">{item.meta.label}</span>
                       </div>
                       <div className="text-right">
@@ -262,7 +262,7 @@ export default function WealthPage() {
                     <div className="h-2 overflow-hidden rounded-full bg-secondary">
                       <div
                         className="h-full rounded-full bg-primary"
-                        style={{ width: `${Math.max(item.share, 4)}%`, backgroundColor: item.bucket === "guaranteed" ? "#1e3a5f" : item.bucket === "growth" ? "#3b5f8a" : item.bucket === "safety" ? "#7fa3c7" : "#a8c5e2" }}
+                        style={{ width: `${Math.max(item.share, 4)}%`, backgroundColor: item.bucket === "guaranteed" ? "#091540" : item.bucket === "growth" ? "#efcb68" : item.bucket === "safety" ? "#aeb7b3" : "#895b1e" }}
                       />
                     </div>
                   </div>

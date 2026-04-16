@@ -20,7 +20,7 @@ export default function ReadinessCard({ projection, retireAge }: Props) {
   return (
     <div className="card-surface h-full p-5">
       <div className="mb-6 flex items-start justify-between">
-        <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#eef5fb]">
+        <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-secondary">
           <TrendingUp className="h-5 w-5 text-primary" />
         </div>
         <div className="flex items-center gap-1.5">

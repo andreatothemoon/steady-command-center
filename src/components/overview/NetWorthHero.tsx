@@ -69,8 +69,8 @@ export default function NetWorthHero({ accounts, adultsCount, childrenCount }: P
         className="absolute inset-0 pointer-events-none"
         style={{
           background: `
-            radial-gradient(circle at 18% 18%, hsl(145 72% 90% / 0.95), transparent 26%),
-            radial-gradient(circle at 88% 18%, hsl(338 90% 92% / 0.9), transparent 24%)
+            radial-gradient(circle at 18% 18%, hsl(141 30% 91% / 0.95), transparent 26%),
+            radial-gradient(circle at 88% 18%, hsl(44 81% 67% / 0.2), transparent 24%)
           `,
         }}
       />
@@ -143,9 +143,9 @@ export default function NetWorthHero({ accounts, adultsCount, childrenCount }: P
             <AreaChart data={filteredChart}>
               <defs>
                 <linearGradient id="heroGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="hsl(145, 66%, 38%)" stopOpacity={0.22} />
-                  <stop offset="65%" stopColor="hsl(145, 66%, 38%)" stopOpacity={0.06} />
-                  <stop offset="100%" stopColor="hsl(145, 66%, 38%)" stopOpacity={0} />
+                  <stop offset="0%" stopColor="hsl(44 81% 67%)" stopOpacity={0.28} />
+                  <stop offset="65%" stopColor="hsl(44 81% 67%)" stopOpacity={0.08} />
+                  <stop offset="100%" stopColor="hsl(44 81% 67%)" stopOpacity={0} />
                 </linearGradient>
                 <filter id="glowDot">
                   <feGaussianBlur stdDeviation="2" result="blur" />
@@ -155,7 +155,7 @@ export default function NetWorthHero({ accounts, adultsCount, childrenCount }: P
                   </feMerge>
                 </filter>
               </defs>
-              <XAxis dataKey="month" tick={{ fontSize: 11, fill: "hsl(220, 8%, 47%)" }} tickLine={false} axisLine={false} />
+              <XAxis dataKey="month" tick={{ fontSize: 11, fill: "hsl(153 6% 42%)" }} tickLine={false} axisLine={false} />
               <YAxis hide domain={["dataMin - 5000", "dataMax + 5000"]} />
               <Tooltip
                 content={({ active, payload, label }) => {
@@ -169,9 +169,9 @@ export default function NetWorthHero({ accounts, adultsCount, childrenCount }: P
                   );
                 }}
               />
-              <Area type="monotone" dataKey="value" stroke="hsl(145, 66%, 38%)" strokeWidth={2.25} fill="url(#heroGrad)" animationDuration={1500} animationEasing="ease-out" />
+              <Area type="monotone" dataKey="value" stroke="hsl(227 75% 14%)" strokeWidth={2.25} fill="url(#heroGrad)" animationDuration={1500} animationEasing="ease-out" />
               {lastPoint && (
-                <ReferenceDot x={lastPoint.month} y={lastPoint.value} r={4} fill="hsl(145, 66%, 38%)" stroke="white" strokeWidth={2} filter="url(#glowDot)" />
+                <ReferenceDot x={lastPoint.month} y={lastPoint.value} r={4} fill="hsl(44 81% 67%)" stroke="white" strokeWidth={2} filter="url(#glowDot)" />
               )}
             </AreaChart>
           </ResponsiveContainer>

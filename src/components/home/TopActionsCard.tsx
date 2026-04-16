@@ -118,10 +118,10 @@ export default function TopActionsCard({ accounts, memberANIs = [], isaUsed = 0,
                 className={cn(
                   "flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-[28px]",
                   action.severity === "high"
-                    ? "bg-[#fef3f2] text-destructive"
+                    ? "bg-destructive/10 text-destructive"
                     : action.category === "optimisation"
-                      ? "bg-[#f0fdf4] text-success"
-                      : "bg-[#f5f7fb] text-primary"
+                      ? "bg-secondary text-success"
+                      : "bg-secondary text-primary"
                 )}
               >
                 {action.category === "freshness" ? <Clock className="h-5 w-5" /> : action.category === "tax" ? <AlertTriangle className="h-5 w-5" /> : <TrendingUp className="h-5 w-5" />}

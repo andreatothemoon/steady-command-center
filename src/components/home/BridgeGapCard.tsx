@@ -10,7 +10,7 @@ export default function BridgeGapCard({ retireAge }: Props) {
   return (
     <div className="card-surface h-full border-l-4 border-l-primary p-5">
       <div className="mb-6">
-        <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#fef3f2]">
+        <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-destructive/10">
           <Calendar className="h-5 w-5 text-destructive" />
         </div>
       </div>

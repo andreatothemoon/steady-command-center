@@ -199,7 +199,7 @@ export default function ActionsPage() {
         <motion.div variants={stagger.item} className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <div className="card-surface p-8">
             <div className="mb-3 flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#fef3f2]">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-destructive/10">
                 <Circle className="h-5 w-5 text-destructive" />
               </div>
               <h2 className="text-lg font-semibold text-foreground">Recommended</h2>
@@ -209,7 +209,7 @@ export default function ActionsPage() {
           </div>
           <div className="card-surface p-8">
             <div className="mb-3 flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#fff7ed]">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-warning/20">
                 <Clock className="h-5 w-5 text-warning" />
               </div>
               <h2 className="text-lg font-semibold text-foreground">Pending</h2>
@@ -219,7 +219,7 @@ export default function ActionsPage() {
           </div>
           <div className="card-surface p-8">
             <div className="mb-3 flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#f0fdf4]">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-secondary">
                 <CheckCircle2 className="h-5 w-5 text-success" />
               </div>
               <h2 className="text-lg font-semibold text-foreground">Potential Impact</h2>
@@ -273,10 +273,10 @@ export default function ActionsPage() {
                   <div className={cn(
                     "flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl",
                     action.status === "recommended"
-                      ? "bg-[#fef3f2] text-destructive"
+                      ? "bg-destructive/10 text-destructive"
                       : action.severity === "medium"
-                        ? "bg-[#fff7ed] text-warning"
-                      : "bg-[#f5f7fb] text-primary"
+                        ? "bg-warning/20 text-warning"
+                      : "bg-secondary text-primary"
                   )}>
                     {action.status === "recommended" ? <Circle className="h-5 w-5" /> :
                      action.severity === "medium" ? <Clock className="h-5 w-5" /> :

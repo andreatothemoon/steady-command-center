@@ -18,6 +18,15 @@ const item = {
   animate: { opacity: 1, y: 0, transition: { duration: 0.5 } },
 };
 
+const chartColors = {
+  dc: "#091540",
+  db: "#efcb68",
+  state: "#e1efe6",
+  isa: "#aeb7b3",
+  grid: "rgba(9, 21, 64, 0.07)",
+  axis: "rgba(0, 4, 17, 0.42)",
+};
+
 interface Props {
   timeline: IncomeTimelinePoint[];
   retireAge: number;
@@ -60,41 +69,45 @@ export default function IncomeTimeline({ timeline, retireAge, targetIncome }: Pr
         <AreaChart data={chartData} margin={{ top: 18, right: 24, left: 8, bottom: 12 }}>
           <defs>
             <linearGradient id="incomeDc" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#1e3a5f" stopOpacity={0.84} />
-              <stop offset="95%" stopColor="#1e3a5f" stopOpacity={0.32} />
+              <stop offset="5%" stopColor={chartColors.dc} stopOpacity={0.96} />
+              <stop offset="55%" stopColor={chartColors.dc} stopOpacity={0.74} />
+              <stop offset="95%" stopColor={chartColors.dc} stopOpacity={0.46} />
             </linearGradient>
             <linearGradient id="incomeDb" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#3b5f8a" stopOpacity={0.82} />
-              <stop offset="95%" stopColor="#3b5f8a" stopOpacity={0.28} />
+              <stop offset="5%" stopColor={chartColors.db} stopOpacity={0.94} />
+              <stop offset="55%" stopColor={chartColors.db} stopOpacity={0.74} />
+              <stop offset="95%" stopColor={chartColors.db} stopOpacity={0.44} />
             </linearGradient>
             <linearGradient id="incomeState" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#5a7fa8" stopOpacity={0.8} />
-              <stop offset="95%" stopColor="#5a7fa8" stopOpacity={0.26} />
+              <stop offset="5%" stopColor={chartColors.state} stopOpacity={0.92} />
+              <stop offset="60%" stopColor={chartColors.state} stopOpacity={0.68} />
+              <stop offset="95%" stopColor={chartColors.state} stopOpacity={0.4} />
             </linearGradient>
             <linearGradient id="incomeIsa" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#a8c5e2" stopOpacity={0.82} />
-              <stop offset="95%" stopColor="#a8c5e2" stopOpacity={0.34} />
+              <stop offset="5%" stopColor={chartColors.isa} stopOpacity={0.86} />
+              <stop offset="60%" stopColor={chartColors.isa} stopOpacity={0.66} />
+              <stop offset="95%" stopColor={chartColors.isa} stopOpacity={0.38} />
             </linearGradient>
           </defs>
-          <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.05)" vertical={false} />
+          <CartesianGrid strokeDasharray="3 3" stroke={chartColors.grid} vertical={false} />
           <XAxis
             dataKey="age"
-            stroke="#666666"
-            tick={{ fill: "#666666", fontSize: 12 }}
-            axisLine={{ stroke: "rgba(0,0,0,0.1)" }}
+            stroke={chartColors.axis}
+            tick={{ fill: chartColors.axis, fontSize: 12 }}
+            axisLine={{ stroke: "rgba(9, 21, 64, 0.12)" }}
             tickLine={false}
           />
           <YAxis
             domain={[0, yMax]}
-            stroke="#666666"
-            tick={{ fill: "#666666", fontSize: 12 }}
-            axisLine={{ stroke: "rgba(0,0,0,0.1)" }}
+            stroke={chartColors.axis}
+            tick={{ fill: chartColors.axis, fontSize: 12 }}
+            axisLine={{ stroke: "rgba(9, 21, 64, 0.12)" }}
             tickLine={false}
             width={72}
             tickFormatter={(value) => `£${value}`}
           />
           <Tooltip
-            cursor={{ stroke: "#1e3a5f", strokeWidth: 1.5, strokeDasharray: "5 5" }}
+            cursor={{ stroke: chartColors.dc, strokeWidth: 1.5, strokeDasharray: "5 5" }}
             content={({ active, payload }) => {
               if (!active || !payload?.length) return null;
               const data = payload[0]?.payload as { age: number; dc: number; db: number; state: number; isa: number };
@@ -133,62 +146,62 @@ export default function IncomeTimeline({ timeline, retireAge, targetIncome }: Pr
               );
             }}
           />
-          <ReferenceLine x={retireAge} stroke="#1e3a5f" strokeDasharray="3 3" strokeWidth={2} />
-          <ReferenceLine x={statePensionAge} stroke="#5a7fa8" strokeDasharray="3 3" strokeWidth={1.5} />
+          <ReferenceLine x={retireAge} stroke={chartColors.dc} strokeDasharray="3 3" strokeWidth={2.25} />
+          <ReferenceLine x={statePensionAge} stroke={chartColors.db} strokeDasharray="3 3" strokeWidth={1.75} />
           <Area
             type="monotone"
             dataKey="isa"
             stackId="income"
-            stroke="#a8c5e2"
+            stroke={chartColors.isa}
             fill="url(#incomeIsa)"
             strokeWidth={0}
-            activeDot={{ r: 6, fill: "#a8c5e2", stroke: "#ffffff", strokeWidth: 3 }}
+            activeDot={{ r: 6, fill: chartColors.isa, stroke: "#ffffff", strokeWidth: 3 }}
           />
           <Area
             type="monotone"
             dataKey="state"
             stackId="income"
-            stroke="#5a7fa8"
+            stroke={chartColors.state}
             fill="url(#incomeState)"
             strokeWidth={0}
-            activeDot={{ r: 6, fill: "#5a7fa8", stroke: "#ffffff", strokeWidth: 3 }}
+            activeDot={{ r: 6, fill: chartColors.state, stroke: "#ffffff", strokeWidth: 3 }}
           />
           <Area
             type="monotone"
             dataKey="db"
             stackId="income"
-            stroke="#3b5f8a"
+            stroke={chartColors.db}
             fill="url(#incomeDb)"
             strokeWidth={0}
-            activeDot={{ r: 6, fill: "#3b5f8a", stroke: "#ffffff", strokeWidth: 3 }}
+            activeDot={{ r: 6, fill: chartColors.db, stroke: "#ffffff", strokeWidth: 3 }}
           />
           <Area
             type="monotone"
             dataKey="dc"
             stackId="income"
-            stroke="#1e3a5f"
+            stroke={chartColors.dc}
             fill="url(#incomeDc)"
             strokeWidth={0}
-            activeDot={{ r: 6, fill: "#1e3a5f", stroke: "#ffffff", strokeWidth: 3 }}
+            activeDot={{ r: 6, fill: chartColors.dc, stroke: "#ffffff", strokeWidth: 3 }}
           />
         </AreaChart>
       </ResponsiveContainer>
 
       <div className="mt-6 flex flex-wrap justify-center gap-8">
         <div className="flex items-center gap-2">
-          <div className="h-3 w-3 rounded-full bg-[#1e3a5f]" />
+          <div className="h-3 w-3 rounded-full" style={{ backgroundColor: chartColors.dc }} />
           <span className="text-sm text-muted-foreground">DC Pension</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="h-3 w-3 rounded-full bg-[#3b5f8a]" />
+          <div className="h-3 w-3 rounded-full" style={{ backgroundColor: chartColors.db }} />
           <span className="text-sm text-muted-foreground">DB Pension</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="h-3 w-3 rounded-full bg-[#5a7fa8]" />
+          <div className="h-3 w-3 rounded-full border border-[rgba(9,21,64,0.12)]" style={{ backgroundColor: chartColors.state }} />
           <span className="text-sm text-muted-foreground">State Pension</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="h-3 w-3 rounded-full bg-[#a8c5e2]" />
+          <div className="h-3 w-3 rounded-full" style={{ backgroundColor: chartColors.isa }} />
           <span className="text-sm text-muted-foreground">ISA Withdrawals</span>
         </div>
       </div>

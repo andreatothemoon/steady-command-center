@@ -152,8 +152,8 @@ export default function DBPensionsPage() {
                   <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <XAxis dataKey="age" tick={{ fontSize: 11, fill: "hsl(220, 9%, 46%)" }} tickLine={false} axisLine={false} />
-              <YAxis tickFormatter={(v) => `£${(v / 1000).toFixed(0)}k`} tick={{ fontSize: 11, fill: "hsl(220, 9%, 46%)" }} tickLine={false} axisLine={false} width={55} />
+              <XAxis dataKey="age" tick={{ fontSize: 11, fill: "hsl(153 6% 42%)" }} tickLine={false} axisLine={false} />
+              <YAxis tickFormatter={(v) => `£${(v / 1000).toFixed(0)}k`} tick={{ fontSize: 11, fill: "hsl(153 6% 42%)" }} tickLine={false} axisLine={false} width={55} />
               <Tooltip
                 content={({ active, payload, label }) => {
                   if (!active || !payload?.length) return null;
@@ -167,7 +167,7 @@ export default function DBPensionsPage() {
               />
               <Area type="monotone" dataKey="total_income" stroke="hsl(var(--primary))" strokeWidth={2.5} fill="url(#dbGrad)" animationDuration={1200} />
               {lastPoint && (
-                <ReferenceDot x={lastPoint.age} y={lastPoint.total_income} r={4} fill="hsl(var(--primary))" stroke="hsl(222, 28%, 9%)" strokeWidth={2.5} />
+                <ReferenceDot x={lastPoint.age} y={lastPoint.total_income} r={4} fill="hsl(var(--accent))" stroke="hsl(var(--primary))" strokeWidth={2.5} />
               )}
             </AreaChart>
           </ResponsiveContainer>
