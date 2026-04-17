@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { Button } from "@/components/ui/button";
@@ -6,14 +7,52 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
+import { useInvitationByToken, useAcceptInvitation } from "@/hooks/useHouseholdInvitations";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function AuthPage() {
-  const [isSignUp, setIsSignUp] = useState(false);
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const inviteToken =
+    searchParams.get("invite") ?? sessionStorage.getItem("pending_invitation_token");
+  const initialMode = searchParams.get("mode") === "signup" || !!inviteToken;
+
+  const [isSignUp, setIsSignUp] = useState(initialMode);
+  const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const { toast } = useToast();
+
+  const { data: invite } = useInvitationByToken(inviteToken);
+  const accept = useAcceptInvitation();
+  const { user } = useAuth();
+
+  // Persist invite token across the auth round-trip
+  useEffect(() => {
+    if (inviteToken) sessionStorage.setItem("pending_invitation_token", inviteToken);
+    if (invite?.email && !email) setEmail(invite.email);
+  }, [inviteToken, invite, email]);
+
+  // If user is already signed in and there's a pending invite, accept it
+  useEffect(() => {
+    const pending = sessionStorage.getItem("pending_invitation_token");
+    if (user && pending) {
+      accept
+        .mutateAsync(pending)
+        .then(() => {
+          sessionStorage.removeItem("pending_invitation_token");
+          toast({ title: "Welcome!", description: "You've joined the household." });
+          navigate("/");
+        })
+        .catch((e) => {
+          sessionStorage.removeItem("pending_invitation_token");
+          toast({ title: "Invitation error", description: e.message, variant: "destructive" });
+        });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
 
   const handleGoogleSignIn = async () => {
     setGoogleLoading(true);
@@ -40,13 +79,20 @@ export default function AuthPage() {
         const { error } = await supabase.auth.signUp({
           email,
           password,
-          options: { emailRedirectTo: window.location.origin },
+          options: {
+            emailRedirectTo: window.location.origin,
+            data: {
+              full_name: fullName || email.split("@")[0],
+              ...(inviteToken ? { invitation_token: inviteToken } : {}),
+            },
+          },
         });
         if (error) throw error;
         toast({ title: "Check your email", description: "We sent you a confirmation link." });
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
+        // Invite acceptance handled by the useEffect above once user state updates
       }
     } catch (error: any) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
@@ -64,11 +110,33 @@ export default function AuthPage() {
           </div>
           <h1 className="text-2xl font-semibold tracking-tight text-foreground">WealthOS</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            {isSignUp ? "Create your account" : "Sign in to your account"}
+            {invite
+              ? `Join ${invite.household_name}`
+              : isSignUp
+              ? "Create your account"
+              : "Sign in to your account"}
           </p>
+          {invite && (
+            <p className="text-xs text-muted-foreground mt-1">
+              {isSignUp ? "Sign up to accept your invitation" : "Sign in to accept your invitation"}
+            </p>
+          )}
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          {isSignUp && (
+            <div className="space-y-2">
+              <Label htmlFor="name" className="text-foreground">Your name</Label>
+              <Input
+                id="name"
+                type="text"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                placeholder="e.g. Sarah Smith"
+                className="bg-card border-border"
+              />
+            </div>
+          )}
           <div className="space-y-2">
             <Label htmlFor="email" className="text-foreground">Email</Label>
             <Input

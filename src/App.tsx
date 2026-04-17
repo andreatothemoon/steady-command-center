@@ -14,6 +14,7 @@ import WealthPage from "@/pages/WealthPage";
 import ActionsPage from "@/pages/ActionsPage";
 import ProfilePage from "@/pages/ProfilePage";
 import AuthPage from "@/pages/AuthPage";
+import AcceptInvitePage from "@/pages/AcceptInvitePage";
 import PendingApprovalPage from "@/pages/PendingApprovalPage";
 import AdminApprovalsPage from "@/pages/AdminApprovalsPage";
 import NotFound from "@/pages/NotFound";
@@ -77,6 +78,7 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/auth" element={<AuthRoute />} />
+            <Route path="/invite/:token" element={<AcceptInvitePage />} />
             <Route path="/*" element={<ProtectedRoutes />} />
           </Routes>
         </BrowserRouter>

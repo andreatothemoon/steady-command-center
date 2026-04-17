@@ -524,6 +524,56 @@ export type Database = {
           },
         ]
       }
+      household_invitations: {
+        Row: {
+          accepted_at: string | null
+          accepted_by: string | null
+          created_at: string
+          email: string | null
+          expires_at: string
+          household_id: string
+          id: string
+          invited_by: string
+          status: Database["public"]["Enums"]["invitation_status"]
+          token: string
+          updated_at: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          accepted_by?: string | null
+          created_at?: string
+          email?: string | null
+          expires_at?: string
+          household_id: string
+          id?: string
+          invited_by: string
+          status?: Database["public"]["Enums"]["invitation_status"]
+          token: string
+          updated_at?: string
+        }
+        Update: {
+          accepted_at?: string | null
+          accepted_by?: string | null
+          created_at?: string
+          email?: string | null
+          expires_at?: string
+          household_id?: string
+          id?: string
+          invited_by?: string
+          status?: Database["public"]["Enums"]["invitation_status"]
+          token?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "household_invitations_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       household_members: {
         Row: {
           created_at: string
@@ -964,6 +1014,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      accept_household_invitation: {
+        Args: {
+          _token: string
+          _user_email: string
+          _user_id: string
+          _user_name: string
+        }
+        Returns: string
+      }
       delete_email: {
         Args: { message_id: number; queue_name: string }
         Returns: boolean
@@ -1051,6 +1110,7 @@ export type Database = {
         | "completed"
         | "failed"
       indexation_type: "CPI" | "capped"
+      invitation_status: "pending" | "accepted" | "revoked" | "expired"
       member_role: "adult" | "child"
       revaluation_type: "CPI" | "fixed"
       source_type: "manual" | "imported" | "api"
@@ -1219,6 +1279,7 @@ export const Constants = {
         "failed",
       ],
       indexation_type: ["CPI", "capped"],
+      invitation_status: ["pending", "accepted", "revoked", "expired"],
       member_role: ["adult", "child"],
       revaluation_type: ["CPI", "fixed"],
       source_type: ["manual", "imported", "api"],
