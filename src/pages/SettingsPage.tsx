@@ -259,6 +259,9 @@ export default function SettingsPage() {
         profile={editingProfile}
       />
 
+      {/* Invite dialog */}
+      <InviteMemberDialog open={inviteDialogOpen} onOpenChange={setInviteDialogOpen} />
+
       {/* Delete confirmation */}
 
       <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
