@@ -608,32 +608,21 @@ export type Database = {
           created_at: string
           id: string
           name: string
-          selected_retirement_scenario_id: string | null
           updated_at: string
         }
         Insert: {
           created_at?: string
           id?: string
           name?: string
-          selected_retirement_scenario_id?: string | null
           updated_at?: string
         }
         Update: {
           created_at?: string
           id?: string
           name?: string
-          selected_retirement_scenario_id?: string | null
           updated_at?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "households_selected_retirement_scenario_id_fkey"
-            columns: ["selected_retirement_scenario_id"]
-            isOneToOne: false
-            referencedRelation: "retirement_scenarios"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       import_jobs: {
         Row: {
@@ -762,15 +751,9 @@ export type Database = {
           household_id: string
           id: string
           inflation_rate: number
-          isa_bridge_income_annual: number
           monthly_contribution: number
           name: string
-          part_time_income_annual: number
-          property_income_annual: number
           retirement_age: number
-          tax_free_cash_age: number | null
-          tax_free_cash_enabled: boolean
-          tax_free_cash_pct: number
           target_income: number
           updated_at: string
         }
@@ -783,15 +766,9 @@ export type Database = {
           household_id: string
           id?: string
           inflation_rate?: number
-          isa_bridge_income_annual?: number
           monthly_contribution?: number
           name?: string
-          part_time_income_annual?: number
-          property_income_annual?: number
           retirement_age?: number
-          tax_free_cash_age?: number | null
-          tax_free_cash_enabled?: boolean
-          tax_free_cash_pct?: number
           target_income?: number
           updated_at?: string
         }
@@ -804,15 +781,9 @@ export type Database = {
           household_id?: string
           id?: string
           inflation_rate?: number
-          isa_bridge_income_annual?: number
           monthly_contribution?: number
           name?: string
-          part_time_income_annual?: number
-          property_income_annual?: number
           retirement_age?: number
-          tax_free_cash_age?: number | null
-          tax_free_cash_enabled?: boolean
-          tax_free_cash_pct?: number
           target_income?: number
           updated_at?: string
         }
