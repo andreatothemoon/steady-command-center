@@ -118,7 +118,7 @@ export function useSetSelectedRetirementScenario() {
       if (!hasSelectionColumn) return scenarioId;
       const { error } = await supabase
         .from("households")
-        .update({ selected_retirement_scenario_id: scenarioId })
+        .update({ selected_retirement_scenario_id: scenarioId } as any)
         .eq("id", householdId);
       if (error) throw error;
       return scenarioId;
