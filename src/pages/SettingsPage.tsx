@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Users, Baby, Shield, Database, Plus, Pencil, Trash2 } from "lucide-react";
+import { Users, Baby, Shield, Database, Plus, Pencil, Trash2, UserPlus, Copy, X, Mail, Link as LinkIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import {
@@ -8,7 +8,15 @@ import {
   useDeleteHouseholdProfile,
   type HouseholdProfile,
 } from "@/hooks/useHouseholdProfiles";
+import {
+  useHouseholdInvitations,
+  useRevokeInvitation,
+  buildInviteUrl,
+} from "@/hooks/useHouseholdInvitations";
+import { supabase } from "@/integrations/supabase/client";
+import { useQuery } from "@tanstack/react-query";
 import MemberDialog from "@/components/MemberDialog";
+import InviteMemberDialog from "@/components/InviteMemberDialog";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import {
@@ -40,16 +48,38 @@ const getAge = (dob: string | null) => {
 };
 
 export default function SettingsPage() {
-  const { signOut } = useAuth();
+  const { signOut, user, householdId } = useAuth();
   const { data: profiles = [], isLoading } = useHouseholdProfiles();
   const deleteMember = useDeleteHouseholdProfile();
+  const { data: invitations = [] } = useHouseholdInvitations();
+  const revokeInvite = useRevokeInvitation();
+
+  // Determine if current user is the household owner
+  const { data: isOwner = false } = useQuery({
+    queryKey: ["is_household_owner", householdId, user?.id],
+    queryFn: async () => {
+      if (!householdId || !user) return false;
+      const { data } = await supabase
+        .from("household_members")
+        .select("role")
+        .eq("household_id", householdId)
+        .eq("user_id", user.id)
+        .maybeSingle();
+      return data?.role === "owner";
+    },
+    enabled: !!householdId && !!user,
+  });
 
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
   const [editingProfile, setEditingProfile] = useState<HouseholdProfile | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<HouseholdProfile | null>(null);
 
   const adults = profiles.filter((p) => p.role === "adult");
   const children = profiles.filter((p) => p.role === "child");
+  const pendingInvites = invitations.filter(
+    (i) => i.status === "pending" && new Date(i.expires_at) > new Date()
+  );
 
   const handleEdit = (profile: HouseholdProfile) => {
     setEditingProfile(profile);
@@ -70,6 +100,20 @@ export default function SettingsPage() {
       toast.error(e.message || "Failed to remove");
     }
     setDeleteTarget(null);
+  };
+
+  const copyInviteLink = async (token: string) => {
+    await navigator.clipboard.writeText(buildInviteUrl(token));
+    toast.success("Invite link copied");
+  };
+
+  const handleRevoke = async (id: string) => {
+    try {
+      await revokeInvite.mutateAsync(id);
+      toast.success("Invitation revoked");
+    } catch (e: any) {
+      toast.error(e.message || "Failed to revoke");
+    }
   };
 
   return (
