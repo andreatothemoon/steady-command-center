@@ -136,10 +136,18 @@ export default function SettingsPage() {
               </p>
             </div>
           </div>
-          <Button size="sm" variant="outline" className="gap-1.5" onClick={handleAdd}>
-            <Plus className="h-3.5 w-3.5" />
-            Add Member
-          </Button>
+          <div className="flex items-center gap-2">
+            {isOwner && (
+              <Button size="sm" className="gap-1.5" onClick={() => setInviteDialogOpen(true)}>
+                <UserPlus className="h-3.5 w-3.5" />
+                Invite
+              </Button>
+            )}
+            <Button size="sm" variant="outline" className="gap-1.5" onClick={handleAdd}>
+              <Plus className="h-3.5 w-3.5" />
+              Add Member
+            </Button>
+          </div>
         </div>
 
         {isLoading ? (
