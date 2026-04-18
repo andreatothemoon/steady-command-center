@@ -1,20 +1,18 @@
 /**
- * Profile Page — Tabbed: Settings, Tax, Documents
+ * Profile Page — Tabbed: Settings, Tax
  * Clean visual hierarchy with icon tabs
  */
 import { useState } from "react";
-import { Settings, Receipt, FileText } from "lucide-react";
+import { Settings, Receipt } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import SettingsPage from "@/pages/SettingsPage";
-import DocumentsPage from "@/pages/DocumentsPage";
 import TaxPage from "@/pages/TaxPage";
 import { useHouseholdProfiles } from "@/hooks/useHouseholdProfiles";
 
 const tabs = [
   { key: "settings" as const, label: "Settings", icon: Settings },
   { key: "tax" as const, label: "Tax", icon: Receipt },
-  { key: "documents" as const, label: "Documents", icon: FileText },
 ];
 
 type TabKey = (typeof tabs)[number]["key"];
@@ -37,7 +35,7 @@ export default function ProfilePage() {
     >
       <div>
         <h1 className="text-4xl font-semibold tracking-tight text-foreground">Profile</h1>
-        <p className="mt-2 text-muted-foreground">Manage your household details, tax setup, and supporting documents in one place.</p>
+        <p className="mt-2 text-muted-foreground">Manage your household details and tax setup in one place.</p>
       </div>
 
       <div className="card-surface p-8">
@@ -60,7 +58,7 @@ export default function ProfilePage() {
                   {profiles.length} household member{profiles.length !== 1 ? "s" : ""}
                 </span>
                 <span className="rounded-full bg-secondary px-4 py-2 text-sm text-muted-foreground">
-                  {activeTab === "settings" ? "Settings view" : activeTab === "tax" ? "Tax view" : "Documents view"}
+                  {activeTab === "settings" ? "Settings view" : "Tax view"}
                 </span>
               </div>
             </div>
@@ -101,7 +99,6 @@ export default function ProfilePage() {
       >
         {activeTab === "settings" && <SettingsPage />}
         {activeTab === "tax" && <TaxPage />}
-        {activeTab === "documents" && <DocumentsPage />}
       </motion.div>
     </motion.div>
   );
