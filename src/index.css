@@ -137,6 +137,15 @@
     box-shadow: 0 14px 34px -28px hsl(226 100% 3% / 0.16);
   }
 
+  /* Mobile: tighten oversized paddings/typography so content doesn't overflow */
+  @media (max-width: 640px) {
+    .card-surface.p-12 { @apply p-6; }
+    .card-surface.p-10 { @apply p-5; }
+    .card-surface.p-8  { @apply p-5; }
+    h1.text-4xl { @apply text-3xl; }
+    .text-5xl { @apply text-4xl; }
+  }
+
   .card-surface-hover {
     @apply card-surface transition-all duration-200 cursor-default;
   }
