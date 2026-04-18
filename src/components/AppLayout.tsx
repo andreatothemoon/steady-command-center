@@ -15,9 +15,9 @@ export default function AppLayout({ children }: AppLayoutProps) {
     <div className="min-h-screen bg-background">
       <main className={cn(
         "transition-all duration-300",
-        isMobile ? "pl-0 pt-16" : collapsed ? "pl-20" : "pl-56"
+        isMobile ? "pl-0 pt-20" : collapsed ? "pl-20" : "pl-56"
       )}>
-        <div className="mx-auto max-w-[1280px] px-6 py-8 sm:px-8 sm:py-10 lg:px-12">
+        <div className="mx-auto max-w-[1280px] px-4 py-6 sm:px-8 sm:py-10 lg:px-12">
           {children}
         </div>
       </main>
