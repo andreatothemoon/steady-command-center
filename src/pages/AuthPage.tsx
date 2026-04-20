@@ -133,7 +133,7 @@ export default function AuthPage() {
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 placeholder="e.g. Sarah Smith"
-                className="bg-card border-border"
+                className="bg-card border-border text-foreground"
               />
             </div>
           )}
