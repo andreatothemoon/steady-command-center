@@ -13,6 +13,7 @@ import PlanPage from "@/pages/PlanPage";
 import WealthPage from "@/pages/WealthPage";
 import ActionsPage from "@/pages/ActionsPage";
 import ProfilePage from "@/pages/ProfilePage";
+import TaxPage from "@/pages/TaxPage";
 import AuthPage from "@/pages/AuthPage";
 import AcceptInvitePage from "@/pages/AcceptInvitePage";
 import PendingApprovalPage from "@/pages/PendingApprovalPage";
@@ -51,6 +52,7 @@ function ProtectedRoutes() {
             <Route path="/wealth" element={<WealthPage />} />
             <Route path="/actions" element={<ActionsPage />} />
             <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/tax" element={<TaxPage />} />
             {isAdmin && (
               <Route path="/admin/approvals" element={<AdminApprovalsPage />} />
             )}

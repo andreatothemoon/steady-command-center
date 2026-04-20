@@ -5,6 +5,7 @@ import {
   LineChart,
   Wallet,
   Zap,
+  Receipt,
   User,
   Shield,
   ChevronLeft,
@@ -23,7 +24,8 @@ const navItems = [
   { to: "/plan", label: "Plan", icon: LineChart },
   { to: "/wealth", label: "Wealth", icon: Wallet },
   { to: "/actions", label: "Actions", icon: Zap },
-  { to: "/profile", label: "Profile", icon: User },
+  { to: "/tax", label: "Tax", icon: Receipt },
+  { to: "/profile", label: "Settings", icon: User },
 ];
 
 function SidebarContent({ collapsed, toggle, onNavigate }: { collapsed: boolean; toggle: () => void; onNavigate?: () => void }) {
