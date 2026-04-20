@@ -146,7 +146,7 @@ export default function AuthPage() {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@example.com"
               required
-              className="bg-card border-border"
+              className="bg-card border-border text-foreground"
             />
           </div>
           <div className="space-y-2">
