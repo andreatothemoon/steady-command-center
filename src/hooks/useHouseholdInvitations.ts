@@ -92,20 +92,13 @@ export function useInvitationByToken(token: string | null) {
     queryKey: ["invitation_token", token],
     queryFn: async () => {
       if (!token) return null;
-      const { data, error } = await (supabase as any)
-        .from(TABLE)
-        .select("id, household_id, status, expires_at, email")
-        .eq("token", token)
-        .maybeSingle();
+      const { data, error } = await (supabase as any).rpc("get_invitation_by_token", {
+        _token: token,
+      });
       if (error) throw error;
-      if (!data) return null;
-      // Fetch household name
-      const { data: hh } = await (supabase as any)
-        .from("households")
-        .select("name")
-        .eq("id", data.household_id)
-        .maybeSingle();
-      return { ...data, household_name: hh?.name ?? "a household" };
+      const row = Array.isArray(data) ? data[0] : data;
+      if (!row) return null;
+      return { ...row, household_name: row.household_name ?? "a household" };
     },
     enabled: !!token,
   });
