@@ -1035,6 +1035,17 @@ export type Database = {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["approval_status"]
       }
+      get_invitation_by_token: {
+        Args: { _token: string }
+        Returns: {
+          email: string
+          expires_at: string
+          household_id: string
+          household_name: string
+          id: string
+          status: Database["public"]["Enums"]["invitation_status"]
+        }[]
+      }
       get_ni_number: { Args: { _profile_id: string }; Returns: string }
       get_user_email: { Args: { _user_id: string }; Returns: string }
       get_user_household_ids: { Args: { _user_id: string }; Returns: string[] }
