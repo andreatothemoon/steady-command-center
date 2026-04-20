@@ -25,7 +25,6 @@ const navItems = [
   { to: "/wealth", label: "Wealth", icon: Wallet },
   { to: "/actions", label: "Actions", icon: Zap },
   { to: "/tax", label: "Tax", icon: Receipt },
-  { to: "/profile", label: "Settings", icon: User },
 ];
 
 function SidebarContent({ collapsed, toggle, onNavigate }: { collapsed: boolean; toggle: () => void; onNavigate?: () => void }) {
