@@ -159,7 +159,7 @@ export default function AuthPage() {
               placeholder="••••••••"
               required
               minLength={6}
-              className="bg-card border-border"
+              className="bg-card border-border text-foreground"
             />
           </div>
           <Button type="submit" className="w-full" disabled={loading}>
