@@ -126,10 +126,14 @@ function SidebarContent({ collapsed, toggle, onNavigate }: { collapsed: boolean;
           </button>
         )}
 
-        <div className={cn(
-          "border-t border-sidebar-border pt-3 mt-2",
-          collapsed ? "flex justify-center" : ""
-        )}>
+        <NavLink
+          to="/profile"
+          onClick={onNavigate}
+          className={cn(
+            "block border-t border-sidebar-border pt-3 mt-2 transition-colors",
+            collapsed ? "flex justify-center" : ""
+          )}
+        >
           <div className={cn("flex items-center", collapsed ? "" : "gap-3 px-1")}>
             <div className="h-8 w-8 rounded-full bg-secondary border border-sidebar-border flex items-center justify-center flex-shrink-0">
               <span className="text-[11px] font-semibold text-sidebar-accent-foreground">{initials.slice(0, 2)}</span>
@@ -141,7 +145,7 @@ function SidebarContent({ collapsed, toggle, onNavigate }: { collapsed: boolean;
               </div>
             )}
           </div>
-        </div>
+        </NavLink>
       </div>
     </>
   );
