@@ -22,7 +22,7 @@ import ReadinessCard from "@/components/home/ReadinessCard";
 import GuaranteedIncomeCard from "@/components/home/GuaranteedIncomeCard";
 import BridgeGapCard from "@/components/home/BridgeGapCard";
 import TopActionsCard from "@/components/home/TopActionsCard";
-import type { MemberANI } from "@/pages/OverviewPage";
+import type { MemberANI } from "@/types/tax";
 
 const TAX_YEAR = "2025/26";
 

@@ -12,8 +12,10 @@ export interface NetWorthPoint {
 export function useNetWorthHistory(accounts: Account[]) {
   const { householdId } = useAuth();
 
+  const accountIds = accounts.map((a) => a.id).sort();
+
   return useQuery({
-    queryKey: ["net_worth_history", householdId],
+    queryKey: ["net_worth_history", householdId, accountIds],
     queryFn: async (): Promise<NetWorthPoint[]> => {
       if (!householdId) return [];
 

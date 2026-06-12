@@ -3,7 +3,7 @@ import { ShieldCheck, AlertTriangle, ChevronRight, TrendingDown } from "lucide-r
 import { formatCurrency } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
-import type { MemberANI } from "@/pages/OverviewPage";
+import type { MemberANI } from "@/types/tax";
 
 interface Props {
   memberANIs: MemberANI[];
