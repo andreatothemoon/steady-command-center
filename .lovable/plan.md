@@ -1,41 +1,59 @@
+# Backend Security Hardening
 
+Single Supabase migration that closes the 33 linter warnings and the email-enumeration surface. No frontend changes needed — all current client calls keep working.
 
-## Fix ANI to Per-Person Thresholds
+## Goals
 
-### Problem
-ANI is currently summed across all household members and compared against a single £100,000 threshold. This is wrong — the £100k threshold applies **per person**. If two adults each earn £80k, the current code shows £160k "Over £100k" when both are actually safe.
+1. Remove the one overly-permissive RLS policy (linter WARN 1).
+2. Stop exposing internal `SECURITY DEFINER` helper functions through the public API.
+3. Restrict `get_user_email` so only admins can resolve emails.
 
-### What Changes
+## What changes
 
-**1. `src/pages/OverviewPage.tsx`**
-- Stop computing a single summed `ani`. Instead, compute per-member ANI values from `taxSummaries` using `computeANI`.
-- Pass an array of per-member ANI results (or the worst-case member's ANI + member name) to `TaxPosition` and `ActionCenter`.
-- ISA and pension allowances remain household-aggregated (that's correct).
+### 1. Audit & fix the permissive RLS policy
+Find the policy flagged by linter rule `0024_permissive_rls_policy` (an INSERT/UPDATE/DELETE policy using `USING (true)` or `WITH CHECK (true)`) and rewrite it to scope by `auth.uid()` / `is_household_member(...)`. Likely candidate: a policy on `household_invitations`, `user_approvals`, or `user_roles`. I'll confirm by reading `pg_policies` before writing the migration body.
 
-**2. `src/components/overview/TaxPosition.tsx`**
-- Change props from a single `ani: number` to `memberANIs: { name: string; ani: number; pensionContributions: number }[]`.
-- Show the **highest ANI member** as the headline figure with their name (e.g., "Andrea: £95,000").
-- Status badge reflects the worst-case member (whoever is closest to or over £100k).
-- If multiple members are at risk, show each one.
-- ISA/Pension bars remain household-level (unchanged).
-- Insight text references the specific member who needs action.
+### 2. Revoke EXECUTE on internal helper functions
+These are called only from other DB functions / triggers, never from the client. Revoke from `anon` and `authenticated`:
 
-**3. `src/components/ActionCenter.tsx`**
-- Change `ani` prop to `memberANIs: { name: string; ani: number }[]`.
-- Generate ANI alerts **per member** — e.g., "Andrea's ANI approaching £100k" or "Andrea's ANI exceeds £100k".
-- Each member who is approaching or over threshold gets their own action item.
+- `is_household_member`
+- `is_household_owner`
+- `get_user_household_ids`
+- `has_role`
+- `get_approval_status`
+- `enqueue_email`, `read_email_batch`, `delete_email`, `move_to_dlq` (edge-function only — keep `service_role`)
+- `update_updated_at_column` (trigger only)
+- `handle_new_user`, `handle_new_user_approval` (triggers only)
 
-**4. `src/pages/TaxPage.tsx`**
-- Household view: Replace "Combined Household ANI" hero with a per-member ANI summary. Show each adult's ANI individually with their own status badge (safe/warning/danger vs £100k).
-- Remove the summed `getHouseholdANI()` function.
-- The `aniWarning` flag becomes true if **any** adult is over £100k.
+Functions that **stay callable** by `authenticated` (used by the client):
+- `accept_household_invitation`
+- `get_invitation_by_token` (must remain callable by `anon` — used on the public invite page before sign-in)
+- `get_ni_number`, `set_ni_number`
 
-**5. `src/components/tax/ANIBreakdown.tsx`**
-- No structural changes needed — it already works per-member.
+### 3. Lock down `get_user_email`
+Currently any authenticated user can resolve any other user's email by id.
+Change to: only callable by an admin (`has_role(auth.uid(), 'admin')`), and the function itself enforces the check before returning.
 
-### Files Changed
-- `src/pages/OverviewPage.tsx` — compute per-member ANIs, pass to children
-- `src/components/overview/TaxPosition.tsx` — per-member ANI display
-- `src/components/ActionCenter.tsx` — per-member ANI alerts
-- `src/pages/TaxPage.tsx` — household view shows individual ANIs
+```text
+admin? → return auth.users.email
+else   → return null
+```
 
+`usePendingApprovals` (the only client caller) is admin-only, so behaviour is preserved.
+
+## Out of scope (separate plan)
+
+- Type regeneration + removing `(supabase as any)` casts
+- Form validation with zod
+- Dead code cleanup
+- `useNetWorthHistory` query-key fix
+
+## Verification
+
+After the migration:
+1. Re-run `supabase--linter` — expect 0 SECURITY warnings (or only known-safe ones).
+2. Smoke test: sign-in, view dashboard, accept an invitation, admin views the approvals queue.
+
+## Approval
+
+Approve and I'll generate the migration SQL in a single `supabase--migration` call. I'll inspect `pg_policies` first to identify the exact permissive policy so the fix is precise rather than guessed.
