@@ -24,15 +24,8 @@ import BridgeGapCard from "@/components/home/BridgeGapCard";
 import TopActionsCard from "@/components/home/TopActionsCard";
 import type { MemberANI } from "@/types/tax";
 
-const TAX_YEAR = "2025/26";
-
-const stagger = {
-  container: { transition: { staggerChildren: 0.08 } },
-  item: {
-    initial: { opacity: 0, y: 14 },
-    animate: { opacity: 1, y: 0, transition: { duration: 0.45, ease: [0.25, 0.46, 0.45, 0.94] } },
-  },
-};
+import { CURRENT_TAX_YEAR } from "@/lib/constants";
+import { heroStagger as stagger } from "@/lib/animation";
 
 function buildOtherIncomeSources(scenario: {
   retirement_age: number;
