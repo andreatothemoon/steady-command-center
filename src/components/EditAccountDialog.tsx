@@ -79,7 +79,7 @@ export default function EditAccountDialog({ account, open, onOpenChange }: Props
 
   useEffect(() => {
     if (account) {
-      setLinkedAccountId((account as any).linked_account_id ?? null);
+      setLinkedAccountId(account.linked_account_id ?? null);
     }
   }, [account]);
 
@@ -92,8 +92,8 @@ export default function EditAccountDialog({ account, open, onOpenChange }: Props
           wrapper_type: account.wrapper_type,
           current_value: Number(account.current_value),
           owner_name: account.owner_name,
-          interest_rate: (account as any).interest_rate ?? "",
-          term_remaining_months: (account as any).term_remaining_months ?? "",
+          interest_rate: account.interest_rate ?? "",
+          term_remaining_months: account.term_remaining_months ?? "",
         }
       : undefined,
   });
@@ -111,7 +111,7 @@ export default function EditAccountDialog({ account, open, onOpenChange }: Props
         linked_account_id: isMortgage ? linkedAccountId : null,
         interest_rate: isDebtType && values.interest_rate !== "" ? Number(values.interest_rate) : null,
         term_remaining_months: isDebtType && values.term_remaining_months !== "" ? Number(values.term_remaining_months) : null,
-      } as any);
+      });
       toast.success("Account updated");
       onOpenChange(false);
     } catch (e: any) {

@@ -90,7 +90,7 @@ export default function AddAccountDialog({ open, onOpenChange }: Props) {
         linked_account_id: isMortgageType ? linkedAccountId : null,
         interest_rate: debtType && values.interest_rate !== "" ? Number(values.interest_rate) : null,
         term_remaining_months: debtType && values.term_remaining_months !== "" ? Number(values.term_remaining_months) : null,
-      } as any);
+      });
       toast.success("Account added");
       form.reset();
       setLinkedAccountId(null);

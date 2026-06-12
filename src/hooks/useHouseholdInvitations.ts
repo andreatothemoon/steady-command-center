@@ -1,22 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import type { Database } from "@/integrations/supabase/types";
 
-export interface HouseholdInvitation {
-  id: string;
-  household_id: string;
-  token: string;
-  email: string | null;
-  invited_by: string;
-  status: "pending" | "accepted" | "revoked" | "expired";
-  expires_at: string;
-  accepted_at: string | null;
-  accepted_by: string | null;
-  created_at: string;
-  updated_at: string;
-}
-
-const TABLE = "household_invitations" as any;
+export type HouseholdInvitation = Database["public"]["Tables"]["household_invitations"]["Row"];
 
 function genToken() {
   const arr = new Uint8Array(24);
@@ -31,8 +18,8 @@ export function useHouseholdInvitations() {
     queryKey: ["household_invitations", householdId],
     queryFn: async () => {
       if (!householdId) return [];
-      const { data, error } = await (supabase as any)
-        .from(TABLE)
+      const { data, error } = await supabase
+        .from("household_invitations")
         .select("*")
         .eq("household_id", householdId)
         .order("created_at", { ascending: false });
@@ -51,8 +38,8 @@ export function useCreateInvitation() {
     mutationFn: async (input: { email?: string | null }) => {
       if (!householdId || !user) throw new Error("No household");
       const token = genToken();
-      const { data, error } = await (supabase as any)
-        .from(TABLE)
+      const { data, error } = await supabase
+        .from("household_invitations")
         .insert({
           household_id: householdId,
           token,
@@ -75,8 +62,8 @@ export function useRevokeInvitation() {
 
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await (supabase as any)
-        .from(TABLE)
+      const { error } = await supabase
+        .from("household_invitations")
         .update({ status: "revoked" })
         .eq("id", id);
       if (error) throw error;
@@ -92,7 +79,7 @@ export function useInvitationByToken(token: string | null) {
     queryKey: ["invitation_token", token],
     queryFn: async () => {
       if (!token) return null;
-      const { data, error } = await (supabase as any).rpc("get_invitation_by_token", {
+      const { data, error } = await supabase.rpc("get_invitation_by_token", {
         _token: token,
       });
       if (error) throw error;
@@ -111,7 +98,7 @@ export function useAcceptInvitation() {
   return useMutation({
     mutationFn: async (token: string) => {
       if (!user) throw new Error("Not authenticated");
-      const { data, error } = await (supabase as any).rpc("accept_household_invitation", {
+      const { data, error } = await supabase.rpc("accept_household_invitation", {
         _token: token,
         _user_id: user.id,
         _user_name:
