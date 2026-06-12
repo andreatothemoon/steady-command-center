@@ -40,13 +40,7 @@ import ScenarioTabs, { type ScenarioMeta } from "@/components/retirement/Scenari
 import ScenarioComparison from "@/components/retirement/ScenarioComparison";
 
 
-const stagger = {
-  container: { transition: { staggerChildren: 0.06 } },
-  item: {
-    initial: { opacity: 0, y: 10 },
-    animate: { opacity: 1, y: 0, transition: { duration: 0.35 } },
-  },
-};
+import { stagger } from "@/lib/animation";
 
 function buildOtherIncomeSources(values: {
   retireAge: number;

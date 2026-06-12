@@ -30,15 +30,8 @@ import { toast } from "sonner";
 import { CurrencyField } from "@/components/tax/CurrencyField";
 import { ANIBreakdown } from "@/components/tax/ANIBreakdown";
 
-const TAX_YEAR = "2025/26";
-
-const stagger = {
-  container: { transition: { staggerChildren: 0.06 } },
-  item: {
-    initial: { opacity: 0, y: 10 },
-    animate: { opacity: 1, y: 0, transition: { duration: 0.35 } },
-  },
-};
+import { CURRENT_TAX_YEAR } from "@/lib/constants";
+import { stagger } from "@/lib/animation";
 
 type ViewMode = "household" | string;
 
@@ -51,7 +44,7 @@ interface Allowance {
 export default function TaxPage() {
   const { data: profiles = [], isLoading } = useHouseholdProfiles();
   const { data: accounts = [] } = useAccounts();
-  const { data: taxSummaries = [] } = useTaxSummaries(TAX_YEAR);
+  const { data: taxSummaries = [] } = useTaxSummaries(CURRENT_TAX_YEAR);
   const upsertTax = useUpsertTaxSummary();
 
   const [viewMode, setViewMode] = useState<ViewMode>("household");
@@ -102,7 +95,7 @@ export default function TaxPage() {
       await upsertTax.mutateAsync({
         id: existing?.id,
         member_profile_id: profile.id,
-        tax_year: TAX_YEAR,
+        tax_year: CURRENT_TAX_YEAR,
         ...formState,
       });
       toast.success(`${profile.name}'s tax data saved`);
@@ -266,7 +259,7 @@ export default function TaxPage() {
         <div>
           <h1 className="text-2xl font-semibold tracking-tight text-foreground">Tax</h1>
           <p className="label-subtle mt-1">
-            Tax year {TAX_YEAR} — {viewMode === "household" ? "Household view" : selectedProfile?.name}
+            Tax year {CURRENT_TAX_YEAR} — {viewMode === "household" ? "Household view" : selectedProfile?.name}
           </p>
         </div>
         <Button size="sm" variant="outline" className="gap-2" onClick={() => setAddMemberOpen(true)}>

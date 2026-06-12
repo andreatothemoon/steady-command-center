@@ -59,13 +59,7 @@ const severityConfig: Record<Severity, { border: string; icon: string; badge: st
   },
 };
 
-const stagger = {
-  container: { transition: { staggerChildren: 0.06, delayChildren: 0.1 } },
-  item: {
-    initial: { opacity: 0, x: -8 },
-    animate: { opacity: 1, x: 0, transition: { duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] } },
-  },
-};
+import { listStagger as stagger } from "@/lib/animation";
 
 export default function ActionCenter({ accounts, memberANIs = [], isaUsed = 0, isaLimit = 20000 }: Props) {
   const navigate = useNavigate();
