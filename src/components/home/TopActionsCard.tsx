@@ -111,12 +111,12 @@ export default function TopActionsCard({ accounts, memberANIs = [], isaUsed = 0,
           <button
             key={action.id}
             onClick={() => navigate(action.route)}
-            className="group flex w-full items-center justify-between gap-8 rounded-[2rem] border border-border/60 bg-card px-8 py-7 text-left transition-all hover:shadow-sm"
+            className="group flex w-full items-center justify-between gap-6 rounded-[2rem] border border-border/60 bg-card px-7 py-6 text-left transition-all hover:-translate-y-0.5 hover:shadow-sm"
           >
             <div className="flex flex-1 items-start gap-5">
               <div
                 className={cn(
-                  "flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-[28px]",
+                  "mt-1 flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-[24px]",
                   action.severity === "high"
                     ? "bg-destructive/10 text-destructive"
                     : action.category === "optimisation"
@@ -127,13 +127,30 @@ export default function TopActionsCard({ accounts, memberANIs = [], isaUsed = 0,
                 {action.category === "freshness" ? <Clock className="h-5 w-5" /> : action.category === "tax" ? <AlertTriangle className="h-5 w-5" /> : <TrendingUp className="h-5 w-5" />}
               </div>
               <div className="min-w-0 flex-1">
-                <h4 className="mb-4 text-[2rem] font-semibold tracking-[-0.04em] text-foreground">{action.title}</h4>
+                <div className="mb-3 flex flex-wrap items-center gap-2">
+                  <span className="rounded-full border border-border/70 bg-white px-3 py-1 text-[11px] font-medium uppercase tracking-[0.12em] text-muted-foreground">
+                    {action.category}
+                  </span>
+                  <span
+                    className={cn(
+                      "rounded-full px-3 py-1 text-[11px] font-medium uppercase tracking-[0.12em]",
+                      action.severity === "high"
+                        ? "bg-destructive/10 text-destructive"
+                        : action.severity === "medium"
+                          ? "bg-warning/20 text-foreground"
+                          : "bg-secondary text-muted-foreground"
+                    )}
+                  >
+                    {action.severity} priority
+                  </span>
+                </div>
+                <h4 className="mb-3 text-[1.55rem] font-semibold tracking-[-0.04em] text-foreground">{action.title}</h4>
                 <div className="mb-4 flex flex-wrap items-center gap-x-8 gap-y-2">
                   <div className="flex items-center gap-2">
-                    <span className="text-xl text-muted-foreground">Impact:</span>
+                    <span className="text-base text-muted-foreground">Impact:</span>
                     <span
                       className={cn(
-                        "text-[1.1rem] font-semibold",
+                        "text-lg font-semibold",
                         action.severity === "high" ? "text-destructive" : action.category === "optimisation" ? "text-success" : "text-foreground"
                       )}
                     >
@@ -141,13 +158,13 @@ export default function TopActionsCard({ accounts, memberANIs = [], isaUsed = 0,
                     </span>
                   </div>
                   {action.secondary && (
-                    <span className="text-xl text-muted-foreground">{action.secondary}</span>
+                    <span className="text-base text-muted-foreground">{action.secondary}</span>
                   )}
                 </div>
-                <p className="text-xl text-muted-foreground">{action.detail}</p>
+                <p className="text-base text-muted-foreground">{action.detail}</p>
               </div>
             </div>
-            <div className="inline-flex items-center gap-3 rounded-[28px] bg-primary px-8 py-5 text-xl font-semibold text-primary-foreground transition-colors group-hover:bg-primary/92">
+            <div className="inline-flex items-center gap-3 rounded-[24px] bg-primary px-6 py-4 text-base font-semibold text-primary-foreground transition-colors group-hover:bg-primary/92">
               Try this <ArrowRight className="h-5 w-5" />
             </div>
           </button>

@@ -8,19 +8,22 @@ export default function BridgeGapCard({ retireAge }: Props) {
   const bridgeYears = Math.max(0, 67 - retireAge);
 
   return (
-    <div className="card-surface h-full border-l-4 border-l-primary p-5">
-      <div className="mb-6">
-        <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-destructive/10">
+    <div className="card-surface h-full p-6">
+      <div className="mb-8 flex items-start justify-between">
+        <div className="flex h-12 w-12 items-center justify-center rounded-[22px] bg-destructive/10">
           <Calendar className="h-5 w-5 text-destructive" />
+        </div>
+        <div className="rounded-full border border-border/60 bg-white/80 px-3 py-1 text-xs font-medium text-muted-foreground">
+          Bridge years
         </div>
       </div>
 
-      <h3 className="mb-2 text-base font-semibold tracking-tight text-foreground">Bridge Gap</h3>
-      <p className="mb-1 text-[2rem] font-semibold leading-none tracking-tight text-foreground">
+      <h3 className="mb-3 text-lg font-semibold tracking-tight text-foreground">Bridge Gap</h3>
+      <p className="mb-2 text-[2.4rem] font-semibold leading-none tracking-tight text-foreground">
         {bridgeYears === 0 ? "None" : `${bridgeYears} years`}
       </p>
       <p className="text-sm text-muted-foreground">
-        {bridgeYears === 0 ? "State Pension starts when you retire" : "To cover before State Pension"}
+        {bridgeYears === 0 ? "State Pension begins when you retire." : "Years to fund before State Pension starts."}
       </p>
     </div>
   );

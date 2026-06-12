@@ -45,8 +45,9 @@ export default function ActionsPanel({ actions }: Props) {
   return (
     <motion.div variants={item} className="space-y-4">
       <div>
+        <p className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">Action Signals</p>
         <h2 className="text-2xl font-semibold text-foreground">Retirement Actions</h2>
-        <p className="mt-2 text-sm text-muted-foreground">Personalised insights based on your plan.</p>
+        <p className="mt-2 text-sm text-muted-foreground">Personalised interventions based on the pressure points in this scenario.</p>
       </div>
       <div className="space-y-4">
         {actions.map((action, i) => {
@@ -64,12 +65,14 @@ export default function ActionsPanel({ actions }: Props) {
                   <config.icon className={cn("h-5 w-5", config.iconColor)} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="mb-2 flex items-center gap-2">
+                  <div className="mb-3 flex items-center gap-2">
                     <p className="text-lg font-semibold text-card-foreground">{action.title}</p>
                     <span className={cn(config.badge, "hidden sm:inline-flex")}>{config.label}</span>
                   </div>
                   <p className="text-sm leading-relaxed text-muted-foreground">{action.explanation}</p>
-                  <p className="mt-2 text-sm font-medium text-card-foreground">{action.impact}</p>
+                  <div className={cn("mt-4 rounded-2xl px-4 py-3 text-sm font-medium", config.bg, config.iconColor)}>
+                    {action.impact}
+                  </div>
                 </div>
               </div>
             </motion.div>

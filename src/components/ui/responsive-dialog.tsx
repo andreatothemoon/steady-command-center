@@ -52,7 +52,7 @@ function ResponsiveDialogContent({ children, className }: ResponsiveDialogConten
 
   if (isMobile) {
     return (
-      <DrawerContent className={cn("px-4 pb-6", className)}>
+      <DrawerContent className={cn("rounded-t-[28px] border-border bg-card/98 px-4 pb-6 shadow-[0_-18px_44px_-30px_rgba(0,4,17,0.4)]", className)}>
         <div className="overflow-y-auto max-h-[85vh] py-2">
           {children}
         </div>
@@ -61,7 +61,7 @@ function ResponsiveDialogContent({ children, className }: ResponsiveDialogConten
   }
 
   return (
-    <DialogContent className={cn("sm:max-w-md bg-card border-border max-h-[85vh] overflow-y-auto", className)}>
+    <DialogContent className={cn("max-h-[85vh] overflow-y-auto border-border bg-card sm:max-w-lg", className)}>
       {children}
     </DialogContent>
   );

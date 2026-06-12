@@ -144,9 +144,11 @@ export default function HomePage() {
 
   return (
     <motion.div className="flex flex-col gap-10" variants={stagger.container} initial="initial" animate="animate">
-      <motion.div variants={stagger.item} className="space-y-2">
+      <motion.div variants={stagger.item} className="space-y-3">
         <h1 className="text-4xl font-semibold tracking-tight text-foreground">Your Retirement Plan</h1>
-        <p className="text-muted-foreground">Live projection of your retirement income, actions, and wealth position.</p>
+        <p className="max-w-3xl text-muted-foreground">
+          A live view of your retirement income, bridge strategy, and household wealth position, all anchored to the currently selected scenario.
+        </p>
       </motion.div>
 
       <motion.div variants={stagger.item}>
@@ -177,6 +179,9 @@ export default function HomePage() {
       <motion.div variants={stagger.item} className="space-y-5">
         <div>
           <h3 className="mb-2 text-2xl font-semibold text-foreground">Recommended Actions</h3>
+          <p className="text-sm text-muted-foreground">
+            Highest-leverage next steps based on the latest tax, account, and retirement data in your workspace.
+          </p>
         </div>
         <TopActionsCard
           accounts={accounts}

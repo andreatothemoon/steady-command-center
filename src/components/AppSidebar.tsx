@@ -41,20 +41,31 @@ function SidebarContent({ collapsed, toggle, onNavigate }: { collapsed: boolean;
 
   return (
     <>
-      <div className={cn("flex h-20 items-center", collapsed ? "justify-center px-4" : "px-5")}>
-        <div className="h-10 w-10 rounded-xl bg-[#0B0F14] flex items-center justify-center flex-shrink-0">
+      <div className={cn("flex h-24 items-center border-b border-sidebar-border/70", collapsed ? "justify-center px-4" : "px-5")}>
+        <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-2xl bg-[#0B0F14] shadow-[0_14px_28px_-20px_rgba(0,4,17,0.45)]">
           <svg viewBox="0 0 64 64" className="h-6 w-6" fill="none">
             <path d="M8 14 L20 50 L32 28 L44 50 L56 14" stroke="#F9FAFB" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
         </div>
         {!collapsed && (
-          <span className="ml-3 text-sidebar-accent-foreground font-semibold text-[15px] tracking-tight">
-            WealthOS
-          </span>
+          <div className="ml-3">
+            <span className="text-[15px] font-semibold tracking-tight text-sidebar-accent-foreground">
+              WealthOS
+            </span>
+            <p className="mt-0.5 text-[11px] text-sidebar-foreground">Planning workspace</p>
+          </div>
         )}
       </div>
 
-      <nav className={cn("flex-1 pt-2", collapsed ? "px-2 space-y-3" : "px-3 space-y-2")}>
+      <div className={cn("pt-4", collapsed ? "px-2" : "px-4")}>
+        {!collapsed && (
+          <p className="px-2 pb-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-sidebar-foreground/75">
+            Navigation
+          </p>
+        )}
+      </div>
+
+      <nav className={cn("flex-1", collapsed ? "px-2 space-y-3" : "px-3 space-y-2")}>
         {navItems.map(({ to, label, icon: Icon }) => {
           const isActive = to === "/" ? location.pathname === "/" : location.pathname.startsWith(to);
           return (
@@ -131,12 +142,12 @@ function SidebarContent({ collapsed, toggle, onNavigate }: { collapsed: boolean;
           to="/profile"
           onClick={onNavigate}
           className={cn(
-            "block border-t border-sidebar-border pt-3 mt-2 transition-colors",
+            "mt-3 block border-t border-sidebar-border pt-4 transition-colors",
             collapsed ? "flex justify-center" : ""
           )}
         >
-          <div className={cn("flex items-center", collapsed ? "" : "gap-3 px-1")}>
-            <div className="h-8 w-8 rounded-full bg-secondary border border-sidebar-border flex items-center justify-center flex-shrink-0">
+          <div className={cn("flex items-center rounded-2xl", collapsed ? "" : "gap-3 bg-secondary/45 px-3 py-3")}>
+            <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border border-sidebar-border bg-white">
               <span className="text-[11px] font-semibold text-sidebar-accent-foreground">{initials.slice(0, 2)}</span>
             </div>
             {!collapsed && (
@@ -182,10 +193,10 @@ export default function AppSidebar() {
   return (
     <aside
       className={cn(
-        "fixed left-0 top-0 z-40 flex h-screen flex-col border-r border-sidebar-border transition-all duration-300",
+        "fixed left-0 top-0 z-40 flex h-screen flex-col border-r border-sidebar-border transition-all duration-300 shadow-[0_18px_40px_-34px_rgba(0,4,17,0.22)]",
         collapsed ? "w-20" : "w-56"
       )}
-      style={{ background: "hsl(var(--sidebar-background))" }}
+      style={{ background: "linear-gradient(180deg, hsl(var(--sidebar-background)) 0%, hsl(var(--background)) 100%)" }}
     >
       <SidebarContent collapsed={collapsed} toggle={toggle} />
     </aside>

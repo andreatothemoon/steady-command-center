@@ -61,19 +61,20 @@ export default function ScenarioComparison({ scenarios }: Props) {
   return (
     <motion.div variants={item} className="card-surface p-6 lg:p-8">
       <div className="mb-5">
+        <p className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">Comparison View</p>
         <h2 className="text-2xl font-semibold text-foreground">Scenario Comparison</h2>
         <p className="mt-2 text-sm text-muted-foreground">Side-by-side view of your retirement scenarios.</p>
       </div>
 
-      <div className="overflow-x-auto -mx-2 px-2">
+      <div className="overflow-x-auto -mx-2 rounded-[24px] border border-border/50 px-2">
         <Table>
           <TableHeader>
             <TableRow className="border-border/50">
-              <TableHead className="text-[11px] font-medium text-muted-foreground w-[180px]">Metric</TableHead>
+              <TableHead className="w-[180px] text-[11px] font-medium uppercase tracking-[0.12em] text-muted-foreground">Metric</TableHead>
               {scenarios.map((s, i) => (
                 <TableHead key={i} className="text-center min-w-[140px]">
                   <div className="flex items-center justify-center gap-1.5">
-                    <span className="text-[11px] font-semibold text-card-foreground">{s.name}</span>
+                    <span className="text-[11px] font-semibold uppercase tracking-[0.1em] text-card-foreground">{s.name}</span>
                     {i === bestIdx && (
                       <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
                     )}
@@ -87,7 +88,7 @@ export default function ScenarioComparison({ scenarios }: Props) {
               const values = scenarios.map((s) => m.format(s));
               return (
                 <TableRow key={m.key} className="border-border/30 hover:bg-muted/30">
-                  <TableCell className="text-[11px] text-muted-foreground font-medium py-2.5">{m.label}</TableCell>
+                  <TableCell className="py-2.5 text-[11px] font-medium text-muted-foreground">{m.label}</TableCell>
                   {scenarios.map((s, i) => {
                     const isBest = i === bestIdx;
                     const isGapRow = m.key === "gap";

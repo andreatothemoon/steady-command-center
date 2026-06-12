@@ -161,7 +161,7 @@ export default function IncomeSourceCards({ projection, dbPensions, statePension
         </div>
         <div className="space-y-2.5">
           <p className="text-[11px] text-muted-foreground">
-            ISA withdrawals, property income, and part-time work can supplement your retirement income during bridge years.
+            ISA bridge, property income, and part-time work can be layered into the scenario to support retirement before State Pension.
           </p>
           <div className="flex items-center justify-between text-[11px]">
             <span className="text-muted-foreground">ISA bridge</span>

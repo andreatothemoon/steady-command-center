@@ -36,7 +36,7 @@ interface Props {
 }
 
 export default function IncomeTimeline({ timeline, retireAge, targetIncome }: Props) {
-  void targetIncome;
+  const targetMonthly = Math.round(targetIncome / 12);
   const chartData = useMemo(() => {
     return timeline.map((point) => ({
       age: point.age,
@@ -63,16 +63,34 @@ export default function IncomeTimeline({ timeline, retireAge, targetIncome }: Pr
       return Math.max(max, total);
     }, 0);
     const step = 1500;
-    return Math.max(step, Math.ceil(maxTotal / step) * step);
+    return Math.max(step, Math.ceil(Math.max(maxTotal, targetMonthly) / step) * step);
+  }, [chartData, targetMonthly]);
+
+  const peakMonthly = useMemo(() => {
+    return chartData.reduce((max, point) => Math.max(max, point.dc + point.db + point.state + point.isa + point.other), 0);
   }, [chartData]);
 
   return (
     <motion.div variants={item} className="card-surface p-8 lg:p-10">
-      <div className="mb-8">
-        <h3 className="mb-2 text-2xl font-semibold text-foreground">Income Timeline</h3>
-        <p className="text-sm text-muted-foreground">Monthly income by source from today through retirement.</p>
+      <div className="mb-8 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+        <div>
+          <p className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">Income Visualisation</p>
+          <h3 className="mb-2 text-2xl font-semibold text-foreground">Income Timeline</h3>
+          <p className="text-sm text-muted-foreground">Monthly income by source from today through retirement.</p>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div className="rounded-[22px] bg-secondary/55 px-4 py-3">
+            <p className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">Target income</p>
+            <p className="mt-2 text-lg font-semibold text-foreground">{formatCurrency(targetMonthly)}/mo</p>
+          </div>
+          <div className="rounded-[22px] bg-secondary/55 px-4 py-3">
+            <p className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">Peak modelled income</p>
+            <p className="mt-2 text-lg font-semibold text-foreground">{formatCurrency(peakMonthly)}/mo</p>
+          </div>
+        </div>
       </div>
 
+      <div className="rounded-[30px] border border-border/50 bg-[linear-gradient(180deg,rgba(255,255,255,0.92),rgba(255,255,255,0.72))] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.4)]">
       <ResponsiveContainer width="100%" height={420}>
         <AreaChart data={chartData} margin={{ top: 18, right: 24, left: 8, bottom: 12 }}>
           <defs>
@@ -172,6 +190,19 @@ export default function IncomeTimeline({ timeline, retireAge, targetIncome }: Pr
             }}
           />
           <ReferenceLine x={retireAge} stroke={chartColors.dc} strokeDasharray="3 3" strokeWidth={2.25} />
+          <ReferenceLine
+            y={targetMonthly}
+            stroke="rgba(9, 21, 64, 0.32)"
+            strokeDasharray="4 4"
+            strokeWidth={1.5}
+            label={{
+              value: `Target ${formatCurrency(targetMonthly)}/mo`,
+              position: "insideTopLeft",
+              fill: "rgba(9, 21, 64, 0.58)",
+              fontSize: 12,
+              fontWeight: 600,
+            }}
+          />
           {taxFreeCashEvent && (
             <ReferenceLine
               x={taxFreeCashEvent.age}
@@ -235,6 +266,7 @@ export default function IncomeTimeline({ timeline, retireAge, targetIncome }: Pr
           />
         </AreaChart>
       </ResponsiveContainer>
+      </div>
 
       <div className="mt-6 flex flex-wrap justify-center gap-8">
         <div className="flex items-center gap-2">

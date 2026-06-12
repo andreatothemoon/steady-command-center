@@ -192,8 +192,64 @@ export default function ActionsPage() {
     <motion.div className="space-y-8" variants={stagger.container} initial="initial" animate="animate">
       <motion.div variants={stagger.item}>
         <h1 className="text-4xl font-semibold tracking-tight text-foreground">Actions</h1>
-        <p className="mt-2 text-muted-foreground">Personalized steps to improve your plan, reduce tax drag, and keep your numbers current.</p>
+        <p className="mt-2 max-w-3xl text-muted-foreground">A ranked view of the next moves most likely to improve your plan, reduce tax drag, and keep the underlying model trustworthy.</p>
       </motion.div>
+
+      {actions.length > 0 && (
+        <motion.div variants={stagger.item} className="hero-surface p-8 lg:p-10">
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-32 bg-[radial-gradient(circle_at_top_left,hsl(var(--accent)/0.14),transparent_58%)]" />
+          <div className="relative flex flex-col gap-8 xl:grid xl:grid-cols-[minmax(0,1.35fr)_minmax(0,0.65fr)] xl:items-start">
+            <div>
+              <p className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">Action Overview</p>
+              <h2 className="mt-2 text-3xl font-semibold tracking-[-0.05em] text-foreground">
+                {highCount > 0 ? "There are a few things worth tackling now." : "The plan is in good shape, with a few smart optimisations available."}
+              </h2>
+              <p className="mt-3 max-w-2xl text-sm text-muted-foreground">
+                This page is designed to help you focus on leverage, not noise: what matters most, what is quick to fix, and where the biggest long-term gain sits.
+              </p>
+              <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
+                <div className="rounded-[24px] border border-border/60 bg-white/75 px-5 py-4 backdrop-blur">
+                  <p className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">Recommended</p>
+                  <p className="mt-2 text-2xl font-semibold tracking-tight text-foreground">{recommendedCount}</p>
+                  <p className="mt-1 text-sm text-muted-foreground">{highCount} high-priority right now</p>
+                </div>
+                <div className="rounded-[24px] border border-border/60 bg-white/75 px-5 py-4 backdrop-blur">
+                  <p className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">Potential lift</p>
+                  <p className="mt-2 text-2xl font-semibold tracking-tight text-success">
+                    {totalMonthlyImpact > 0 ? `+${formatCurrency(totalMonthlyImpact)}` : "—"}
+                  </p>
+                  <p className="mt-1 text-sm text-muted-foreground">Estimated monthly retirement income gain.</p>
+                </div>
+                <div className="rounded-[24px] border border-border/60 bg-white/75 px-5 py-4 backdrop-blur">
+                  <p className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">Quick wins</p>
+                  <p className="mt-2 text-2xl font-semibold tracking-tight text-foreground">{quickWins}</p>
+                  <p className="mt-1 text-sm text-muted-foreground">Lower-effort actions available now.</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="rounded-[30px] border border-border/70 bg-white/85 p-6 shadow-[0_18px_44px_-30px_hsl(var(--foreground)/0.22)] backdrop-blur">
+              <p className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">Priority Mix</p>
+              <div className="mt-6 space-y-5">
+                <div>
+                  <p className="mb-1 text-sm font-medium text-foreground/60">Pending actions</p>
+                  <p className="text-2xl font-semibold tracking-tight text-foreground">{pendingCount}</p>
+                </div>
+                <div>
+                  <p className="mb-1 text-sm font-medium text-foreground/60">Highest urgency</p>
+                  <p className="text-2xl font-semibold tracking-tight text-foreground">{highCount > 0 ? `${highCount} urgent` : "None urgent"}</p>
+                </div>
+                <div className="rounded-[24px] bg-secondary/65 px-4 py-4">
+                  <p className="text-sm font-medium text-foreground/75">Best near-term themes</p>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    Tax efficiency, ISA usage, and current account balances are driving most of the available upside.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      )}
 
       {actions.length > 0 && (
         <motion.div variants={stagger.item} className="grid grid-cols-1 gap-4 sm:grid-cols-3">
@@ -304,6 +360,12 @@ export default function ActionsPage() {
                         </div>
                       )}
                     </div>
+                    <div className="mt-4 rounded-[20px] bg-secondary/55 px-4 py-3">
+                      <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
+                        <span className="text-muted-foreground">Effort: <span className="font-medium text-foreground">{eff.label}</span></span>
+                        <span className="text-muted-foreground">Status: <span className="font-medium text-foreground">{action.status === "recommended" ? "Recommended now" : "Worth planning"}</span></span>
+                      </div>
+                    </div>
                   </div>
                 </div>
                 <span className="flex-shrink-0 whitespace-nowrap rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground flex items-center gap-1.5 transition-colors group-hover:bg-primary/92">
@@ -317,6 +379,7 @@ export default function ActionsPage() {
 
       {actions.length > 0 && (
         <motion.div variants={stagger.item} className="card-surface p-8">
+          <p className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">Impact Summary</p>
           <h2 className="text-2xl font-semibold text-foreground">Total Potential Impact</h2>
           <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-3">
             <div>

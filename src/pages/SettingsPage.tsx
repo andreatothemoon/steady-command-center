@@ -119,8 +119,9 @@ export default function SettingsPage() {
   return (
     <motion.div className="space-y-5" variants={stagger.container} initial="initial" animate="animate">
       <motion.div variants={stagger.item}>
-        <h1 className="text-2xl font-semibold tracking-tight text-foreground">Settings</h1>
-        <p className="label-subtle mt-1">Manage your household and preferences</p>
+        <p className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">Account Settings</p>
+        <h1 className="mt-2 text-2xl font-semibold tracking-tight text-foreground">Household and access</h1>
+        <p className="mt-1 text-sm text-muted-foreground">Keep the planning household accurate, make membership changes, and manage session-level access.</p>
       </motion.div>
 
       {/* Household Members */}
@@ -171,7 +172,7 @@ export default function SettingsPage() {
               return (
                 <div
                   key={profile.id}
-                  className="flex items-center justify-between px-5 py-3.5 hover:bg-secondary/20 transition-colors"
+                  className="flex items-center justify-between px-5 py-4 hover:bg-secondary/20 transition-colors"
                 >
                   <div className="flex items-center gap-3">
                     <div
@@ -229,27 +230,43 @@ export default function SettingsPage() {
         )}
       </motion.div>
 
-      {/* Security */}
-      <motion.div variants={stagger.item} className="card-surface p-5">
-        <div className="flex items-center gap-3 mb-4">
-          <Shield className="h-5 w-5 text-muted-foreground" />
-          <p className="label-muted">Security</p>
+      <motion.div variants={stagger.item} className="grid gap-5 lg:grid-cols-2">
+        {/* Security */}
+        <div className="card-surface p-6">
+          <div className="mb-4 flex items-center gap-3">
+            <Shield className="h-5 w-5 text-muted-foreground" />
+            <div>
+              <p className="text-sm font-medium text-card-foreground">Security</p>
+              <p className="text-[11px] text-muted-foreground">Manage this session and household access.</p>
+            </div>
+          </div>
+          <div className="rounded-[24px] bg-secondary/50 px-4 py-4">
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <p className="text-sm font-medium text-foreground">Current session</p>
+                <p className="mt-1 text-xs text-muted-foreground">Sign out of this device when you&apos;re done.</p>
+              </div>
+              <Button variant="outline" size="sm" onClick={signOut}>
+                Sign Out
+              </Button>
+            </div>
+          </div>
         </div>
-        <div className="flex items-center justify-between">
-          <p className="label-subtle">Manage your session</p>
-          <Button variant="outline" size="sm" onClick={signOut}>
-            Sign Out
-          </Button>
-        </div>
-      </motion.div>
 
-      {/* Data */}
-      <motion.div variants={stagger.item} className="card-surface p-5">
-        <div className="flex items-center gap-3 mb-4">
-          <Database className="h-5 w-5 text-muted-foreground" />
-          <p className="label-muted">Data</p>
+        {/* Data */}
+        <div className="card-surface p-6">
+          <div className="mb-4 flex items-center gap-3">
+            <Database className="h-5 w-5 text-muted-foreground" />
+            <div>
+              <p className="text-sm font-medium text-card-foreground">Data</p>
+              <p className="text-[11px] text-muted-foreground">Import, export, and portability tools.</p>
+            </div>
+          </div>
+          <div className="rounded-[24px] bg-secondary/50 px-4 py-4">
+            <p className="text-sm font-medium text-foreground">Data portability</p>
+            <p className="mt-1 text-xs text-muted-foreground">Export and import options are planned next, alongside clearer document and tax record workflows.</p>
+          </div>
         </div>
-        <p className="label-subtle">Export and import options coming soon.</p>
       </motion.div>
 
       {/* Add/Edit dialog */}

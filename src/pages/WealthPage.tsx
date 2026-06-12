@@ -20,6 +20,7 @@ import { formatOwnerGroup } from "@/lib/accountOwners";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import AllocationDonut from "@/components/AllocationDonut";
 import AddAccountDialog from "@/components/AddAccountDialog";
 import EditAccountDialog from "@/components/EditAccountDialog";
 import ImportAccountsDialog from "@/components/ImportAccountsDialog";
@@ -145,6 +146,17 @@ export default function WealthPage() {
   );
 
   const totalIncomeEstimate = dcIncome + dbIncome + UK_STATE_PENSION_FULL;
+  const guaranteedIncomeMonthly = Math.round((dbIncome + UK_STATE_PENSION_FULL) / 12);
+  const drawdownCapacityMonthly = Math.round(dcIncome / 12);
+  const liquidityCoverageMonths = dcIncome > 0
+    ? Math.max(
+        0,
+        Math.round(
+          buckets.safety.reduce((sum, account) => sum + Number(account.current_value), 0) /
+            Math.max(drawdownCapacityMonthly, 1)
+        )
+      )
+    : 0;
 
   // DB pension handlers
   const handleDbSave = (input: DBPensionInput & { id?: string }) => {
@@ -201,12 +213,13 @@ export default function WealthPage() {
 
       {!isLoading && accounts.length > 0 && (
         <>
-          <motion.div variants={stagger.item} className="card-surface p-10">
-            <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between">
+          <motion.div variants={stagger.item} className="hero-surface p-10">
+            <div className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-[radial-gradient(circle_at_top_left,hsl(var(--accent)/0.14),transparent_60%)]" />
+            <div className="relative flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Total Net Worth</p>
+                <p className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">Wealth Overview</p>
                 <p className="mt-2 text-5xl font-semibold tracking-[-0.06em] text-foreground">{formatCurrency(netWorth)}</p>
-                <p className="mt-2 text-sm text-muted-foreground">
+                <p className="mt-3 max-w-2xl text-sm text-muted-foreground">
                   {accounts.length} account{accounts.length !== 1 ? "s" : ""} mapped into retirement income and liquidity.
                 </p>
               </div>
@@ -228,9 +241,27 @@ export default function WealthPage() {
               </div>
             </div>
 
+            <div className="relative mt-8 grid gap-4 lg:grid-cols-3">
+              <div className="rounded-[24px] border border-border/60 bg-white/75 px-5 py-4 backdrop-blur">
+                <p className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">Guaranteed Base</p>
+                <p className="mt-2 text-2xl font-semibold tracking-tight text-foreground">{formatCurrency(guaranteedIncomeMonthly)}/mo</p>
+                <p className="mt-1 text-sm text-muted-foreground">Projected DB income plus full State Pension.</p>
+              </div>
+              <div className="rounded-[24px] border border-border/60 bg-white/75 px-5 py-4 backdrop-blur">
+                <p className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">Flexible Capacity</p>
+                <p className="mt-2 text-2xl font-semibold tracking-tight text-foreground">{formatCurrency(drawdownCapacityMonthly)}/mo</p>
+                <p className="mt-1 text-sm text-muted-foreground">Illustrative drawdown from invested DC and growth assets.</p>
+              </div>
+              <div className="rounded-[24px] border border-border/60 bg-white/75 px-5 py-4 backdrop-blur">
+                <p className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">Safety Buffer</p>
+                <p className="mt-2 text-2xl font-semibold tracking-tight text-foreground">{liquidityCoverageMonths} months</p>
+                <p className="mt-1 text-sm text-muted-foreground">Approximate coverage from cash and savings against flexible spending.</p>
+              </div>
+            </div>
+
             {leadingAllocation && (
-              <div className="mt-8 border-t border-border/60 pt-6">
-                <div className="flex items-center justify-between gap-4">
+              <div className="relative mt-8 border-t border-border/60 pt-6">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <p className="text-sm text-muted-foreground">Largest allocation</p>
                     <p className="mt-1 text-lg font-semibold text-foreground">{leadingAllocation.meta.label}</p>
@@ -243,16 +274,24 @@ export default function WealthPage() {
             )}
           </motion.div>
 
-          <motion.div variants={stagger.item}>
+          <motion.div variants={stagger.item} className="grid gap-6 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
+            <AllocationDonut accounts={accounts} />
             <div className="card-surface p-8">
-              <h2 className="text-2xl font-semibold text-foreground">Asset Allocation</h2>
+              <p className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">Allocation Story</p>
+              <h2 className="mt-2 text-2xl font-semibold text-foreground">How your capital is positioned</h2>
+              <p className="mt-2 text-sm text-muted-foreground">
+                These buckets translate assets into retirement roles: dependable income, growth, liquidity, and property exposure.
+              </p>
               <div className="mt-6 space-y-4">
                 {allocation.map((item) => (
                   <div key={item.bucket} className="space-y-2">
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between gap-4">
                       <div className="flex items-center gap-3">
                         <div className="h-3 w-3 rounded-full bg-primary" style={{ backgroundColor: item.bucket === "guaranteed" ? "#091540" : item.bucket === "growth" ? "#efcb68" : item.bucket === "safety" ? "#aeb7b3" : "#895b1e" }} />
-                        <span className="text-sm text-muted-foreground">{item.meta.label}</span>
+                        <div>
+                          <span className="text-sm font-medium text-foreground">{item.meta.label}</span>
+                          <p className="text-xs text-muted-foreground">{item.meta.description}</p>
+                        </div>
                       </div>
                       <div className="text-right">
                         <p className="text-sm font-semibold text-foreground">{formatCurrency(Math.round(item.total))}{item.bucket === "guaranteed" ? "/yr" : ""}</p>
@@ -304,12 +343,12 @@ export default function WealthPage() {
             return (
               <motion.div key={bucket} variants={stagger.item}>
                 <div className="mb-4 flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-secondary">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-secondary">
                     <Icon className={cn("h-4 w-4", meta.color)} />
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center justify-between">
-                      <h2 className="text-lg font-semibold text-foreground">{meta.label}</h2>
+                      <h2 className="text-xl font-semibold text-foreground">{meta.label}</h2>
                       <span className="text-base font-semibold text-foreground tabular-nums">
                         {bucket === "guaranteed"
                           ? `${formatCurrency(bucketTotal)}/yr`
@@ -321,10 +360,10 @@ export default function WealthPage() {
                 </div>
 
                 {items.length > 0 && (
-                  <div className="card-surface divide-y divide-border overflow-hidden">
+                  <div className="card-surface overflow-hidden">
                     {items
                       .sort((a, b) => Math.abs(getDisplayValue(b)) - Math.abs(getDisplayValue(a)))
-                      .map((account) => {
+                      .map((account, index) => {
                         const stale = staleness(account.last_updated);
                         const income = estimateIncome(account, dbProjections[account.id]?.projected);
                         const displayVal = getDisplayValue(account);
@@ -334,7 +373,10 @@ export default function WealthPage() {
                         return (
                           <div
                             key={account.id}
-                            className="flex items-center justify-between px-6 py-4 hover:bg-secondary/50 transition-colors cursor-pointer"
+                            className={cn(
+                              "flex items-center justify-between px-6 py-4 transition-colors cursor-pointer hover:bg-secondary/50",
+                              index !== items.length - 1 && "border-b border-border"
+                            )}
                             onClick={() => handleAccountClick(account)}
                           >
                             <div className="flex-1 min-w-0">
