@@ -69,7 +69,7 @@ function buildOtherIncomeSources(scenario: {
 export default function HomePage() {
   const { data: accounts = [] } = useAccounts();
   const { data: profiles = [] } = useHouseholdProfiles();
-  const { data: taxSummaries = [] } = useTaxSummaries(TAX_YEAR);
+  const { data: taxSummaries = [] } = useTaxSummaries(CURRENT_TAX_YEAR);
   const { data: dbPensions = [] } = useDBPensions();
 
   const adults = profiles.filter((p) => p.role === "adult");

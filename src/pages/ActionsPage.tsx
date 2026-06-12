@@ -37,6 +37,18 @@ interface MemberANI { name: string; ani: number; pensionContributions: number }
 import { CURRENT_TAX_YEAR } from "@/lib/constants";
 import { listStagger as stagger } from "@/lib/animation";
 
+const severityStyle: Record<Severity, { badge: string }> = {
+  high: { badge: "status-danger" },
+  medium: { badge: "status-warning" },
+  low: { badge: "bg-secondary text-muted-foreground" },
+};
+
+const effortStyle: Record<Effort, { cls: string; label: string }> = {
+  easy: { cls: "bg-success/15 text-success", label: "Easy" },
+  moderate: { cls: "bg-warning/20 text-warning", label: "Moderate" },
+  involved: { cls: "bg-secondary text-muted-foreground", label: "Involved" },
+};
+
 function buildActions(accounts: Account[], memberANIs: MemberANI[], isaUsed: number, isaLimit: number): ActionItem[] {
   const actions: ActionItem[] = [];
 
