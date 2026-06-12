@@ -62,10 +62,7 @@ function estimateIncome(account: Account, dbPensionIncome?: number): number | nu
   return null;
 }
 
-const stagger = {
-  container: { transition: { staggerChildren: 0.06 } },
-  item: { initial: { opacity: 0, y: 10 }, animate: { opacity: 1, y: 0, transition: { duration: 0.35 } } },
-};
+import { stagger } from "@/lib/animation";
 
 export default function WealthPage() {
   const { data: accounts = [], isLoading } = useAccounts();

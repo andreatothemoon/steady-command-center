@@ -34,24 +34,8 @@ interface ActionItem {
 
 interface MemberANI { name: string; ani: number; pensionContributions: number }
 
-const TAX_YEAR = "2025/26";
-
-const severityStyle: Record<Severity, { badge: string }> = {
-  high:   { badge: "bg-destructive/15 text-destructive" },
-  medium: { badge: "bg-warning/15 text-warning" },
-  low:    { badge: "bg-secondary text-muted-foreground" },
-};
-
-const effortStyle: Record<Effort, { label: string; cls: string }> = {
-  easy:     { label: "Quick win", cls: "bg-success/10 text-success" },
-  moderate: { label: "Moderate", cls: "bg-chart-3/10 text-chart-3" },
-  involved: { label: "Involved", cls: "bg-chart-4/10 text-chart-4" },
-};
-
-const stagger = {
-  container: { transition: { staggerChildren: 0.06, delayChildren: 0.1 } },
-  item: { initial: { opacity: 0, x: -8 }, animate: { opacity: 1, x: 0, transition: { duration: 0.3 } } },
-};
+import { CURRENT_TAX_YEAR } from "@/lib/constants";
+import { listStagger as stagger } from "@/lib/animation";
 
 function buildActions(accounts: Account[], memberANIs: MemberANI[], isaUsed: number, isaLimit: number): ActionItem[] {
   const actions: ActionItem[] = [];

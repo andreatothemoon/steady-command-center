@@ -30,15 +30,8 @@ import { toast } from "sonner";
 import { CurrencyField } from "@/components/tax/CurrencyField";
 import { ANIBreakdown } from "@/components/tax/ANIBreakdown";
 
-const TAX_YEAR = "2025/26";
-
-const stagger = {
-  container: { transition: { staggerChildren: 0.06 } },
-  item: {
-    initial: { opacity: 0, y: 10 },
-    animate: { opacity: 1, y: 0, transition: { duration: 0.35 } },
-  },
-};
+import { CURRENT_TAX_YEAR } from "@/lib/constants";
+import { stagger } from "@/lib/animation";
 
 type ViewMode = "household" | string;
 
