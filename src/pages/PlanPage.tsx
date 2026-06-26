@@ -17,8 +17,10 @@ import {
   useSetSelectedRetirementScenario,
   type RetirementScenario,
 } from "@/hooks/useRetirementScenarios";
-import { Check, ChevronRight, TrendingDown, TrendingUp } from "lucide-react";
-import { cn } from "@/lib/utils";
+import ScenarioOverviewList from "@/components/plan/ScenarioOverviewList";
+import BestDownsideAssumptions from "@/components/plan/BestDownsideAssumptions";
+import FundingMixCard from "@/components/plan/FundingMixCard";
+
 import {
   computeRetirement,
   generateActions,
