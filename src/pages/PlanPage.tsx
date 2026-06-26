@@ -17,8 +17,10 @@ import {
   useSetSelectedRetirementScenario,
   type RetirementScenario,
 } from "@/hooks/useRetirementScenarios";
-import { Check, ChevronRight, TrendingDown, TrendingUp } from "lucide-react";
-import { cn } from "@/lib/utils";
+import ScenarioOverviewList from "@/components/plan/ScenarioOverviewList";
+import BestDownsideAssumptions from "@/components/plan/BestDownsideAssumptions";
+import FundingMixCard from "@/components/plan/FundingMixCard";
+
 import {
   computeRetirement,
   generateActions,
@@ -438,83 +440,14 @@ export default function PlanPage() {
         />
       </motion.div>
 
-      <motion.div variants={stagger.item} className="space-y-5">
-        <div>
-          <h2 className="text-2xl font-semibold text-foreground">Scenarios</h2>
-          <p className="mt-2 text-sm text-muted-foreground">Choose a scenario to edit, or compare them side by side.</p>
-        </div>
-        <div className="space-y-4">
-          {allProjections.map(({ scenario, values, projection: scenarioProjection }) => {
-            const isActive = scenario.id === activeId;
-            return (
-              <button
-                key={scenario.id}
-                onClick={() => {
-                  handleSelectScenario(scenario.id);
-                  if (compareMode) setCompareMode(false);
-                }}
-                className={cn(
-                  "card-surface group w-full p-8 text-left transition-all hover:shadow-sm",
-                  isActive && "border-primary border-2"
-                )}
-              >
-                <div className="flex items-start justify-between gap-6">
-                  <div className="flex-1">
-                    <div className="mb-4 flex flex-wrap items-center gap-3">
-                      <h3 className="text-xl font-semibold text-foreground">{scenario.name}</h3>
-                      {isActive && (
-                        <span className="rounded-full bg-primary px-3 py-1 text-xs font-semibold text-primary-foreground">
-                          Active
-                        </span>
-                      )}
-                    </div>
+      <ScenarioOverviewList
+        allProjections={allProjections}
+        activeId={activeId}
+        compareMode={compareMode}
+        onSelect={handleSelectScenario}
+        onExitCompare={() => setCompareMode(false)}
+      />
 
-                    <div className="grid grid-cols-2 gap-6 md:grid-cols-5">
-                      <div>
-                        <p className="text-sm text-muted-foreground">Retirement Age</p>
-                        <p className="mt-1 text-2xl font-semibold tracking-tight text-foreground">{values.retireAge}</p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-muted-foreground">Monthly Income</p>
-                        <p className="mt-1 text-2xl font-semibold tracking-tight text-foreground">
-                          {formatCurrency(Math.round(scenarioProjection.totalIncome / 12))}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-muted-foreground">Confidence</p>
-                        <p className="mt-1 text-lg font-semibold text-foreground">
-                          {scenarioProjection.readinessPct >= 100 ? "Very High" : scenarioProjection.readinessPct >= 90 ? "High" : scenarioProjection.readinessPct >= 75 ? "Medium" : "Low"}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-muted-foreground">Contributions</p>
-                        <p className="mt-1 text-lg font-semibold text-foreground">
-                          {formatCurrency(values.monthlyContrib + values.employerContrib)}/mo
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-muted-foreground">Outcome</p>
-                        <p className="mt-1 text-lg font-semibold text-foreground">{scenarioProjection.readinessPct}% of target</p>
-                      </div>
-                    </div>
-
-                    {isActive && (
-                      <div className="mt-4 flex items-center gap-2 text-sm text-success">
-                        <Check className="h-4 w-4" />
-                        <span>Currently using this scenario</span>
-                      </div>
-                    )}
-                  </div>
-
-                  <span className="rounded-xl p-2 text-primary opacity-0 transition-opacity group-hover:opacity-100">
-                    <ChevronRight className="h-5 w-5" />
-                  </span>
-                </div>
-              </button>
-            );
-          })}
-        </div>
-      </motion.div>
 
       {compareMode && allProjections.length >= 2 && (
         <motion.div variants={stagger.item}>
@@ -533,125 +466,18 @@ export default function PlanPage() {
 
       {!compareMode && projection && activeValues && (
         <>
-          <motion.div variants={stagger.item} className="grid grid-cols-1 gap-6 xl:grid-cols-3">
-            <div className="card-surface p-8">
-              <h2 className="text-xl font-semibold text-foreground">Best Case Scenario</h2>
-              <div className="mt-6 space-y-5">
-                <div>
-                  <p className="text-sm text-muted-foreground">Retirement Age</p>
-                  <p className="mt-1 text-3xl font-semibold tracking-tight text-foreground">
-                    {bestScenario ? bestScenario.values.retireAge : "—"}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Monthly Income</p>
-                  <p className="mt-1 text-3xl font-semibold tracking-tight text-success">
-                    {bestScenario ? formatCurrency(Math.round(bestScenario.projection.totalIncome / 12)) : "—"}
-                  </p>
-                </div>
-                <div>
-                  <p className="mb-2 text-sm text-muted-foreground">What drives it</p>
-                  <ul className="space-y-2 text-sm text-muted-foreground">
-                    <li className="flex items-center gap-2">
-                      <TrendingUp className="h-4 w-4 text-success" />
-                      Higher readiness and stronger income cover
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <TrendingUp className="h-4 w-4 text-success" />
-                      Better balance between retirement age and contributions
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <TrendingUp className="h-4 w-4 text-success" />
-                      More resilient against late-stage shortfall
-                    </li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-
-            <div className="card-surface p-8">
-              <h2 className="text-xl font-semibold text-foreground">Downside Case</h2>
-              <div className="mt-6 space-y-5">
-                <div>
-                  <p className="text-sm text-muted-foreground">Retirement Age</p>
-                  <p className="mt-1 text-3xl font-semibold tracking-tight text-foreground">
-                    {downsideScenario ? downsideScenario.values.retireAge : "—"}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Monthly Income</p>
-                  <p className="mt-1 text-3xl font-semibold tracking-tight text-destructive">
-                    {downsideScenario ? formatCurrency(Math.round(downsideScenario.projection.totalIncome / 12)) : "—"}
-                  </p>
-                </div>
-                <div>
-                  <p className="mb-2 text-sm text-muted-foreground">What weakens it</p>
-                  <ul className="space-y-2 text-sm text-muted-foreground">
-                    <li className="flex items-center gap-2">
-                      <TrendingDown className="h-4 w-4 text-destructive" />
-                      Lower readiness against your target income
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <TrendingDown className="h-4 w-4 text-destructive" />
-                      Less room for bridge years before State Pension
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <TrendingDown className="h-4 w-4 text-destructive" />
-                      Greater dependency on drawdown from DC assets
-                    </li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-
-            <div className="card-surface p-8">
-              <h2 className="text-xl font-semibold text-foreground">Planning Assumptions</h2>
-              <div className="mt-4 space-y-4">
-                {planningAssumptions.map((assumption) => (
-                  <div key={assumption.label} className="flex items-center justify-between border-b border-border/50 py-3 last:border-0">
-                    <div>
-                      <p className="font-medium text-foreground">{assumption.label}</p>
-                      {!assumption.adjustable && (
-                        <p className="mt-1 text-xs text-muted-foreground">Fixed by policy or product rules</p>
-                      )}
-                    </div>
-                    <p className="text-lg font-semibold text-foreground">{assumption.value}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </motion.div>
+          <BestDownsideAssumptions
+            bestScenario={bestScenario}
+            downsideScenario={downsideScenario}
+            planningAssumptions={planningAssumptions}
+          />
 
           <motion.div variants={stagger.item}>
             <HeroOutcome projection={projection} retireAge={activeValues.retireAge} targetIncome={activeValues.targetIncome} />
           </motion.div>
 
-          <motion.div variants={stagger.item} className="card-surface p-8">
-            <h2 className="text-2xl font-semibold text-foreground">Retirement Funding Mix</h2>
-            <div className="mt-6 space-y-5">
-              <div>
-                <p className="text-sm text-muted-foreground">Guaranteed income</p>
-                <p className="mt-1 text-3xl font-semibold tracking-tight text-foreground">
-                  {formatCurrency(Math.round((fundingMix?.stableIncome ?? 0) / 12))}/mo
-                </p>
-                <p className="mt-1 text-sm text-muted-foreground">Scenario-adjusted DB pensions plus State Pension when available.</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Flexible drawdown capacity</p>
-                <p className="mt-1 text-3xl font-semibold tracking-tight text-foreground">
-                  {formatCurrency(Math.round((fundingMix?.flexibleIncome ?? 0) / 12))}/mo
-                </p>
-                <p className="mt-1 text-sm text-muted-foreground">From DC pensions and ISA drawdown in the selected scenario.</p>
-              </div>
-              <div className="border-t border-border/60 pt-5">
-                <p className="text-sm text-muted-foreground">What this means</p>
-                <p className="mt-2 text-base text-foreground">
-                  Your selected scenario supports an estimated {formatCurrency(Math.round((fundingMix?.totalIncome ?? 0) / 12))}/month,
-                  with {formatCurrency(Math.round((fundingMix?.stableIncome ?? 0) / 12))}/month coming from more stable sources.
-                </p>
-              </div>
-            </div>
-          </motion.div>
+          <FundingMixCard fundingMix={fundingMix} />
+
 
           <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
             <div className="xl:col-span-2 space-y-6">
