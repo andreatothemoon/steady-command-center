@@ -18,15 +18,16 @@ const item = {
   animate: { opacity: 1, y: 0, transition: { duration: 0.5 } },
 };
 
+// Wise-inspired minimal palette — single accent dark green with muted supporting tones.
 const chartColors = {
-  dc: "#091540",
-  db: "#efcb68",
-  state: "#e1efe6",
-  isa: "#aeb7b3",
-  other: "#895b1e",
-  taxFreeCash: "#895b1e",
-  grid: "rgba(9, 21, 64, 0.07)",
-  axis: "rgba(0, 4, 17, 0.42)",
+  dc: "#163300",
+  db: "#9fe870",
+  state: "#c9e8b4",
+  isa: "#b8c4b0",
+  other: "#5b7a3a",
+  taxFreeCash: "#163300",
+  grid: "rgba(15, 23, 42, 0.10)",
+  axis: "rgba(15, 23, 42, 0.42)",
 };
 
 interface Props {
