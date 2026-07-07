@@ -230,5 +230,6 @@ export default function HomePage() {
           showHeader={false}
         />
       </motion.section>
-
+    </motion.div>
+  );
 }
