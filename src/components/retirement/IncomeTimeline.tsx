@@ -267,8 +267,8 @@ export default function IncomeTimeline({ timeline, retireAge, targetIncome }: Pr
             stackId="income"
             stroke={chartColors.dc}
             fill="url(#incomeDc)"
-            strokeWidth={0}
-            activeDot={{ r: 6, fill: chartColors.dc, stroke: "#ffffff", strokeWidth: 3 }}
+            strokeWidth={2}
+            activeDot={{ r: 5, fill: chartColors.dc, stroke: "#ffffff", strokeWidth: 3 }}
           />
         </AreaChart>
       </ResponsiveContainer>
