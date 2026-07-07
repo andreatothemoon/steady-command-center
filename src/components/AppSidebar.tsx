@@ -138,26 +138,6 @@ function SidebarContent({ collapsed, toggle, onNavigate }: { collapsed: boolean;
           </button>
         )}
 
-        <NavLink
-          to="/profile"
-          onClick={onNavigate}
-          className={cn(
-            "mt-3 block border-t border-sidebar-border pt-4 transition-colors",
-            collapsed ? "flex justify-center" : ""
-          )}
-        >
-          <div className={cn("flex items-center rounded-2xl", collapsed ? "" : "gap-3 bg-secondary/45 px-3 py-3")}>
-            <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border border-sidebar-border bg-white">
-              <span className="text-[11px] font-semibold text-sidebar-accent-foreground">{initials.slice(0, 2)}</span>
-            </div>
-            {!collapsed && (
-              <div className="flex-1 min-w-0">
-                <p className="text-[13px] font-medium text-sidebar-accent-foreground truncate">{householdLabel}</p>
-                <p className="text-[11px] text-sidebar-foreground truncate">Household</p>
-              </div>
-            )}
-          </div>
-        </NavLink>
       </div>
     </>
   );
