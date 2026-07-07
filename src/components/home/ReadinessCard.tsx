@@ -32,7 +32,7 @@ export default function ReadinessCard({ projection, retireAge }: Props) {
       </div>
 
       <h3 className="mb-3 text-lg font-semibold tracking-tight text-foreground">Retirement Readiness</h3>
-      <p className="mb-2 text-[2.4rem] font-semibold leading-none tracking-tight text-foreground">Age {retireAge}</p>
+      <p className="mb-2 text-3xl font-semibold leading-none tracking-tight text-foreground">Age {retireAge}</p>
       <p className="text-sm text-muted-foreground">Your selected retirement age in the active scenario.</p>
     </div>
   );

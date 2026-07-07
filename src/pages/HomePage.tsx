@@ -20,7 +20,6 @@ import ReadinessCard from "@/components/home/ReadinessCard";
 import GuaranteedIncomeCard from "@/components/home/GuaranteedIncomeCard";
 import BridgeGapCard from "@/components/home/BridgeGapCard";
 import TopActionsCard from "@/components/home/TopActionsCard";
-import WealthSummaryStrip from "@/components/home/WealthSummaryStrip";
 import AccountsStackCard from "@/components/home/AccountsStackCard";
 import DoMoreCard from "@/components/home/DoMoreCard";
 import QuickActionsRow from "@/components/home/QuickActionsRow";
@@ -230,11 +229,6 @@ export default function HomePage() {
           isaLimit={isaLimit}
           showHeader={false}
         />
-      </motion.section>
-
-      {/* Wealth breakdown */}
-      <motion.section variants={stagger.item}>
-        <WealthSummaryStrip accounts={accounts} />
       </motion.section>
     </motion.div>
   );
