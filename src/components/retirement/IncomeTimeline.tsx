@@ -18,15 +18,16 @@ const item = {
   animate: { opacity: 1, y: 0, transition: { duration: 0.5 } },
 };
 
+// Wise-inspired minimal palette — single accent dark green with muted supporting tones.
 const chartColors = {
-  dc: "#091540",
-  db: "#efcb68",
-  state: "#e1efe6",
-  isa: "#aeb7b3",
-  other: "#895b1e",
-  taxFreeCash: "#895b1e",
-  grid: "rgba(9, 21, 64, 0.07)",
-  axis: "rgba(0, 4, 17, 0.42)",
+  dc: "#163300",
+  db: "#9fe870",
+  state: "#c9e8b4",
+  isa: "#b8c4b0",
+  other: "#5b7a3a",
+  taxFreeCash: "#163300",
+  grid: "rgba(15, 23, 42, 0.10)",
+  axis: "rgba(15, 23, 42, 0.42)",
 };
 
 interface Props {
@@ -90,9 +91,9 @@ export default function IncomeTimeline({ timeline, retireAge, targetIncome }: Pr
         </div>
       </div>
 
-      <div className="rounded-[30px] border border-border/50 bg-[linear-gradient(180deg,rgba(255,255,255,0.92),rgba(255,255,255,0.72))] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.4)]">
-      <ResponsiveContainer width="100%" height={420}>
-        <AreaChart data={chartData} margin={{ top: 18, right: 24, left: 8, bottom: 12 }}>
+      <div className="rounded-[28px] bg-[#f4f2ed] p-6">
+      <ResponsiveContainer width="100%" height={360}>
+        <AreaChart data={chartData} margin={{ top: 24, right: 56, left: 8, bottom: 8 }}>
           <defs>
             <linearGradient id="incomeDc" x1="0" y1="0" x2="0" y2="1">
               <stop offset="5%" stopColor={chartColors.dc} stopOpacity={0.96} />
@@ -120,21 +121,26 @@ export default function IncomeTimeline({ timeline, retireAge, targetIncome }: Pr
               <stop offset="95%" stopColor={chartColors.other} stopOpacity={0.38} />
             </linearGradient>
           </defs>
-          <CartesianGrid strokeDasharray="3 3" stroke={chartColors.grid} vertical={false} />
+          <CartesianGrid strokeDasharray="4 6" stroke={chartColors.grid} vertical={false} />
           <XAxis
             dataKey="age"
             stroke={chartColors.axis}
-            tick={{ fill: chartColors.axis, fontSize: 12 }}
-            axisLine={{ stroke: "rgba(9, 21, 64, 0.12)" }}
+            tick={{ fill: chartColors.axis, fontSize: 11 }}
+            axisLine={false}
             tickLine={false}
+            ticks={chartData.length > 0 ? [chartData[0].age, chartData[chartData.length - 1].age] : undefined}
+            tickFormatter={(value, index) => (index === 0 ? `Age ${value}` : "Today")}
+            interval="preserveStartEnd"
           />
           <YAxis
             domain={[0, yMax]}
+            orientation="right"
             stroke={chartColors.axis}
-            tick={{ fill: chartColors.axis, fontSize: 12 }}
-            axisLine={{ stroke: "rgba(9, 21, 64, 0.12)" }}
+            tick={{ fill: chartColors.axis, fontSize: 11 }}
+            axisLine={false}
             tickLine={false}
-            width={72}
+            width={52}
+            tickCount={3}
             tickFormatter={(value) => `£${value}`}
           />
           <Tooltip
@@ -261,8 +267,8 @@ export default function IncomeTimeline({ timeline, retireAge, targetIncome }: Pr
             stackId="income"
             stroke={chartColors.dc}
             fill="url(#incomeDc)"
-            strokeWidth={0}
-            activeDot={{ r: 6, fill: chartColors.dc, stroke: "#ffffff", strokeWidth: 3 }}
+            strokeWidth={2}
+            activeDot={{ r: 5, fill: chartColors.dc, stroke: "#ffffff", strokeWidth: 3 }}
           />
         </AreaChart>
       </ResponsiveContainer>
