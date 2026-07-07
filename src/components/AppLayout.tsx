@@ -2,6 +2,7 @@ import { ReactNode } from "react";
 import { useSidebarCollapse } from "@/contexts/SidebarContext";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
+import AppTopBar from "@/components/AppTopBar";
 
 interface AppLayoutProps {
   children: ReactNode;
@@ -13,11 +14,14 @@ export default function AppLayout({ children }: AppLayoutProps) {
 
   return (
     <div className="min-h-screen bg-background">
-      <main className={cn(
-        "transition-all duration-300",
-        isMobile ? "pl-0 pt-20" : collapsed ? "pl-20" : "pl-56"
-      )}>
-        <div className="mx-auto max-w-[1360px] px-6 py-8 sm:px-8 sm:py-10 lg:px-12 xl:px-14">
+      <main
+        className={cn(
+          "transition-all duration-300",
+          isMobile ? "pl-0 pt-20" : collapsed ? "pl-20" : "pl-56",
+        )}
+      >
+        <div className="mx-auto max-w-[1360px] px-6 py-6 sm:px-8 sm:py-8 lg:px-12 xl:px-14">
+          <AppTopBar />
           {children}
         </div>
       </main>
