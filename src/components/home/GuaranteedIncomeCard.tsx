@@ -20,7 +20,7 @@ export default function GuaranteedIncomeCard({ projection }: Props) {
       </div>
 
       <h3 className="mb-3 text-lg font-semibold tracking-tight text-foreground">Guaranteed Income</h3>
-      <p className="mb-2 text-[2.4rem] font-semibold leading-none tracking-tight text-foreground">
+      <p className="mb-2 text-3xl font-semibold leading-none tracking-tight text-foreground">
         {projection ? `${formatCurrency(guaranteedMonthly)}/mo` : "—"}
       </p>
       <p className="text-sm text-muted-foreground">
