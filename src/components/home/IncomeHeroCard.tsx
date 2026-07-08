@@ -52,7 +52,7 @@ export default function IncomeHeroCard({ monthlyIncome, retireAge, projection, t
 
   return (
     <div className="hero-surface overflow-hidden p-8 lg:p-10">
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-[radial-gradient(circle_at_top_left,hsl(var(--accent)/0.16),transparent_58%)]" />
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-accent/[0.06]" />
 
       <div className="relative flex flex-col gap-8 xl:grid xl:grid-cols-[minmax(0,1.65fr)_24rem] xl:items-start">
         <div className="max-w-4xl">
