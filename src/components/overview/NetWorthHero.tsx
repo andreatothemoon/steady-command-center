@@ -65,16 +65,8 @@ export default function NetWorthHero({ accounts, adultsCount, childrenCount }: P
 
   return (
     <div className="hero-surface p-7 lg:p-10 relative">
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          background: `
-            radial-gradient(circle at 18% 18%, hsl(141 30% 91% / 0.95), transparent 26%),
-            radial-gradient(circle at 88% 18%, hsl(44 81% 67% / 0.2), transparent 24%)
-          `,
-        }}
-      />
       <div className="relative z-10">
+
         <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-3xl">
             <div className="flex items-center gap-2 mb-3">
