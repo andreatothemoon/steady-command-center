@@ -171,8 +171,8 @@ export default function ActionCenter({ accounts, memberANIs = [], isaUsed = 0, i
       highCount > 0 ? "border-destructive/20" : "border-border"
     )} style={{
       background: highCount > 0
-        ? "linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(44 81% 67% / 0.14) 100%)"
-        : "linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(75 13% 94%) 100%)",
+        ? "hsl(44 81% 67% / 0.10)"
+        : "hsl(0 0% 100%)",
       boxShadow: "0 18px 40px -32px hsl(226 100% 3% / 0.22)"
     }}>
       {/* Header */}
