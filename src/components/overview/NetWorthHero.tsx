@@ -156,7 +156,7 @@ export default function NetWorthHero({ accounts, adultsCount, childrenCount }: P
                   );
                 }}
               />
-              <Area type="monotone" dataKey="value" stroke="hsl(227 75% 14%)" strokeWidth={2.25} fill="url(#heroGrad)" animationDuration={1500} animationEasing="ease-out" />
+              <Area type="monotone" dataKey="value" stroke="hsl(227 75% 14%)" strokeWidth={2.25} fill="hsl(44 81% 67% / 0.14)" animationDuration={1500} animationEasing="ease-out" />
               {lastPoint && (
                 <ReferenceDot x={lastPoint.month} y={lastPoint.value} r={4} fill="hsl(44 81% 67%)" stroke="white" strokeWidth={2} filter="url(#glowDot)" />
               )}
