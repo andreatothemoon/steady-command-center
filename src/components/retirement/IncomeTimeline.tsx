@@ -92,7 +92,7 @@ export default function IncomeTimeline({ timeline, retireAge, targetIncome }: Pr
         </div>
       </div>
 
-      <div className="rounded-[28px] bg-[#f4f2ed] p-6">
+      <div className="rounded-[28px] bg-background p-6">
       <ResponsiveContainer width="100%" height={360}>
         <AreaChart data={chartData} margin={{ top: 24, right: 56, left: 8, bottom: 8 }}>
           <defs>
