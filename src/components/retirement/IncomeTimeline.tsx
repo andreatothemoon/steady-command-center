@@ -233,7 +233,7 @@ export default function IncomeTimeline({ timeline, retireAge, targetIncome }: Pr
             stroke={chartColors.other}
             fill="url(#incomeOther)"
             strokeWidth={0}
-            activeDot={{ r: 6, fill: chartColors.other, stroke: "#ffffff", strokeWidth: 3 }}
+            activeDot={{ r: 6, fill: chartColors.other, stroke: "hsl(var(--card))", strokeWidth: 3 }}
           />
           <Area
             type="monotone"
@@ -242,7 +242,7 @@ export default function IncomeTimeline({ timeline, retireAge, targetIncome }: Pr
             stroke={chartColors.isa}
             fill="url(#incomeIsa)"
             strokeWidth={0}
-            activeDot={{ r: 6, fill: chartColors.isa, stroke: "#ffffff", strokeWidth: 3 }}
+            activeDot={{ r: 6, fill: chartColors.isa, stroke: "hsl(var(--card))", strokeWidth: 3 }}
           />
           <Area
             type="monotone"
@@ -251,7 +251,7 @@ export default function IncomeTimeline({ timeline, retireAge, targetIncome }: Pr
             stroke={chartColors.state}
             fill="url(#incomeState)"
             strokeWidth={0}
-            activeDot={{ r: 6, fill: chartColors.state, stroke: "#ffffff", strokeWidth: 3 }}
+            activeDot={{ r: 6, fill: chartColors.state, stroke: "hsl(var(--card))", strokeWidth: 3 }}
           />
           <Area
             type="monotone"
@@ -260,7 +260,7 @@ export default function IncomeTimeline({ timeline, retireAge, targetIncome }: Pr
             stroke={chartColors.db}
             fill="url(#incomeDb)"
             strokeWidth={0}
-            activeDot={{ r: 6, fill: chartColors.db, stroke: "#ffffff", strokeWidth: 3 }}
+            activeDot={{ r: 6, fill: chartColors.db, stroke: "hsl(var(--card))", strokeWidth: 3 }}
           />
           <Area
             type="monotone"
@@ -269,7 +269,7 @@ export default function IncomeTimeline({ timeline, retireAge, targetIncome }: Pr
             stroke={chartColors.dc}
             fill="url(#incomeDc)"
             strokeWidth={2}
-            activeDot={{ r: 5, fill: chartColors.dc, stroke: "#ffffff", strokeWidth: 3 }}
+            activeDot={{ r: 5, fill: chartColors.dc, stroke: "hsl(var(--card))", strokeWidth: 3 }}
           />
         </AreaChart>
       </ResponsiveContainer>
