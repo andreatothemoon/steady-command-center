@@ -173,7 +173,7 @@
     left: 0;
     right: 0;
     height: 100%;
-    background: linear-gradient(180deg, hsl(44 81% 67% / 0.1) 0%, hsl(141 30% 91% / 0.08) 100%);
+    background: hsl(44 81% 67% / 0.08);
     opacity: 0.5;
     pointer-events: none;
   }
