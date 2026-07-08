@@ -95,33 +95,8 @@ export default function IncomeTimeline({ timeline, retireAge, targetIncome }: Pr
       <div className="rounded-[28px] bg-background p-6">
       <ResponsiveContainer width="100%" height={360}>
         <AreaChart data={chartData} margin={{ top: 24, right: 56, left: 8, bottom: 8 }}>
-          <defs>
-            <linearGradient id="incomeDc" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor={chartColors.dc} stopOpacity={0.96} />
-              <stop offset="55%" stopColor={chartColors.dc} stopOpacity={0.74} />
-              <stop offset="95%" stopColor={chartColors.dc} stopOpacity={0.46} />
-            </linearGradient>
-            <linearGradient id="incomeDb" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor={chartColors.db} stopOpacity={0.94} />
-              <stop offset="55%" stopColor={chartColors.db} stopOpacity={0.74} />
-              <stop offset="95%" stopColor={chartColors.db} stopOpacity={0.44} />
-            </linearGradient>
-            <linearGradient id="incomeState" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor={chartColors.state} stopOpacity={0.92} />
-              <stop offset="60%" stopColor={chartColors.state} stopOpacity={0.68} />
-              <stop offset="95%" stopColor={chartColors.state} stopOpacity={0.4} />
-            </linearGradient>
-            <linearGradient id="incomeIsa" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor={chartColors.isa} stopOpacity={0.86} />
-              <stop offset="60%" stopColor={chartColors.isa} stopOpacity={0.66} />
-              <stop offset="95%" stopColor={chartColors.isa} stopOpacity={0.38} />
-            </linearGradient>
-            <linearGradient id="incomeOther" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor={chartColors.other} stopOpacity={0.9} />
-              <stop offset="60%" stopColor={chartColors.other} stopOpacity={0.66} />
-              <stop offset="95%" stopColor={chartColors.other} stopOpacity={0.38} />
-            </linearGradient>
-          </defs>
+          <defs />
+
           <CartesianGrid strokeDasharray="4 6" stroke={chartColors.grid} vertical={false} />
           <XAxis
             dataKey="age"
