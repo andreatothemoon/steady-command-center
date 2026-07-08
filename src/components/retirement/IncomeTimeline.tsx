@@ -18,16 +18,17 @@ const item = {
   animate: { opacity: 1, y: 0, transition: { duration: 0.5 } },
 };
 
-// Wise-inspired minimal palette — single accent dark green with muted supporting tones.
+// Palette aligned to project design tokens (index.css):
+// primary navy #091540, accent gold #efcb68, secondary mint, muted olive, success bronze.
 const chartColors = {
-  dc: "#163300",
-  db: "#9fe870",
-  state: "#c9e8b4",
-  isa: "#b8c4b0",
-  other: "#5b7a3a",
-  taxFreeCash: "#163300",
-  grid: "rgba(15, 23, 42, 0.10)",
-  axis: "rgba(15, 23, 42, 0.42)",
+  dc: "hsl(227 75% 14%)",        // primary navy — headline series
+  db: "hsl(44 81% 67%)",         // accent gold
+  state: "hsl(141 30% 82%)",     // secondary mint (slightly deeper for legibility)
+  isa: "hsl(153 6% 70%)",        // muted olive/grey
+  other: "hsl(34 64% 33%)",      // success/bronze
+  taxFreeCash: "hsl(227 75% 14%)",
+  grid: "hsl(227 75% 14% / 0.10)",
+  axis: "hsl(227 75% 14% / 0.45)",
 };
 
 interface Props {
@@ -91,7 +92,7 @@ export default function IncomeTimeline({ timeline, retireAge, targetIncome }: Pr
         </div>
       </div>
 
-      <div className="rounded-[28px] bg-[#f4f2ed] p-6">
+      <div className="rounded-[28px] bg-background p-6">
       <ResponsiveContainer width="100%" height={360}>
         <AreaChart data={chartData} margin={{ top: 24, right: 56, left: 8, bottom: 8 }}>
           <defs>
@@ -157,7 +158,7 @@ export default function IncomeTimeline({ timeline, retireAge, targetIncome }: Pr
               const taxFreeCash = data.taxFreeCash ?? 0;
               const total = dc + isa + db + sp + other;
               return (
-                <div className="min-w-[290px] rounded-[28px] border border-[rgba(0,0,0,0.08)] bg-white px-6 py-5 shadow-[0_18px_36px_-24px_rgba(15,23,42,0.32)]">
+                <div className="min-w-[290px] rounded-[28px] border border-border bg-card px-6 py-5 shadow-[0_18px_36px_-24px_hsl(var(--primary)/0.32)]">
                   <p className="mb-5 text-[2rem] font-semibold tracking-[-0.05em] text-foreground">Age {data.age}</p>
                   <div className="space-y-3">
                     <div className="flex justify-between gap-6">
@@ -186,7 +187,7 @@ export default function IncomeTimeline({ timeline, retireAge, targetIncome }: Pr
                         <span className="text-xl font-semibold tabular-nums" style={{ color: chartColors.taxFreeCash }}>{formatCurrency(taxFreeCash)}</span>
                       </div>
                     )}
-                    <div className="mt-4 flex justify-between gap-6 border-t border-[rgba(0,0,0,0.06)] pt-4">
+                    <div className="mt-4 flex justify-between gap-6 border-t border-border pt-4">
                       <span className="text-xl font-semibold text-foreground">Total</span>
                       <span className="text-xl font-semibold tabular-nums text-foreground">{formatCurrency(total)}/mo</span>
                     </div>
@@ -198,13 +199,13 @@ export default function IncomeTimeline({ timeline, retireAge, targetIncome }: Pr
           <ReferenceLine x={retireAge} stroke={chartColors.dc} strokeDasharray="3 3" strokeWidth={2.25} />
           <ReferenceLine
             y={targetMonthly}
-            stroke="rgba(9, 21, 64, 0.32)"
+            stroke="hsl(227 75% 14% / 0.32)"
             strokeDasharray="4 4"
             strokeWidth={1.5}
             label={{
               value: `Target ${formatCurrency(targetMonthly)}/mo`,
               position: "insideTopLeft",
-              fill: "rgba(9, 21, 64, 0.58)",
+              fill: "hsl(227 75% 14% / 0.65)",
               fontSize: 12,
               fontWeight: 600,
             }}
@@ -232,7 +233,7 @@ export default function IncomeTimeline({ timeline, retireAge, targetIncome }: Pr
             stroke={chartColors.other}
             fill="url(#incomeOther)"
             strokeWidth={0}
-            activeDot={{ r: 6, fill: chartColors.other, stroke: "#ffffff", strokeWidth: 3 }}
+            activeDot={{ r: 6, fill: chartColors.other, stroke: "hsl(var(--card))", strokeWidth: 3 }}
           />
           <Area
             type="monotone"
@@ -241,7 +242,7 @@ export default function IncomeTimeline({ timeline, retireAge, targetIncome }: Pr
             stroke={chartColors.isa}
             fill="url(#incomeIsa)"
             strokeWidth={0}
-            activeDot={{ r: 6, fill: chartColors.isa, stroke: "#ffffff", strokeWidth: 3 }}
+            activeDot={{ r: 6, fill: chartColors.isa, stroke: "hsl(var(--card))", strokeWidth: 3 }}
           />
           <Area
             type="monotone"
@@ -250,7 +251,7 @@ export default function IncomeTimeline({ timeline, retireAge, targetIncome }: Pr
             stroke={chartColors.state}
             fill="url(#incomeState)"
             strokeWidth={0}
-            activeDot={{ r: 6, fill: chartColors.state, stroke: "#ffffff", strokeWidth: 3 }}
+            activeDot={{ r: 6, fill: chartColors.state, stroke: "hsl(var(--card))", strokeWidth: 3 }}
           />
           <Area
             type="monotone"
@@ -259,7 +260,7 @@ export default function IncomeTimeline({ timeline, retireAge, targetIncome }: Pr
             stroke={chartColors.db}
             fill="url(#incomeDb)"
             strokeWidth={0}
-            activeDot={{ r: 6, fill: chartColors.db, stroke: "#ffffff", strokeWidth: 3 }}
+            activeDot={{ r: 6, fill: chartColors.db, stroke: "hsl(var(--card))", strokeWidth: 3 }}
           />
           <Area
             type="monotone"
@@ -268,7 +269,7 @@ export default function IncomeTimeline({ timeline, retireAge, targetIncome }: Pr
             stroke={chartColors.dc}
             fill="url(#incomeDc)"
             strokeWidth={2}
-            activeDot={{ r: 5, fill: chartColors.dc, stroke: "#ffffff", strokeWidth: 3 }}
+            activeDot={{ r: 5, fill: chartColors.dc, stroke: "hsl(var(--card))", strokeWidth: 3 }}
           />
         </AreaChart>
       </ResponsiveContainer>
