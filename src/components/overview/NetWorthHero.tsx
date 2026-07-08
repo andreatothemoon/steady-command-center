@@ -134,7 +134,8 @@ export default function NetWorthHero({ accounts, adultsCount, childrenCount }: P
           <ResponsiveContainer width="100%" height={200}>
             <AreaChart data={filteredChart}>
               <defs>
-                <linearGradient id="heroGrad" x1="0" y1="0" x2="0" y2="1">
+                <filter id="glowDot">
+
                   <stop offset="0%" stopColor="hsl(44 81% 67%)" stopOpacity={0.28} />
                   <stop offset="65%" stopColor="hsl(44 81% 67%)" stopOpacity={0.08} />
                   <stop offset="100%" stopColor="hsl(44 81% 67%)" stopOpacity={0} />
