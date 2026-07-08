@@ -300,8 +300,7 @@
 
 @layer utilities {
   .text-gradient {
-    @apply bg-clip-text text-transparent;
-    background-image: linear-gradient(90deg, hsl(226 100% 3%), hsl(227 75% 14%), hsl(34 64% 33%));
+    color: hsl(227 75% 14%);
   }
 }
 
