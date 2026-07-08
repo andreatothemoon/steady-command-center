@@ -67,42 +67,38 @@ export default function AccountsStackCard({ accounts, netWorth }: Props) {
       className="group relative block w-full overflow-hidden rounded-[32px] bg-card text-left shadow-[0_1px_0_0_hsl(var(--border)/0.6),0_20px_50px_-32px_hsl(var(--primary)/0.25)] ring-1 ring-border/50 transition-shadow hover:shadow-[0_1px_0_0_hsl(var(--border)/0.6),0_28px_60px_-30px_hsl(var(--primary)/0.35)]"
     >
       {/* Colored header band with integrated peek tab */}
-      <div className="relative">
-        <motion.div
-          variants={{ rest: { height: 76 }, hover: { height: 84 } }}
-          transition={{ type: "spring", stiffness: 260, damping: 28 }}
-          className="relative w-full bg-secondary"
-        >
-          {/* Peek pill */}
-          <div className="absolute inset-x-0 bottom-0 flex items-end justify-between px-5 pb-3">
-            <motion.span
-              variants={{ rest: { y: 0 }, hover: { y: -2 } }}
-              transition={{ type: "spring", stiffness: 300, damping: 24 }}
-              className="inline-flex items-center gap-1.5 text-sm font-semibold tracking-tight text-primary"
-            >
-              {accountsCount} accounts
-              <ChevronRight className="h-4 w-4" strokeWidth={2.5} />
-            </motion.span>
-            <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-[11px] font-bold text-primary">
-              ₤
-            </span>
-          </div>
-        </motion.div>
-
-        {/* Scalloped notch — SVG cut so the band flows into the body organically */}
+      <motion.div
+        variants={{ rest: { height: 88 }, hover: { height: 96 } }}
+        transition={{ type: "spring", stiffness: 260, damping: 28 }}
+        className="relative w-full bg-secondary"
+      >
+        <div className="flex h-full items-center justify-between px-6">
+          <motion.span
+            variants={{ rest: { x: 0 }, hover: { x: 2 } }}
+            transition={{ type: "spring", stiffness: 300, damping: 24 }}
+            className="inline-flex items-center gap-1.5 text-[15px] font-semibold tracking-tight text-primary"
+          >
+            {accountsCount} accounts
+            <ChevronRight className="h-4 w-4" strokeWidth={2.5} />
+          </motion.span>
+          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-[13px] font-bold text-primary">
+            £
+          </span>
+        </div>
+        {/* Scalloped notch cut into the body */}
         <svg
-          className="absolute -bottom-px left-0 w-full text-card"
-          height="22"
-          viewBox="0 0 400 22"
+          className="pointer-events-none absolute -bottom-px left-0 w-full text-card"
+          height="26"
+          viewBox="0 0 400 26"
           preserveAspectRatio="none"
           aria-hidden
         >
           <path
-            d="M0,0 L0,22 L400,22 L400,0 C400,0 320,0 280,0 C260,0 250,14 200,14 C150,14 140,0 120,0 C80,0 0,0 0,0 Z"
+            d="M0,26 L0,26 C0,26 80,26 130,26 C160,26 170,6 200,6 C230,6 240,26 270,26 C320,26 400,26 400,26 L400,26 L0,26 Z"
             fill="currentColor"
           />
         </svg>
-      </div>
+      </motion.div>
 
       {/* Body */}
       <div className="flex flex-col gap-5 px-6 pb-6 pt-4">
@@ -129,7 +125,7 @@ export default function AccountsStackCard({ accounts, netWorth }: Props) {
 
         {/* Account rows */}
         {topAccounts.length > 0 ? (
-          <ul className="grid grid-cols-1 gap-x-6 gap-y-1 sm:grid-cols-2">
+          <ul className="grid grid-cols-1 gap-x-6 gap-y-1">
             {topAccounts.map((a) => {
               const meta = typeMeta[a.account_type] ?? fallback;
               const Icon = meta.icon;
