@@ -11,7 +11,7 @@ interface Props {
 
 type Meta = {
   label: string;
-  icon: React.ComponentType<{ className?: string }>;
+  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
   tintBg: string;
   tintFg: string;
 };
