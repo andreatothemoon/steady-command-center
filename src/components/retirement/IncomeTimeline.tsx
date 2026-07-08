@@ -206,7 +206,7 @@ export default function IncomeTimeline({ timeline, retireAge, targetIncome }: Pr
             dataKey="other"
             stackId="income"
             stroke={chartColors.other}
-            fill="url(#incomeOther)"
+            fill={chartColors.other} fillOpacity={0.7}
             strokeWidth={0}
             activeDot={{ r: 6, fill: chartColors.other, stroke: "hsl(var(--card))", strokeWidth: 3 }}
           />
@@ -215,7 +215,7 @@ export default function IncomeTimeline({ timeline, retireAge, targetIncome }: Pr
             dataKey="isa"
             stackId="income"
             stroke={chartColors.isa}
-            fill="url(#incomeIsa)"
+            fill={chartColors.isa} fillOpacity={0.65}
             strokeWidth={0}
             activeDot={{ r: 6, fill: chartColors.isa, stroke: "hsl(var(--card))", strokeWidth: 3 }}
           />
@@ -224,7 +224,7 @@ export default function IncomeTimeline({ timeline, retireAge, targetIncome }: Pr
             dataKey="state"
             stackId="income"
             stroke={chartColors.state}
-            fill="url(#incomeState)"
+            fill={chartColors.state} fillOpacity={0.7}
             strokeWidth={0}
             activeDot={{ r: 6, fill: chartColors.state, stroke: "hsl(var(--card))", strokeWidth: 3 }}
           />
@@ -233,7 +233,7 @@ export default function IncomeTimeline({ timeline, retireAge, targetIncome }: Pr
             dataKey="db"
             stackId="income"
             stroke={chartColors.db}
-            fill="url(#incomeDb)"
+            fill={chartColors.db} fillOpacity={0.7}
             strokeWidth={0}
             activeDot={{ r: 6, fill: chartColors.db, stroke: "hsl(var(--card))", strokeWidth: 3 }}
           />
@@ -242,7 +242,7 @@ export default function IncomeTimeline({ timeline, retireAge, targetIncome }: Pr
             dataKey="dc"
             stackId="income"
             stroke={chartColors.dc}
-            fill="url(#incomeDc)"
+            fill={chartColors.dc} fillOpacity={0.75}
             strokeWidth={2}
             activeDot={{ r: 5, fill: chartColors.dc, stroke: "hsl(var(--card))", strokeWidth: 3 }}
           />
