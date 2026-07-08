@@ -95,33 +95,8 @@ export default function IncomeTimeline({ timeline, retireAge, targetIncome }: Pr
       <div className="rounded-[28px] bg-background p-6">
       <ResponsiveContainer width="100%" height={360}>
         <AreaChart data={chartData} margin={{ top: 24, right: 56, left: 8, bottom: 8 }}>
-          <defs>
-            <linearGradient id="incomeDc" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor={chartColors.dc} stopOpacity={0.96} />
-              <stop offset="55%" stopColor={chartColors.dc} stopOpacity={0.74} />
-              <stop offset="95%" stopColor={chartColors.dc} stopOpacity={0.46} />
-            </linearGradient>
-            <linearGradient id="incomeDb" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor={chartColors.db} stopOpacity={0.94} />
-              <stop offset="55%" stopColor={chartColors.db} stopOpacity={0.74} />
-              <stop offset="95%" stopColor={chartColors.db} stopOpacity={0.44} />
-            </linearGradient>
-            <linearGradient id="incomeState" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor={chartColors.state} stopOpacity={0.92} />
-              <stop offset="60%" stopColor={chartColors.state} stopOpacity={0.68} />
-              <stop offset="95%" stopColor={chartColors.state} stopOpacity={0.4} />
-            </linearGradient>
-            <linearGradient id="incomeIsa" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor={chartColors.isa} stopOpacity={0.86} />
-              <stop offset="60%" stopColor={chartColors.isa} stopOpacity={0.66} />
-              <stop offset="95%" stopColor={chartColors.isa} stopOpacity={0.38} />
-            </linearGradient>
-            <linearGradient id="incomeOther" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor={chartColors.other} stopOpacity={0.9} />
-              <stop offset="60%" stopColor={chartColors.other} stopOpacity={0.66} />
-              <stop offset="95%" stopColor={chartColors.other} stopOpacity={0.38} />
-            </linearGradient>
-          </defs>
+          <defs />
+
           <CartesianGrid strokeDasharray="4 6" stroke={chartColors.grid} vertical={false} />
           <XAxis
             dataKey="age"
@@ -231,7 +206,7 @@ export default function IncomeTimeline({ timeline, retireAge, targetIncome }: Pr
             dataKey="other"
             stackId="income"
             stroke={chartColors.other}
-            fill="url(#incomeOther)"
+            fill={chartColors.other} fillOpacity={0.7}
             strokeWidth={0}
             activeDot={{ r: 6, fill: chartColors.other, stroke: "hsl(var(--card))", strokeWidth: 3 }}
           />
@@ -240,7 +215,7 @@ export default function IncomeTimeline({ timeline, retireAge, targetIncome }: Pr
             dataKey="isa"
             stackId="income"
             stroke={chartColors.isa}
-            fill="url(#incomeIsa)"
+            fill={chartColors.isa} fillOpacity={0.65}
             strokeWidth={0}
             activeDot={{ r: 6, fill: chartColors.isa, stroke: "hsl(var(--card))", strokeWidth: 3 }}
           />
@@ -249,7 +224,7 @@ export default function IncomeTimeline({ timeline, retireAge, targetIncome }: Pr
             dataKey="state"
             stackId="income"
             stroke={chartColors.state}
-            fill="url(#incomeState)"
+            fill={chartColors.state} fillOpacity={0.7}
             strokeWidth={0}
             activeDot={{ r: 6, fill: chartColors.state, stroke: "hsl(var(--card))", strokeWidth: 3 }}
           />
@@ -258,7 +233,7 @@ export default function IncomeTimeline({ timeline, retireAge, targetIncome }: Pr
             dataKey="db"
             stackId="income"
             stroke={chartColors.db}
-            fill="url(#incomeDb)"
+            fill={chartColors.db} fillOpacity={0.7}
             strokeWidth={0}
             activeDot={{ r: 6, fill: chartColors.db, stroke: "hsl(var(--card))", strokeWidth: 3 }}
           />
@@ -267,7 +242,7 @@ export default function IncomeTimeline({ timeline, retireAge, targetIncome }: Pr
             dataKey="dc"
             stackId="income"
             stroke={chartColors.dc}
-            fill="url(#incomeDc)"
+            fill={chartColors.dc} fillOpacity={0.75}
             strokeWidth={2}
             activeDot={{ r: 5, fill: chartColors.dc, stroke: "hsl(var(--card))", strokeWidth: 3 }}
           />

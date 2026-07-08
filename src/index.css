@@ -173,7 +173,7 @@
     left: 0;
     right: 0;
     height: 100%;
-    background: linear-gradient(180deg, hsl(44 81% 67% / 0.1) 0%, hsl(141 30% 91% / 0.08) 100%);
+    background: hsl(44 81% 67% / 0.08);
     opacity: 0.5;
     pointer-events: none;
   }
@@ -182,7 +182,7 @@
   .card-alert {
     @apply rounded-[28px] overflow-hidden;
     border: 1px solid hsl(44 81% 67% / 0.45);
-    background: linear-gradient(180deg, hsl(44 81% 67% / 0.16) 0%, hsl(75 13% 94%) 100%);
+    background: hsl(44 81% 67% / 0.12);
     box-shadow: 0 18px 36px -30px hsl(34 64% 33% / 0.22);
   }
 
@@ -198,11 +198,7 @@
   .card-action {
     @apply rounded-xl overflow-hidden relative;
     border: 1px solid hsl(227 75% 14% / 0.8);
-    background: linear-gradient(
-      165deg,
-      hsl(227 75% 14%) 0%,
-      hsl(226 100% 3%) 100%
-    );
+    background: hsl(227 75% 14%);
     box-shadow: 0 2px 12px -4px hsl(0 0% 0% / 0.3),
                 inset 0 1px 0 0 hsl(0 0% 100% / 0.03);
     transition: all 180ms ease-out;
@@ -304,8 +300,7 @@
 
 @layer utilities {
   .text-gradient {
-    @apply bg-clip-text text-transparent;
-    background-image: linear-gradient(90deg, hsl(226 100% 3%), hsl(227 75% 14%), hsl(34 64% 33%));
+    color: hsl(227 75% 14%);
   }
 }
 

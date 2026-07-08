@@ -168,7 +168,7 @@ export default function AppSidebar() {
         "fixed left-0 top-0 z-40 flex h-screen flex-col border-r border-sidebar-border transition-all duration-300 shadow-[0_18px_40px_-34px_rgba(0,4,17,0.22)]",
         collapsed ? "w-20" : "w-56"
       )}
-      style={{ background: "linear-gradient(180deg, hsl(var(--sidebar-background)) 0%, hsl(var(--background)) 100%)" }}
+      style={{ background: "hsl(var(--sidebar-background))" }}
     >
       <SidebarContent collapsed={collapsed} toggle={toggle} />
     </aside>

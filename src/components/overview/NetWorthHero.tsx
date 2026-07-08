@@ -65,16 +65,8 @@ export default function NetWorthHero({ accounts, adultsCount, childrenCount }: P
 
   return (
     <div className="hero-surface p-7 lg:p-10 relative">
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          background: `
-            radial-gradient(circle at 18% 18%, hsl(141 30% 91% / 0.95), transparent 26%),
-            radial-gradient(circle at 88% 18%, hsl(44 81% 67% / 0.2), transparent 24%)
-          `,
-        }}
-      />
       <div className="relative z-10">
+
         <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-3xl">
             <div className="flex items-center gap-2 mb-3">
@@ -142,11 +134,6 @@ export default function NetWorthHero({ accounts, adultsCount, childrenCount }: P
           <ResponsiveContainer width="100%" height={200}>
             <AreaChart data={filteredChart}>
               <defs>
-                <linearGradient id="heroGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="hsl(44 81% 67%)" stopOpacity={0.28} />
-                  <stop offset="65%" stopColor="hsl(44 81% 67%)" stopOpacity={0.08} />
-                  <stop offset="100%" stopColor="hsl(44 81% 67%)" stopOpacity={0} />
-                </linearGradient>
                 <filter id="glowDot">
                   <feGaussianBlur stdDeviation="2" result="blur" />
                   <feMerge>
@@ -169,7 +156,7 @@ export default function NetWorthHero({ accounts, adultsCount, childrenCount }: P
                   );
                 }}
               />
-              <Area type="monotone" dataKey="value" stroke="hsl(227 75% 14%)" strokeWidth={2.25} fill="url(#heroGrad)" animationDuration={1500} animationEasing="ease-out" />
+              <Area type="monotone" dataKey="value" stroke="hsl(227 75% 14%)" strokeWidth={2.25} fill="hsl(44 81% 67% / 0.14)" animationDuration={1500} animationEasing="ease-out" />
               {lastPoint && (
                 <ReferenceDot x={lastPoint.month} y={lastPoint.value} r={4} fill="hsl(44 81% 67%)" stroke="white" strokeWidth={2} filter="url(#glowDot)" />
               )}

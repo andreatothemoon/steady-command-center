@@ -211,7 +211,7 @@ export default function WealthPage() {
       {!isLoading && accounts.length > 0 && (
         <>
           <motion.div variants={stagger.item} className="hero-surface p-10">
-            <div className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-[radial-gradient(circle_at_top_left,hsl(var(--accent)/0.14),transparent_60%)]" />
+            <div className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-accent/[0.06]" />
             <div className="relative flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between">
               <div>
                 <p className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">Wealth Overview</p>
