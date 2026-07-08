@@ -18,16 +18,17 @@ const item = {
   animate: { opacity: 1, y: 0, transition: { duration: 0.5 } },
 };
 
-// Wise-inspired minimal palette — single accent dark green with muted supporting tones.
+// Palette aligned to project design tokens (index.css):
+// primary navy #091540, accent gold #efcb68, secondary mint, muted olive, success bronze.
 const chartColors = {
-  dc: "#163300",
-  db: "#9fe870",
-  state: "#c9e8b4",
-  isa: "#b8c4b0",
-  other: "#5b7a3a",
-  taxFreeCash: "#163300",
-  grid: "rgba(15, 23, 42, 0.10)",
-  axis: "rgba(15, 23, 42, 0.42)",
+  dc: "hsl(227 75% 14%)",        // primary navy — headline series
+  db: "hsl(44 81% 67%)",         // accent gold
+  state: "hsl(141 30% 82%)",     // secondary mint (slightly deeper for legibility)
+  isa: "hsl(153 6% 70%)",        // muted olive/grey
+  other: "hsl(34 64% 33%)",      // success/bronze
+  taxFreeCash: "hsl(227 75% 14%)",
+  grid: "hsl(227 75% 14% / 0.10)",
+  axis: "hsl(227 75% 14% / 0.45)",
 };
 
 interface Props {
