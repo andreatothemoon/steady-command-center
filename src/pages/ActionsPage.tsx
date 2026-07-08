@@ -193,7 +193,7 @@ export default function ActionsPage() {
 
       {actions.length > 0 && (
         <motion.div variants={stagger.item} className="hero-surface p-8 lg:p-10">
-          <div className="pointer-events-none absolute inset-x-0 top-0 h-32 bg-[radial-gradient(circle_at_top_left,hsl(var(--accent)/0.14),transparent_58%)]" />
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-32 bg-accent/[0.06]" />
           <div className="relative flex flex-col gap-8 xl:grid xl:grid-cols-[minmax(0,1.35fr)_minmax(0,0.65fr)] xl:items-start">
             <div>
               <p className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">Action Overview</p>
