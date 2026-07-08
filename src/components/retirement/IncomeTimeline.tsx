@@ -158,7 +158,7 @@ export default function IncomeTimeline({ timeline, retireAge, targetIncome }: Pr
               const taxFreeCash = data.taxFreeCash ?? 0;
               const total = dc + isa + db + sp + other;
               return (
-                <div className="min-w-[290px] rounded-[28px] border border-[rgba(0,0,0,0.08)] bg-white px-6 py-5 shadow-[0_18px_36px_-24px_rgba(15,23,42,0.32)]">
+                <div className="min-w-[290px] rounded-[28px] border border-border bg-card px-6 py-5 shadow-[0_18px_36px_-24px_hsl(var(--primary)/0.32)]">
                   <p className="mb-5 text-[2rem] font-semibold tracking-[-0.05em] text-foreground">Age {data.age}</p>
                   <div className="space-y-3">
                     <div className="flex justify-between gap-6">
