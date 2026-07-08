@@ -182,7 +182,7 @@
   .card-alert {
     @apply rounded-[28px] overflow-hidden;
     border: 1px solid hsl(44 81% 67% / 0.45);
-    background: linear-gradient(180deg, hsl(44 81% 67% / 0.16) 0%, hsl(75 13% 94%) 100%);
+    background: hsl(44 81% 67% / 0.12);
     box-shadow: 0 18px 36px -30px hsl(34 64% 33% / 0.22);
   }
 
