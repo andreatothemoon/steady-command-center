@@ -187,7 +187,7 @@ export default function IncomeTimeline({ timeline, retireAge, targetIncome }: Pr
                         <span className="text-xl font-semibold tabular-nums" style={{ color: chartColors.taxFreeCash }}>{formatCurrency(taxFreeCash)}</span>
                       </div>
                     )}
-                    <div className="mt-4 flex justify-between gap-6 border-t border-[rgba(0,0,0,0.06)] pt-4">
+                    <div className="mt-4 flex justify-between gap-6 border-t border-border pt-4">
                       <span className="text-xl font-semibold text-foreground">Total</span>
                       <span className="text-xl font-semibold tabular-nums text-foreground">{formatCurrency(total)}/mo</span>
                     </div>
