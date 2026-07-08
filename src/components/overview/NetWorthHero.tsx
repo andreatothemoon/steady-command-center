@@ -135,12 +135,6 @@ export default function NetWorthHero({ accounts, adultsCount, childrenCount }: P
             <AreaChart data={filteredChart}>
               <defs>
                 <filter id="glowDot">
-
-                  <stop offset="0%" stopColor="hsl(44 81% 67%)" stopOpacity={0.28} />
-                  <stop offset="65%" stopColor="hsl(44 81% 67%)" stopOpacity={0.08} />
-                  <stop offset="100%" stopColor="hsl(44 81% 67%)" stopOpacity={0} />
-                </linearGradient>
-                <filter id="glowDot">
                   <feGaussianBlur stdDeviation="2" result="blur" />
                   <feMerge>
                     <feMergeNode in="blur" />
