@@ -125,7 +125,7 @@ export default function AccountsStackCard({ accounts, netWorth }: Props) {
 
         {/* Account rows */}
         {topAccounts.length > 0 ? (
-          <ul className="grid grid-cols-1 gap-x-6 gap-y-1 sm:grid-cols-2">
+          <ul className="grid grid-cols-1 gap-x-6 gap-y-1">
             {topAccounts.map((a) => {
               const meta = typeMeta[a.account_type] ?? fallback;
               const Icon = meta.icon;
