@@ -199,13 +199,13 @@ export default function IncomeTimeline({ timeline, retireAge, targetIncome }: Pr
           <ReferenceLine x={retireAge} stroke={chartColors.dc} strokeDasharray="3 3" strokeWidth={2.25} />
           <ReferenceLine
             y={targetMonthly}
-            stroke="rgba(9, 21, 64, 0.32)"
+            stroke="hsl(227 75% 14% / 0.32)"
             strokeDasharray="4 4"
             strokeWidth={1.5}
             label={{
               value: `Target ${formatCurrency(targetMonthly)}/mo`,
               position: "insideTopLeft",
-              fill: "rgba(9, 21, 64, 0.58)",
+              fill: "hsl(227 75% 14% / 0.65)",
               fontSize: 12,
               fontWeight: 600,
             }}
