@@ -41,14 +41,17 @@ export default function TimelineEventEditor({ event, open, onOpenChange }: Props
   const changed = event ? JSON.stringify(event) !== JSON.stringify(draft) : false;
 
   return (
-    <ResponsiveDialog
-      open={open}
-      onOpenChange={onOpenChange}
-      title={draft.title}
-      description={`Event in the ${activeScenario.name} scenario`}
-    >
-      <div className="space-y-6">
-        <div className="space-y-2">
+    <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
+      <ResponsiveDialogContent>
+        <ResponsiveDialogHeader>
+          <ResponsiveDialogTitle>{draft.title}</ResponsiveDialogTitle>
+          <ResponsiveDialogDescription>
+            Event in the {activeScenario.name} scenario
+          </ResponsiveDialogDescription>
+        </ResponsiveDialogHeader>
+        <div className="space-y-6 px-1 pb-2">
+          <div className="space-y-2">
+
           <Label>Title</Label>
           <Input value={draft.title} onChange={(e) => setDraft({ ...draft, title: e.target.value })} />
         </div>
