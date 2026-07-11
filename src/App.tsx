@@ -49,7 +49,8 @@ function ProtectedRoutes() {
         <AppLayout>
           <Routes>
             <Route path="/" element={<HomePage />} />
-            <Route path="/plan" element={<PlanPage />} />
+            <Route path="/retirement" element={<RetirementPage />} />
+            <Route path="/plan" element={<Navigate to="/retirement" replace />} />
             <Route path="/wealth" element={<WealthPage />} />
             <Route path="/wealth-map" element={<WealthMapPage />} />
             <Route path="/actions" element={<ActionsPage />} />
