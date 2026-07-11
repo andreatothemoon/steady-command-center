@@ -229,6 +229,55 @@ function formatWithSuffix(bucket: Bucket, total: number): string {
   return `${formatCurrency(rounded, true)}${bucket === "guaranteed" ? "/yr" : ""}`;
 }
 
+function MapCanvas({
+  nodes,
+  edges,
+  onNodesChange,
+  onEdgesChange,
+  onNodeDragStart,
+  onNodeDragStop,
+}: {
+  nodes: Node[];
+  edges: Edge[];
+  onNodesChange: (nodes: Node[]) => void;
+  onEdgesChange: (edges: Edge[]) => void;
+  onNodeDragStart: (event: MouseEvent | TouchEvent, node: Node) => void;
+  onNodeDragStop: (event: MouseEvent | TouchEvent, node: Node) => void;
+}) {
+  const { fitView } = useReactFlow();
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      fitView({ padding: 0.05, duration: 200 });
+    }, 100);
+    return () => clearTimeout(timer);
+  }, [nodes, edges, fitView]);
+
+  return (
+    <ReactFlow
+      nodes={nodes}
+      edges={edges}
+      onNodesChange={onNodesChange}
+      onEdgesChange={onEdgesChange}
+      onNodeDragStart={onNodeDragStart}
+      onNodeDragStop={onNodeDragStop}
+      nodeTypes={nodeTypes}
+      minZoom={0.5}
+      maxZoom={2}
+      proOptions={{ hideAttribution: true }}
+    >
+      <Background color="hsl(var(--border))" gap={24} size={1} />
+      <MiniMap
+        className="!bg-card !border-border"
+        maskColor="hsl(var(--background) / 0.85)"
+        nodeColor="hsl(var(--secondary))"
+        nodeStrokeColor="hsl(var(--border))"
+      />
+      <Controls className="!bg-card !border-border [&>button]:!bg-transparent [&>button]:!border-border [&>button]:!text-muted-foreground [&>button:hover]:!bg-secondary" />
+    </ReactFlow>
+  );
+}
+
 export default function WealthMapPage() {
   const { data: accounts = [] } = useAccounts();
   const { data: dbPensions = [] } = useDBPensions();
