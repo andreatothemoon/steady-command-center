@@ -132,8 +132,8 @@ interface NodeMeta {
   isNegative?: boolean;
 }
 
-const NODE_WIDTH = 320;
-const NODE_HEIGHT = 96;
+const NODE_WIDTH = 240;
+const NODE_HEIGHT = 76;
 
 function WealthNode({ data, selected }: NodeProps) {
   const meta = data as unknown as NodeMeta;
@@ -160,17 +160,17 @@ function WealthNode({ data, selected }: NodeProps) {
       )}
 
       <span
-        className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl"
+        className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl"
         style={{ backgroundColor: `${meta.color}1a`, color: meta.color }}
       >
-        <Icon className="h-5 w-5" strokeWidth={2.25} />
+        <Icon className="h-4 w-4" strokeWidth={2.25} />
       </span>
 
       <div className="min-w-0 flex-1">
-        <p className="truncate text-[15px] font-semibold leading-tight text-foreground">{meta.label}</p>
+        <p className="truncate text-[13px] font-semibold leading-tight text-foreground">{meta.label}</p>
         {meta.sublabel && (
           <p
-            className={`mt-0.5 truncate text-[13px] tabular-nums ${
+            className={`mt-0.5 truncate text-[11px] tabular-nums ${
               meta.isNegative ? "text-destructive" : "text-muted-foreground"
             }`}
           >
@@ -181,7 +181,7 @@ function WealthNode({ data, selected }: NodeProps) {
 
       {typeof meta.count === "number" && meta.count > 0 && (
         <span
-          className="absolute -top-2 -right-2 flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-[11px] font-bold"
+          className="absolute -top-2 -right-2 flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-[10px] font-bold"
           style={{ backgroundColor: `${meta.color}26`, color: meta.color }}
         >
           {meta.count}
@@ -198,7 +198,7 @@ const nodeTypes = { wealth: WealthNode };
 function layout(nodes: Node[], edges: Edge[]): Node[] {
   const g = new dagre.graphlib.Graph();
   g.setDefaultEdgeLabel(() => ({}));
-  g.setGraph({ rankdir: "TB", nodesep: 60, ranksep: 120, marginx: 40, marginy: 40 });
+  g.setGraph({ rankdir: "TB", nodesep: 40, ranksep: 90, marginx: 20, marginy: 20 });
   nodes.forEach((n) => g.setNode(n.id, { width: NODE_WIDTH, height: NODE_HEIGHT }));
   edges.forEach((e) => g.setEdge(e.source, e.target));
   dagre.layout(g);
@@ -446,7 +446,7 @@ export default function WealthMapPage() {
   );
 
   return (
-    <div className="flex h-[calc(100vh-3rem)] flex-col gap-4">
+    <div className="flex h-[calc(100vh-8rem)] flex-col gap-4">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight text-foreground">Wealth map</h1>
@@ -454,17 +454,17 @@ export default function WealthMapPage() {
             Household → member → bucket → account. Same buckets as the Wealth page. Drag an account onto a member to reassign ownership.
           </p>
         </div>
-        <div className="flex flex-wrap gap-2 text-[12px]">
+        <div className="flex flex-wrap gap-2 text-[11px]">
           {BUCKETS.map((b) => {
             const Icon = b.icon;
             const color = BUCKET_COLOR[b.key];
             return (
               <span
                 key={b.key}
-                className="flex items-center gap-1.5 rounded-full border border-border/60 bg-card px-3 py-1.5 text-muted-foreground"
+                className="flex items-center gap-1.5 rounded-full border border-border/60 bg-card px-2.5 py-1 text-muted-foreground"
                 style={{ borderColor: `${color}33` }}
               >
-                <Icon className="h-3.5 w-3.5" strokeWidth={2.25} style={{ color }} />
+                <Icon className="h-3 w-3" strokeWidth={2.25} style={{ color }} />
                 <span className="text-foreground/80">{b.label}</span>
               </span>
             );
