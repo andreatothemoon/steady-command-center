@@ -4,7 +4,7 @@
  * Values mirror WealthPage: DB pensions show projected income, guaranteed bucket
  * shows estimated annual income, others show balances.
  */
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ReactFlow,
   Background,
@@ -17,6 +17,7 @@ import {
   type Node,
   type Edge,
   type NodeProps,
+  type ReactFlowInstance,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import dagre from "dagre";
@@ -167,10 +168,10 @@ function WealthNode({ data, selected }: NodeProps) {
       </span>
 
       <div className="min-w-0 flex-1">
-        <p className="truncate text-[13px] font-semibold leading-tight text-foreground">{meta.label}</p>
+        <p className="truncate text-[14px] font-semibold leading-tight text-foreground">{meta.label}</p>
         {meta.sublabel && (
           <p
-            className={`mt-0.5 truncate text-[11px] tabular-nums ${
+            className={`mt-0.5 truncate text-[12px] tabular-nums ${
               meta.isNegative ? "text-destructive" : "text-muted-foreground"
             }`}
           >
@@ -381,10 +382,20 @@ export default function WealthMapPage() {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const [draggingAccount, setDraggingAccount] = useState<Account | null>(null);
+  const flowRef = useRef<ReactFlowInstance | null>(null);
+
+  const onInit = useCallback((instance: ReactFlowInstance) => {
+    flowRef.current = instance;
+    instance.fitView({ padding: 0.05, minZoom: 0.75, maxZoom: 0.75, duration: 200 });
+  }, []);
 
   useEffect(() => {
     setNodes(initialNodes);
     setEdges(initialEdges);
+    const timer = setTimeout(() => {
+      flowRef.current?.fitView({ padding: 0.05, minZoom: 0.75, maxZoom: 0.75, duration: 200 });
+    }, 100);
+    return () => clearTimeout(timer);
   }, [initialNodes, initialEdges, setNodes, setEdges]);
 
   const onNodeDragStart = useCallback(
@@ -446,7 +457,7 @@ export default function WealthMapPage() {
   );
 
   return (
-    <div className="flex h-[calc(100vh-8rem)] flex-col gap-4">
+    <div className="flex h-[calc(100vh-4rem)] flex-col gap-4">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight text-foreground">Wealth map</h1>
@@ -480,12 +491,13 @@ export default function WealthMapPage() {
           onEdgesChange={onEdgesChange}
           onNodeDragStart={onNodeDragStart}
           onNodeDragStop={onNodeDragStop}
+          onInit={onInit}
           nodeTypes={nodeTypes}
           fitView
-          fitViewOptions={{ padding: 0.2 }}
+          fitViewOptions={{ padding: 0.05 }}
           proOptions={{ hideAttribution: true }}
-          minZoom={0.2}
-          maxZoom={1.5}
+          minZoom={0.5}
+          maxZoom={2}
         >
           <Background color="hsl(var(--border))" gap={24} size={1} />
           <MiniMap
