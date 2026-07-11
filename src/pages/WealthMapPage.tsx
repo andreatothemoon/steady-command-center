@@ -496,7 +496,7 @@ export default function WealthMapPage() {
           fitView
           fitViewOptions={{ padding: 0.05 }}
           proOptions={{ hideAttribution: true }}
-          minZoom={0.7}
+          minZoom={0.85}
           maxZoom={2}
         >
           <Background color="hsl(var(--border))" gap={24} size={1} />
