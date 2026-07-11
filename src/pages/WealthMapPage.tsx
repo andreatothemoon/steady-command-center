@@ -279,17 +279,23 @@ export default function WealthMapPage() {
       } satisfies NodeMeta as unknown as Record<string, unknown>,
     });
 
-    const memberList =
+    const memberList: { id: string; name: string; isJoint?: boolean }[] =
       adults.length > 0
         ? adults.map((a) => ({ id: a.id, name: a.name }))
         : [{ id: "unassigned", name: "Unassigned" }];
 
+    if (groupJoint && adults.length > 1) {
+      memberList.push({ id: "joint", name: "Joint", isJoint: true });
+    }
+
     memberList.forEach((m) => {
-      const memberAccounts = accounts.filter((a) =>
-        m.id === "unassigned"
-          ? splitOwnerNames(a.owner_name).length === 0
-          : splitOwnerNames(a.owner_name).includes(m.name.toLowerCase()),
-      );
+      const memberAccounts = accounts.filter((a) => {
+        const owners = splitOwnerNames(a.owner_name);
+        if (m.id === "unassigned") return owners.length === 0;
+        if (m.isJoint) return owners.length > 1;
+        if (groupJoint && owners.length > 1 && adults.length > 1) return false;
+        return owners.includes(m.name.toLowerCase());
+      });
       if (memberAccounts.length === 0 && m.id !== "unassigned") return;
 
       const memberNet = memberAccounts.reduce((s, a) => s + Number(a.current_value), 0);
