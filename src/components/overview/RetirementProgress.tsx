@@ -100,7 +100,7 @@ export default function RetirementProgress({ accounts }: Props) {
         <div className="flex-1 flex flex-col items-center justify-center text-center gap-3">
           <p className="text-sm text-muted-foreground">No retirement scenario configured yet</p>
           <button
-            onClick={() => navigate("/plan")}
+            onClick={() => navigate("/retirement")}
             className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:text-primary/80 transition-colors"
           >
             <Plus className="h-3.5 w-3.5" />
