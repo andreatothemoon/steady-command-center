@@ -526,29 +526,16 @@ export default function WealthMapPage() {
       </div>
 
       <div className="card-surface relative flex-1 overflow-hidden !p-0">
-        <ReactFlow
-          nodes={nodes}
-          edges={edges}
-          onNodesChange={onNodesChange}
-          onEdgesChange={onEdgesChange}
-          onNodeDragStart={onNodeDragStart}
-          onNodeDragStop={onNodeDragStop}
-          nodeTypes={nodeTypes}
-          fitView
-          fitViewOptions={{ padding: 0.05 }}
-          proOptions={{ hideAttribution: true }}
-          minZoom={0.15}
-          maxZoom={3}
-        >
-          <Background color="hsl(var(--border))" gap={24} size={1} />
-          <MiniMap
-            className="!bg-card !border-border"
-            maskColor="hsl(var(--background) / 0.85)"
-            nodeColor="hsl(var(--secondary))"
-            nodeStrokeColor="hsl(var(--border))"
+        <ReactFlowProvider>
+          <MapCanvas
+            nodes={nodes}
+            edges={edges}
+            onNodesChange={onNodesChange}
+            onEdgesChange={onEdgesChange}
+            onNodeDragStart={onNodeDragStart}
+            onNodeDragStop={onNodeDragStop}
           />
-          <Controls className="!bg-card !border-border [&>button]:!bg-transparent [&>button]:!border-border [&>button]:!text-muted-foreground [&>button:hover]:!bg-secondary" />
-        </ReactFlow>
+        </ReactFlowProvider>
 
         <div className="pointer-events-none absolute left-6 top-6 rounded-2xl border border-border/60 bg-card/90 px-4 py-2 text-xs text-muted-foreground shadow-sm backdrop-blur">
           <span>Net worth</span>{" "}
