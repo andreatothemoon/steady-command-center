@@ -238,6 +238,7 @@ export default function WealthMapPage() {
   const { data: profiles = [] } = useHouseholdProfiles();
   const adults = useMemo(() => profiles.filter((p) => p.role === "adult"), [profiles]);
   const updateAccount = useUpdateAccount();
+  const [groupJoint, setGroupJoint] = useState(true);
 
   // DB pension projections keyed by account_id — same as WealthPage
   const dbProjections = useMemo(() => {
