@@ -128,13 +128,13 @@ export default function IncomeHeroCard({ monthlyIncome, retireAge, projection, t
               </div>
             </div>
             <button
-              onClick={() => navigate("/plan")}
+              onClick={() => navigate("/retirement")}
               className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-primary px-6 py-3.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/92"
             >
               Model scenarios <ArrowRight className="h-4 w-4" />
             </button>
             <p className="text-center text-xs text-muted-foreground">
-              Explore contribution, retirement age, and other income changes in your live plan.
+              Explore contribution, retirement age, and other income changes in your retirement scenario.
             </p>
           </div>
         </div>
