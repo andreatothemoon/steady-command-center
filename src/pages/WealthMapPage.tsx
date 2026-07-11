@@ -560,13 +560,77 @@ export default function WealthMapPage() {
           selectionOnDrag={false}
         >
           <Background color="hsl(var(--border))" gap={24} size={1} />
-          <MiniMap
-            className="!bg-card !border-border"
-            maskColor="hsl(var(--background) / 0.85)"
-            nodeColor="hsl(var(--secondary))"
-            nodeStrokeColor="hsl(var(--border))"
-          />
-          <Controls className="!bg-card !border-border [&>button]:!bg-transparent [&>button]:!border-border [&>button]:!text-muted-foreground [&>button:hover]:!bg-secondary" />
+
+          <Panel position="bottom-right" className="!m-4 !mb-6">
+            <div className="flex flex-col items-end gap-2">
+              <div className="overflow-hidden rounded-2xl border border-border/60 bg-card/95 shadow-lg backdrop-blur">
+                <div className="flex items-center justify-between border-b border-border/60 px-3 py-1.5">
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                    Overview
+                  </span>
+                  <span className="text-[10px] tabular-nums text-muted-foreground">
+                    {nodes.length} nodes
+                  </span>
+                </div>
+                <MiniMap
+                  className="!m-0 !bg-transparent"
+                  style={{ width: 200, height: 130 }}
+                  maskColor="hsl(var(--background) / 0.75)"
+                  nodeColor={(n) => {
+                    const c = (n.data as unknown as NodeMeta | undefined)?.color;
+                    return c && c.startsWith("#") ? c : "hsl(var(--secondary))";
+                  }}
+                  nodeStrokeColor="hsl(var(--border))"
+                  nodeBorderRadius={4}
+                  pannable
+                  zoomable
+                />
+              </div>
+
+              <div className="flex items-center gap-1 rounded-full border border-border/60 bg-card/95 p-1 shadow-lg backdrop-blur">
+                <button
+                  type="button"
+                  onClick={() => flowRef.current?.zoomOut({ duration: 200 })}
+                  className="flex h-7 w-7 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+                  title="Zoom out"
+                  aria-label="Zoom out"
+                >
+                  <Minus className="h-3.5 w-3.5" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => fitToView(250)}
+                  className="flex h-7 items-center justify-center gap-1 rounded-full px-2 text-[11px] font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+                  title="Fit to view"
+                >
+                  <Maximize2 className="h-3.5 w-3.5" />
+                  <span>Fit</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => flowRef.current?.zoomIn({ duration: 200 })}
+                  className="flex h-7 w-7 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+                  title="Zoom in"
+                  aria-label="Zoom in"
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                </button>
+                <div className="mx-1 h-4 w-px bg-border/60" />
+                <button
+                  type="button"
+                  onClick={() => {
+                    setNodes(initialNodes);
+                    setTimeout(() => fitToView(250), 40);
+                  }}
+                  className="flex h-7 items-center justify-center gap-1 rounded-full px-2 text-[11px] font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+                  title="Reset layout"
+                >
+                  <RotateCcw className="h-3.5 w-3.5" />
+                  <span>Reset</span>
+                </button>
+              </div>
+            </div>
+          </Panel>
         </ReactFlow>
 
         <div className="pointer-events-none absolute left-6 top-6 rounded-2xl border border-border/60 bg-card/90 px-4 py-2 text-xs text-muted-foreground shadow-sm backdrop-blur">
