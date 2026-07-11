@@ -504,7 +504,21 @@ export default function WealthMapPage() {
             Household → member → bucket → account. Same buckets as the Wealth page. Drag an account onto a member to reassign ownership.
           </p>
         </div>
-        <div className="flex flex-wrap gap-2 text-[11px]">
+        <div className="flex flex-wrap items-center gap-2 text-[11px]">
+          <button
+            type="button"
+            onClick={() => setGroupJoint((v) => !v)}
+            className={`flex items-center gap-1.5 rounded-full border px-2.5 py-1 transition-colors ${
+              groupJoint
+                ? "border-primary/40 bg-primary/10 text-primary"
+                : "border-border/60 bg-card text-muted-foreground hover:bg-secondary"
+            }`}
+            aria-pressed={groupJoint}
+            title="Group joint assets under a single Joint node"
+          >
+            <UsersRound className="h-3 w-3" strokeWidth={2.25} />
+            <span className="font-medium">Group joint assets</span>
+          </button>
           {BUCKETS.map((b) => {
             const Icon = b.icon;
             const color = BUCKET_COLOR[b.key];
