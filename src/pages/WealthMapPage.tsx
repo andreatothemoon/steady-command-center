@@ -240,8 +240,8 @@ function MapCanvas({
 }: {
   nodes: Node[];
   edges: Edge[];
-  onNodesChange: (nodes: Node[]) => void;
-  onEdgesChange: (edges: Edge[]) => void;
+  onNodesChange: OnNodesChange<Node>;
+  onEdgesChange: OnEdgesChange<Edge>;
   onNodeDragStart: (event: MouseEvent | TouchEvent, node: Node) => void;
   onNodeDragStop: (event: MouseEvent | TouchEvent, node: Node) => void;
 }) {
