@@ -1,5 +1,5 @@
 /**
- * Plan Page — absorbs Retirement + DB Pensions
+ * Retirement Page — scenario modeling, DB pensions and income planning
  * Interactive modeling with sliders, scenario comparison, DB pension integration
  */
 import { useState, useMemo, useEffect, useRef, useCallback } from "react";
