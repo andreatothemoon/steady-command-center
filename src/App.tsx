@@ -9,7 +9,7 @@ import { useApprovalStatus, useIsAdmin } from "@/hooks/useApprovalStatus";
 import AppSidebar from "@/components/AppSidebar";
 import AppLayout from "@/components/AppLayout";
 import HomePage from "@/pages/HomePage";
-import PlanPage from "@/pages/PlanPage";
+import RetirementPage from "@/pages/RetirementPage";
 import WealthPage from "@/pages/WealthPage";
 import ActionsPage from "@/pages/ActionsPage";
 import ProfilePage from "@/pages/ProfilePage";
