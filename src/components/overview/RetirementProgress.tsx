@@ -143,7 +143,7 @@ export default function RetirementProgress({ accounts }: Props) {
           </div>
         </div>
         <button
-          onClick={() => navigate("/plan")}
+          onClick={() => navigate("/retirement")}
           className="text-[11px] text-muted-foreground hover:text-primary transition-colors flex items-center gap-0.5"
         >
           Details <ChevronRight className="h-3 w-3" />
