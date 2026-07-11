@@ -454,24 +454,25 @@ export default function WealthMapPage() {
             Household → member → bucket → account. Same buckets as the Wealth page. Drag an account onto a member to reassign ownership.
           </p>
         </div>
-        <div className="flex flex-wrap gap-2 text-[11px] text-white/60">
+        <div className="flex flex-wrap gap-2 text-[11px]">
           {BUCKETS.map((b) => {
             const Icon = b.icon;
-            const styles = ACCENT_STYLES[b.accent];
+            const color = BUCKET_COLOR[b.key];
             return (
               <span
                 key={b.key}
-                className={`flex items-center gap-1.5 rounded-full border border-white/10 bg-[#0f1520] px-2.5 py-1 ${styles.icon}`}
+                className="flex items-center gap-1.5 rounded-full border border-border/60 bg-card px-2.5 py-1 text-muted-foreground"
+                style={{ borderColor: `${color}33` }}
               >
-                <Icon className="h-3 w-3" strokeWidth={2.25} />
-                <span className="text-white/70">{b.label}</span>
+                <Icon className="h-3 w-3" strokeWidth={2.25} style={{ color }} />
+                <span className="text-foreground/80">{b.label}</span>
               </span>
             );
           })}
         </div>
       </div>
 
-      <div className="relative flex-1 overflow-hidden rounded-3xl border border-border/60 bg-[#0a0e17]">
+      <div className="card-surface relative flex-1 overflow-hidden !p-0">
         <ReactFlow
           nodes={nodes}
           edges={edges}
@@ -486,23 +487,23 @@ export default function WealthMapPage() {
           minZoom={0.2}
           maxZoom={1.5}
         >
-          <Background color="hsl(215 20% 20%)" gap={24} size={1} />
+          <Background color="hsl(var(--border))" gap={24} size={1} />
           <MiniMap
-            className="!bg-[#0f1520] !border-white/10"
-            maskColor="rgba(10,14,23,0.85)"
-            nodeColor="#1e293b"
-            nodeStrokeColor="#334155"
+            className="!bg-card !border-border"
+            maskColor="hsl(var(--background) / 0.85)"
+            nodeColor="hsl(var(--secondary))"
+            nodeStrokeColor="hsl(var(--border))"
           />
-          <Controls className="!bg-[#0f1520] !border-white/10 [&>button]:!bg-transparent [&>button]:!border-white/10 [&>button]:!text-white/70 [&>button:hover]:!bg-white/5" />
+          <Controls className="!bg-card !border-border [&>button]:!bg-transparent [&>button]:!border-border [&>button]:!text-muted-foreground [&>button:hover]:!bg-secondary" />
         </ReactFlow>
 
-        <div className="pointer-events-none absolute left-6 top-6 rounded-2xl border border-white/10 bg-[#0f1520]/90 px-4 py-2 text-xs text-white/70 backdrop-blur">
-          <span className="text-white/50">Net worth</span>{" "}
-          <span className="font-semibold text-white tabular-nums">{formatCurrency(netWorth, true)}</span>
+        <div className="pointer-events-none absolute left-6 top-6 rounded-2xl border border-border/60 bg-card/90 px-4 py-2 text-xs text-muted-foreground shadow-sm backdrop-blur">
+          <span>Net worth</span>{" "}
+          <span className="font-semibold text-foreground tabular-nums">{formatCurrency(netWorth, true)}</span>
         </div>
 
         {draggingAccount && (
-          <div className="pointer-events-none absolute left-1/2 top-6 -translate-x-1/2 rounded-full bg-primary/90 px-4 py-2 text-xs font-semibold text-primary-foreground shadow-lg">
+          <div className="pointer-events-none absolute left-1/2 top-6 -translate-x-1/2 rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground shadow-lg">
             Drop on a member to reassign {draggingAccount.name}
           </div>
         )}
