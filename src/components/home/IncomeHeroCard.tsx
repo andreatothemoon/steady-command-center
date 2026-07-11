@@ -94,7 +94,7 @@ export default function IncomeHeroCard({ monthlyIncome, retireAge, projection, t
         </div>
 
         <div className="rounded-[30px] border border-border/70 bg-white/85 p-6 shadow-[0_18px_44px_-30px_hsl(var(--foreground)/0.22)] backdrop-blur">
-          <p className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">Plan Snapshot</p>
+          <p className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">Retirement Snapshot</p>
           <div className="mt-6 space-y-5">
             <div>
               <p className="mb-1 text-sm font-medium text-foreground/60">Confidence</p>
