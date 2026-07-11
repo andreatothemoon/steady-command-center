@@ -1,59 +1,62 @@
-# Backend Security Hardening
+# Home page restructure — WealthOS hub
 
-Single Supabase migration that closes the 33 linter warnings and the email-enumeration surface. No frontend changes needed — all current client calls keep working.
+Reframe the home page as the entry point to the six WealthOS pillars, with a concise hero and one tile per pillar linking to its dedicated page.
 
-## Goals
-
-1. Remove the one overly-permissive RLS policy (linter WARN 1).
-2. Stop exposing internal `SECURITY DEFINER` helper functions through the public API.
-3. Restrict `get_user_email` so only admins can resolve emails.
-
-## What changes
-
-### 1. Audit & fix the permissive RLS policy
-Find the policy flagged by linter rule `0024_permissive_rls_policy` (an INSERT/UPDATE/DELETE policy using `USING (true)` or `WITH CHECK (true)`) and rewrite it to scope by `auth.uid()` / `is_household_member(...)`. Likely candidate: a policy on `household_invitations`, `user_approvals`, or `user_roles`. I'll confirm by reading `pg_policies` before writing the migration body.
-
-### 2. Revoke EXECUTE on internal helper functions
-These are called only from other DB functions / triggers, never from the client. Revoke from `anon` and `authenticated`:
-
-- `is_household_member`
-- `is_household_owner`
-- `get_user_household_ids`
-- `has_role`
-- `get_approval_status`
-- `enqueue_email`, `read_email_batch`, `delete_email`, `move_to_dlq` (edge-function only — keep `service_role`)
-- `update_updated_at_column` (trigger only)
-- `handle_new_user`, `handle_new_user_approval` (triggers only)
-
-Functions that **stay callable** by `authenticated` (used by the client):
-- `accept_household_invitation`
-- `get_invitation_by_token` (must remain callable by `anon` — used on the public invite page before sign-in)
-- `get_ni_number`, `set_ni_number`
-
-### 3. Lock down `get_user_email`
-Currently any authenticated user can resolve any other user's email by id.
-Change to: only callable by an admin (`has_role(auth.uid(), 'admin')`), and the function itself enforces the check before returning.
+## New home page architecture
 
 ```text
-admin? → return auth.users.email
-else   → return null
+┌──────────────────────────────────────────────────────────────┐
+│  HERO                                                        │
+│  Total wealth · household · quick actions                    │
+└──────────────────────────────────────────────────────────────┘
+
+┌───────────────┬───────────────┬───────────────┐
+│ Household     │ Wealth map    │ Retirement    │
+│ wealth        │ (allocation)  │ planning      │
+├───────────────┼───────────────┼───────────────┤
+│ Life          │ Insights      │ Tax           │
+│ planning      │               │               │
+└───────────────┴───────────────┴───────────────┘
+
+┌──────────────────────────────────────────────────────────────┐
+│  Recommended actions (kept, condensed)                       │
+└──────────────────────────────────────────────────────────────┘
 ```
 
-`usePendingApprovals` (the only client caller) is admin-only, so behaviour is preserved.
+## Pillar tiles (each links to its detail page)
 
-## Out of scope (separate plan)
+1. **Household wealth** → `/wealth` — total net worth, delta, member split, top accounts preview. Reuses `AccountsStackCard` styling.
+2. **Wealth map** → `/wealth?view=map` — allocation donut (cash / investments / property / pensions) with % split. New small `WealthMapCard` wrapping `AllocationDonut`.
+3. **Retirement planning** → `/plan` — projected monthly income, target, readiness %, retire age. Condensed from the current right-column tile.
+4. **Life planning** → `/plan?view=scenarios` — scenario modelling entry: active scenario name, "what if" chips (retire earlier, income change, life event). New `LifePlanningCard`.
+5. **Insights** → `/actions` — 1-line headline insight (e.g. biggest opportunity), count of open insights. New `InsightsCard`.
+6. **Tax** → `/tax` — current tax year, household ANI status (OK / near taper / over taper), ISA allowance used. New `TaxCard`.
 
-- Type regeneration + removing `(supabase as any)` casts
-- Form validation with zod
-- Dead code cleanup
-- `useNetWorthHistory` query-key fix
+## Sections removed / merged from current home
 
-## Verification
+- Standalone `ReadinessCard`, `GuaranteedIncomeCard`, `BridgeGapCard` row → folded into the Retirement tile; details live on `/plan`.
+- `IncomeTimeline` chart → moved off home (already on `/plan`).
+- `DoMoreCard` → replaced by Life planning tile.
+- Right-column retirement plan panel → replaced by Retirement tile.
+- `TopActionsCard` (Recommended actions) → kept at bottom, unchanged.
 
-After the migration:
-1. Re-run `supabase--linter` — expect 0 SECURITY warnings (or only known-safe ones).
-2. Smoke test: sign-in, view dashboard, accept an invitation, admin views the approvals queue.
+## Files
 
-## Approval
+New:
+- `src/components/home/pillars/HouseholdWealthTile.tsx`
+- `src/components/home/pillars/WealthMapTile.tsx`
+- `src/components/home/pillars/RetirementTile.tsx`
+- `src/components/home/pillars/LifePlanningTile.tsx`
+- `src/components/home/pillars/InsightsTile.tsx`
+- `src/components/home/pillars/TaxTile.tsx`
 
-Approve and I'll generate the migration SQL in a single `supabase--migration` call. I'll inspect `pg_policies` first to identify the exact permissive policy so the fix is precise rather than guessed.
+Edited:
+- `src/pages/HomePage.tsx` — new layout: hero + 3×2 pillar grid + recommended actions.
+
+Untouched: detail pages, business logic, hooks, retirement engine.
+
+## Notes
+
+- Presentation-only change; all data comes from existing hooks (`useAccounts`, `useHouseholdProfiles`, `useTaxSummaries`, `useDBPensions`, `useSelectedRetirementScenario`).
+- Tiles share a consistent card format: small uppercase eyebrow, headline metric (text-2xl), one line of supporting context, chevron affordance. No gradients.
+- Deep links (`?view=map`, `?view=scenarios`) are added as query params; wiring those views inside `/wealth` and `/plan` is out of scope for this pass (tiles still navigate correctly and land on the right page).
