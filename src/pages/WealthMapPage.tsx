@@ -301,7 +301,8 @@ export default function WealthMapPage() {
       }
 
       // Detect drop target from underlying element
-      const el = document.elementFromPoint(event.clientX, event.clientY);
+      const point = "touches" in event ? event.changedTouches[0] : event;
+      const el = document.elementFromPoint(point.clientX, point.clientY);
       const targetEl = el?.closest("[data-id]") as HTMLElement | null;
       const targetId = targetEl?.getAttribute("data-id");
       const target = targetId ? nodes.find((n) => n.id === targetId) : null;
