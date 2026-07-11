@@ -153,7 +153,7 @@ export default function HomePage() {
         </div>
 
         {/* Right column: plan snapshot (smaller typography than before) */}
-        <div className="card-surface flex flex-col gap-5 p-6">
+        <div className="card-surface flex flex-col gap-4 p-6">
           <div className="flex items-center justify-between">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Retirement plan</p>
             <span className="rounded-full bg-secondary/80 px-2.5 py-1 text-[11px] font-semibold text-foreground">
@@ -163,20 +163,20 @@ export default function HomePage() {
 
           <div>
             <p className="text-xs text-muted-foreground">Projected monthly income</p>
-            <p className="mt-1 text-3xl font-semibold tracking-tight text-foreground">
+            <p className="mt-1 text-2xl font-semibold tracking-tight text-foreground">
               {monthlyIncome !== null ? formatCurrency(monthlyIncome) : "—"}
-              <span className="ml-1 text-base font-medium text-muted-foreground">/mo</span>
+              <span className="ml-1 text-sm font-medium text-muted-foreground">/mo</span>
             </p>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div className="rounded-2xl bg-secondary/60 px-3 py-2.5">
               <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">Target</p>
-              <p className="mt-1 text-base font-semibold text-foreground">{formatCurrency(monthlyTarget)}/mo</p>
+              <p className="mt-1 text-sm font-semibold text-foreground">{formatCurrency(monthlyTarget)}/mo</p>
             </div>
             <div className="rounded-2xl bg-secondary/60 px-3 py-2.5">
               <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">Readiness</p>
-              <p className="mt-1 text-base font-semibold text-foreground">
+              <p className="mt-1 text-sm font-semibold text-foreground">
                 {projection ? `${projection.result.readinessPct}%` : "—"}
               </p>
             </div>
