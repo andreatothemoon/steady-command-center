@@ -15,7 +15,6 @@ import {
   type RetirementInputs,
 } from "@/lib/retirementEngine";
 import type { DBPensionParams } from "@/lib/dbPensionEngine";
-import TopActionsCard from "@/components/home/TopActionsCard";
 import QuickActionsRow from "@/components/home/QuickActionsRow";
 import HouseholdWealthTile from "@/components/home/pillars/HouseholdWealthTile";
 import WealthMapTile from "@/components/home/pillars/WealthMapTile";
