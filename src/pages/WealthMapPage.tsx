@@ -168,10 +168,10 @@ function WealthNode({ data, selected }: NodeProps) {
       </span>
 
       <div className="min-w-0 flex-1">
-        <p className="truncate text-[13px] font-semibold leading-tight text-foreground">{meta.label}</p>
+        <p className="truncate text-[14px] font-semibold leading-tight text-foreground">{meta.label}</p>
         {meta.sublabel && (
           <p
-            className={`mt-0.5 truncate text-[11px] tabular-nums ${
+            className={`mt-0.5 truncate text-[12px] tabular-nums ${
               meta.isNegative ? "text-destructive" : "text-muted-foreground"
             }`}
           >
