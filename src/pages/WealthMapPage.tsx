@@ -351,7 +351,7 @@ export default function WealthMapPage() {
               label: a.name,
               sublabel: `${formatCurrency(displayVal, true)}${suffix ? ` ${suffix}` : ""}`,
               icon: ACCOUNT_ICON[a.account_type] ?? Wallet,
-              accent: bucket.accent,
+              color: BUCKET_COLOR[bucket.key],
               accountId: a.id,
               memberId: m.id,
               bucket: bucket.key,
