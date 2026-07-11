@@ -268,7 +268,7 @@ export default function WealthMapPage() {
         sublabel: `${formatCurrency(nw, true)} net worth`,
         count: accounts.length,
         icon: Users,
-        accent: "green",
+        color: "hsl(var(--primary))",
       } satisfies NodeMeta as unknown as Record<string, unknown>,
     });
 
