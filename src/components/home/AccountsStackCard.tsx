@@ -105,7 +105,7 @@ export default function AccountsStackCard({ accounts, netWorth }: Props) {
         {/* Header */}
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <p className="text-[1.35rem] font-semibold leading-tight tracking-[-0.02em] text-foreground">
+            <p className="text-lg font-semibold leading-tight tracking-tight text-foreground">
               Household wealth
             </p>
             <p className="mt-1 text-[13px] text-muted-foreground">
@@ -117,9 +117,9 @@ export default function AccountsStackCard({ accounts, netWorth }: Props) {
           <motion.span
             variants={{ rest: { x: 0 }, hover: { x: 3 } }}
             transition={{ type: "spring", stiffness: 300, damping: 22 }}
-            className="mt-1.5 flex h-6 w-6 items-center justify-center rounded-full text-muted-foreground/70"
+            className="mt-1 flex h-6 w-6 items-center justify-center rounded-full text-muted-foreground/70"
           >
-            <ChevronRight className="h-5 w-5" strokeWidth={2.25} />
+            <ChevronRight className="h-4 w-4" strokeWidth={2.25} />
           </motion.span>
         </div>
 
