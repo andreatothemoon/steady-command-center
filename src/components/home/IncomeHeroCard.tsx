@@ -57,7 +57,7 @@ export default function IncomeHeroCard({ monthlyIncome, retireAge, projection, t
       <div className="relative flex flex-col gap-8 xl:grid xl:grid-cols-[minmax(0,1.65fr)_24rem] xl:items-start">
         <div className="max-w-4xl">
           <div className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-white/75 px-4 py-2 text-sm font-medium text-foreground/70 backdrop-blur">
-            Current Plan
+            Retirement
           </div>
 
           <div className="mt-7 flex flex-wrap items-end gap-x-3 gap-y-2">
