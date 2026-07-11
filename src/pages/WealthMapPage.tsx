@@ -433,6 +433,11 @@ export default function WealthMapPage() {
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const [draggingAccount, setDraggingAccount] = useState<Account | null>(null);
 
+  useEffect(() => {
+    setNodes(initialNodes);
+    setEdges(initialEdges);
+  }, [initialNodes, initialEdges, setNodes, setEdges]);
+
   const onNodeDragStart = useCallback(
     (_e: MouseEvent | TouchEvent, node: Node) => {
       const meta = node.data as unknown as NodeMeta;
