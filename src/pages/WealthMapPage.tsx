@@ -338,7 +338,7 @@ export default function WealthMapPage() {
         });
 
         bucketAccounts.forEach((a) => {
-          const acctNodeId = `acct:${a.id}`;
+          const acctNodeId = `acct:${m.id}:${a.id}`;
           const displayVal = accountDisplayValue(a, dbProjections[a.id]?.projected);
           const suffix = a.account_type === "db_pension" ? "/yr projected" : "";
 
