@@ -261,7 +261,7 @@ function MapCanvas({
       onNodeDragStop={onNodeDragStop}
       onInit={handleInit}
       nodeTypes={nodeTypes}
-      minZoom={0.5}
+      minZoom={0.7}
       maxZoom={2}
       proOptions={{ hideAttribution: true }}
     >
