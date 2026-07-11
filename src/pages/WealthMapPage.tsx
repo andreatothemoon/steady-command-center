@@ -491,6 +491,7 @@ export default function WealthMapPage() {
           onEdgesChange={onEdgesChange}
           onNodeDragStart={onNodeDragStart}
           onNodeDragStop={onNodeDragStop}
+          onInit={onInit}
           nodeTypes={nodeTypes}
           fitView
           fitViewOptions={{ padding: 0.05 }}
