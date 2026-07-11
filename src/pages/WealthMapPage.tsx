@@ -1,3 +1,9 @@
+/**
+ * Wealth Map — visual hierarchy of the same buckets used on the Wealth page.
+ * Household → Member → Bucket (Guaranteed / Growth / Safety / Property & Debt) → Account.
+ * Values mirror WealthPage: DB pensions show projected income, guaranteed bucket
+ * shows estimated annual income, others show balances.
+ */
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ReactFlow,
@@ -16,57 +22,80 @@ import "@xyflow/react/dist/style.css";
 import dagre from "dagre";
 import { motion } from "framer-motion";
 import {
-  Landmark,
   Users,
   User,
+  Shield,
+  TrendingUp,
+  Landmark,
+  Home as HomeIcon,
   Wallet,
   PiggyBank,
-  Home,
   Banknote,
   CreditCard,
   Building2,
   Bitcoin,
-  TrendingUp,
   GripVertical,
   type LucideIcon,
 } from "lucide-react";
 import { useAccounts, useUpdateAccount, type Account } from "@/hooks/useAccounts";
+import { useDBPensions } from "@/hooks/useDBPensions";
+import type { DBPension } from "@/hooks/useDBPensions";
 import { useHouseholdProfiles } from "@/hooks/useHouseholdProfiles";
+import { projectDBPension } from "@/lib/dbPensionEngine";
+import { toDBPensionParams } from "@/lib/dbPensionRates";
+import { DEFAULT_DRAWDOWN_RATE } from "@/lib/retirementEngine";
 import { splitOwnerNames } from "@/lib/accountOwners";
 import { formatCurrency } from "@/lib/format";
 import { toast } from "@/hooks/use-toast";
 
-type NodeKind = "root" | "member" | "category" | "account";
+/* ─── Buckets mirror WealthPage ─── */
+type Bucket = "guaranteed" | "growth" | "safety" | "property";
 
-interface NodeMeta {
-  kind: NodeKind;
-  label: string;
-  sublabel?: string;
-  count?: number;
-  value?: number;
-  accent: "amber" | "green" | "orange" | "violet" | "sky" | "rose" | "slate";
-  icon: LucideIcon;
-  accountType?: string;
-  accountId?: string;
-  memberId?: string;
-  ownerName?: string;
-}
-
-const CATEGORIES: {
-  key: string;
+const BUCKETS: {
+  key: Bucket;
   label: string;
   icon: LucideIcon;
   accent: NodeMeta["accent"];
   types: string[];
+  description: string;
 }[] = [
-  { key: "cash", label: "Cash", icon: Banknote, accent: "sky", types: ["current_account", "savings"] },
-  { key: "isa", label: "ISAs", icon: Wallet, accent: "green", types: ["cash_isa", "stocks_and_shares_isa"] },
-  { key: "investments", label: "Investments", icon: TrendingUp, accent: "amber", types: ["gia", "employer_share_scheme"] },
-  { key: "pension", label: "Pensions", icon: PiggyBank, accent: "violet", types: ["sipp", "workplace_pension", "db_pension"] },
-  { key: "property", label: "Property", icon: Home, accent: "orange", types: ["property"] },
-  { key: "crypto", label: "Crypto", icon: Bitcoin, accent: "amber", types: ["crypto"] },
-  { key: "debt", label: "Debt", icon: CreditCard, accent: "rose", types: ["mortgage", "loan", "credit_card"] },
+  {
+    key: "guaranteed",
+    label: "Guaranteed Income",
+    icon: Shield,
+    accent: "violet",
+    types: ["db_pension", "workplace_pension", "sipp"],
+    description: "Pensions & annuities",
+  },
+  {
+    key: "growth",
+    label: "Growth Assets",
+    icon: TrendingUp,
+    accent: "amber",
+    types: ["stocks_and_shares_isa", "cash_isa", "gia", "crypto", "employer_share_scheme"],
+    description: "Invested drawdown capacity",
+  },
+  {
+    key: "safety",
+    label: "Safety Net",
+    icon: Landmark,
+    accent: "sky",
+    types: ["current_account", "savings"],
+    description: "Cash & short-term savings",
+  },
+  {
+    key: "property",
+    label: "Property & Debt",
+    icon: HomeIcon,
+    accent: "orange",
+    types: ["property", "mortgage", "loan", "credit_card"],
+    description: "Property equity & liabilities",
+  },
 ];
+
+function toBucket(type: string): Bucket {
+  return BUCKETS.find((b) => b.types.includes(type))?.key ?? "growth";
+}
 
 const ACCOUNT_ICON: Record<string, LucideIcon> = {
   current_account: Banknote,
@@ -77,13 +106,28 @@ const ACCOUNT_ICON: Record<string, LucideIcon> = {
   employer_share_scheme: TrendingUp,
   sipp: PiggyBank,
   workplace_pension: PiggyBank,
-  db_pension: PiggyBank,
-  property: Home,
+  db_pension: Shield,
+  property: HomeIcon,
   mortgage: Building2,
   loan: Landmark,
   credit_card: CreditCard,
   crypto: Bitcoin,
 };
+
+type NodeKind = "root" | "member" | "bucket" | "account";
+
+interface NodeMeta {
+  kind: NodeKind;
+  label: string;
+  sublabel?: string;
+  count?: number;
+  accent: "amber" | "green" | "orange" | "violet" | "sky" | "rose" | "slate";
+  icon: LucideIcon;
+  accountId?: string;
+  memberId?: string;
+  bucket?: Bucket;
+  isNegative?: boolean;
+}
 
 const ACCENT_STYLES: Record<NodeMeta["accent"], { ring: string; icon: string; badge: string; glow: string }> = {
   amber: { ring: "ring-amber-400/40", icon: "text-amber-400", badge: "bg-amber-400/15 text-amber-300", glow: "shadow-[0_0_40px_-15px_rgba(251,191,36,0.6)]" },
@@ -97,10 +141,6 @@ const ACCENT_STYLES: Record<NodeMeta["accent"], { ring: string; icon: string; ba
 
 const NODE_WIDTH = 240;
 const NODE_HEIGHT = 76;
-
-function categorize(type: string) {
-  return CATEGORIES.find((c) => c.types.includes(type));
-}
 
 function WealthNode({ data, selected }: NodeProps) {
   const meta = data as unknown as NodeMeta;
@@ -130,7 +170,9 @@ function WealthNode({ data, selected }: NodeProps) {
       <div className="min-w-0 flex-1">
         <p className="truncate text-[13px] font-semibold leading-tight text-white">{meta.label}</p>
         {meta.sublabel && (
-          <p className="mt-0.5 truncate text-[11px] text-white/50 tabular-nums">{meta.sublabel}</p>
+          <p className={`mt-0.5 truncate text-[11px] tabular-nums ${meta.isNegative ? "text-rose-300/80" : "text-white/50"}`}>
+            {meta.sublabel}
+          </p>
         )}
       </div>
 
@@ -162,17 +204,55 @@ function layout(nodes: Node[], edges: Edge[]): Node[] {
   });
 }
 
+/* ─── Value helpers aligned with WealthPage ─── */
+function accountDisplayValue(a: Account, dbProjected?: number): number {
+  if (a.account_type === "db_pension") return dbProjected ?? 0;
+  return Number(a.current_value);
+}
+
+function accountBucketContribution(a: Account, bucket: Bucket, dbProjected?: number): number {
+  if (a.account_type === "db_pension") return dbProjected ?? 0;
+  const val = Number(a.current_value);
+  if (bucket === "guaranteed" && val > 0) return Math.round(val * DEFAULT_DRAWDOWN_RATE);
+  return val;
+}
+
+function formatWithSuffix(bucket: Bucket, total: number): string {
+  const rounded = Math.round(total);
+  return `${formatCurrency(rounded, true)}${bucket === "guaranteed" ? "/yr" : ""}`;
+}
+
 export default function WealthMapPage() {
   const { data: accounts = [] } = useAccounts();
+  const { data: dbPensions = [] } = useDBPensions();
   const { data: profiles = [] } = useHouseholdProfiles();
   const adults = useMemo(() => profiles.filter((p) => p.role === "adult"), [profiles]);
   const updateAccount = useUpdateAccount();
 
-  const { initialNodes, initialEdges } = useMemo(() => {
+  // DB pension projections keyed by account_id — same as WealthPage
+  const dbProjections = useMemo(() => {
+    const map: Record<string, { pension: DBPension; projected: number }> = {};
+    dbPensions.forEach((p) => {
+      if (p.account_id) {
+        const params = toDBPensionParams(p);
+        const result = projectDBPension(params);
+        map[p.account_id] = { pension: p, projected: result.projected_annual_income };
+      }
+    });
+    return map;
+  }, [dbPensions]);
+
+  const { initialNodes, initialEdges, netWorth } = useMemo(() => {
     const nodes: Node[] = [];
     const edges: Edge[] = [];
 
-    const totalWealth = accounts.reduce((s, a) => s + Number(a.current_value), 0);
+    const totalAssets = accounts
+      .filter((a) => Number(a.current_value) > 0)
+      .reduce((s, a) => s + Number(a.current_value), 0);
+    const totalLiabilities = accounts
+      .filter((a) => Number(a.current_value) < 0)
+      .reduce((s, a) => s + Number(a.current_value), 0);
+    const nw = totalAssets + totalLiabilities;
 
     nodes.push({
       id: "root",
@@ -181,7 +261,7 @@ export default function WealthMapPage() {
       data: {
         kind: "root",
         label: "Household",
-        sublabel: formatCurrency(totalWealth, true),
+        sublabel: `${formatCurrency(nw, true)} net worth`,
         count: accounts.length,
         icon: Users,
         accent: "green",
@@ -199,7 +279,9 @@ export default function WealthMapPage() {
           ? splitOwnerNames(a.owner_name).length === 0
           : splitOwnerNames(a.owner_name).includes(m.name.toLowerCase()),
       );
-      const memberValue = memberAccounts.reduce((s, a) => s + Number(a.current_value), 0);
+      if (memberAccounts.length === 0 && m.id !== "unassigned") return;
+
+      const memberNet = memberAccounts.reduce((s, a) => s + Number(a.current_value), 0);
       const memberNodeId = `member:${m.id}`;
 
       nodes.push({
@@ -209,38 +291,53 @@ export default function WealthMapPage() {
         data: {
           kind: "member",
           label: m.name,
-          sublabel: formatCurrency(memberValue, true),
+          sublabel: `${formatCurrency(memberNet, true)} net`,
           count: memberAccounts.length,
           icon: User,
-          accent: "amber",
+          accent: "green",
           memberId: m.id,
+          isNegative: memberNet < 0,
         } satisfies NodeMeta as unknown as Record<string, unknown>,
       });
       edges.push({ id: `e:root-${memberNodeId}`, source: "root", target: memberNodeId, type: "smoothstep" });
 
-      CATEGORIES.forEach((cat) => {
-        const catAccounts = memberAccounts.filter((a) => cat.types.includes(a.account_type));
-        if (catAccounts.length === 0) return;
-        const catValue = catAccounts.reduce((s, a) => s + Number(a.current_value), 0);
-        const catNodeId = `cat:${m.id}:${cat.key}`;
+      BUCKETS.forEach((bucket) => {
+        const bucketAccounts = memberAccounts.filter((a) => toBucket(a.account_type) === bucket.key);
+        if (bucketAccounts.length === 0) return;
+
+        const bucketTotal = bucketAccounts.reduce(
+          (s, a) => s + accountBucketContribution(a, bucket.key, dbProjections[a.id]?.projected),
+          0,
+        );
+        const bucketNodeId = `bucket:${m.id}:${bucket.key}`;
 
         nodes.push({
-          id: catNodeId,
+          id: bucketNodeId,
           type: "wealth",
           position: { x: 0, y: 0 },
           data: {
-            kind: "category",
-            label: cat.label,
-            sublabel: formatCurrency(catValue, true),
-            count: catAccounts.length,
-            icon: cat.icon,
-            accent: cat.accent,
+            kind: "bucket",
+            label: bucket.label,
+            sublabel: formatWithSuffix(bucket.key, bucketTotal),
+            count: bucketAccounts.length,
+            icon: bucket.icon,
+            accent: bucket.accent,
+            bucket: bucket.key,
+            isNegative: bucketTotal < 0,
           } satisfies NodeMeta as unknown as Record<string, unknown>,
         });
-        edges.push({ id: `e:${memberNodeId}-${catNodeId}`, source: memberNodeId, target: catNodeId, type: "smoothstep" });
+        edges.push({
+          id: `e:${memberNodeId}-${bucketNodeId}`,
+          source: memberNodeId,
+          target: bucketNodeId,
+          type: "smoothstep",
+        });
 
-        catAccounts.forEach((a) => {
+        bucketAccounts.forEach((a) => {
           const acctNodeId = `acct:${a.id}`;
+          const displayVal = accountDisplayValue(a, dbProjections[a.id]?.projected);
+          const suffix = a.account_type === "db_pension" ? "/yr projected" : "";
+
           nodes.push({
             id: acctNodeId,
             type: "wealth",
@@ -248,16 +345,21 @@ export default function WealthMapPage() {
             data: {
               kind: "account",
               label: a.name,
-              sublabel: formatCurrency(Number(a.current_value), true),
+              sublabel: `${formatCurrency(displayVal, true)}${suffix ? ` ${suffix}` : ""}`,
               icon: ACCOUNT_ICON[a.account_type] ?? Wallet,
-              accent: cat.accent,
+              accent: bucket.accent,
               accountId: a.id,
-              accountType: a.account_type,
-              ownerName: a.owner_name,
               memberId: m.id,
+              bucket: bucket.key,
+              isNegative: displayVal < 0,
             } satisfies NodeMeta as unknown as Record<string, unknown>,
           });
-          edges.push({ id: `e:${catNodeId}-${acctNodeId}`, source: catNodeId, target: acctNodeId, type: "smoothstep" });
+          edges.push({
+            id: `e:${bucketNodeId}-${acctNodeId}`,
+            source: bucketNodeId,
+            target: acctNodeId,
+            type: "smoothstep",
+          });
         });
       });
     });
@@ -269,14 +371,13 @@ export default function WealthMapPage() {
       style: { stroke: "hsl(215 20% 30%)", strokeWidth: 1.25 },
     }));
 
-    return { initialNodes: laid, initialEdges: styledEdges };
-  }, [accounts, adults]);
+    return { initialNodes: laid, initialEdges: styledEdges, netWorth: nw };
+  }, [accounts, adults, dbProjections]);
 
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const [draggingAccount, setDraggingAccount] = useState<Account | null>(null);
 
-  // Re-hydrate when data changes
   useEffect(() => {
     setNodes(initialNodes);
     setEdges(initialEdges);
@@ -300,7 +401,6 @@ export default function WealthMapPage() {
         return;
       }
 
-      // Detect drop target from underlying element
       const point = "touches" in event ? event.changedTouches[0] : event;
       const el = document.elementFromPoint(point.clientX, point.clientY);
       const targetEl = el?.closest("[data-id]") as HTMLElement | null;
@@ -328,7 +428,6 @@ export default function WealthMapPage() {
           }
         }
       } else {
-        // Snap back to layout position
         setNodes((prev) =>
           prev.map((n) => {
             if (n.id !== node.id) return n;
@@ -344,11 +443,28 @@ export default function WealthMapPage() {
 
   return (
     <div className="flex h-[calc(100vh-8rem)] flex-col gap-4">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight text-foreground">Wealth map</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Household → member → category → account. Drag an account onto a member to reassign ownership.
-        </p>
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight text-foreground">Wealth map</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Household → member → bucket → account. Same buckets as the Wealth page. Drag an account onto a member to reassign ownership.
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-2 text-[11px] text-white/60">
+          {BUCKETS.map((b) => {
+            const Icon = b.icon;
+            const styles = ACCENT_STYLES[b.accent];
+            return (
+              <span
+                key={b.key}
+                className={`flex items-center gap-1.5 rounded-full border border-white/10 bg-[#0f1520] px-2.5 py-1 ${styles.icon}`}
+              >
+                <Icon className="h-3 w-3" strokeWidth={2.25} />
+                <span className="text-white/70">{b.label}</span>
+              </span>
+            );
+          })}
+        </div>
       </div>
 
       <div className="relative flex-1 overflow-hidden rounded-3xl border border-border/60 bg-[#0a0e17]">
@@ -375,6 +491,11 @@ export default function WealthMapPage() {
           />
           <Controls className="!bg-[#0f1520] !border-white/10 [&>button]:!bg-transparent [&>button]:!border-white/10 [&>button]:!text-white/70 [&>button:hover]:!bg-white/5" />
         </ReactFlow>
+
+        <div className="pointer-events-none absolute left-6 top-6 rounded-2xl border border-white/10 bg-[#0f1520]/90 px-4 py-2 text-xs text-white/70 backdrop-blur">
+          <span className="text-white/50">Net worth</span>{" "}
+          <span className="font-semibold text-white tabular-nums">{formatCurrency(netWorth, true)}</span>
+        </div>
 
         {draggingAccount && (
           <div className="pointer-events-none absolute left-1/2 top-6 -translate-x-1/2 rounded-full bg-primary/90 px-4 py-2 text-xs font-semibold text-primary-foreground shadow-lg">
