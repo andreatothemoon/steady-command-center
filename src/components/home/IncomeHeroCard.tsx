@@ -33,9 +33,9 @@ export default function IncomeHeroCard({ monthlyIncome, retireAge, projection, t
       <div className="hero-surface p-10">
         <div className="py-6">
           <div className="inline-flex items-center gap-2 rounded-full bg-secondary px-4 py-2 text-sm font-medium text-foreground/70">
-            Current Plan
+            Retirement
           </div>
-          <p className="mt-8 text-5xl font-semibold tracking-tight text-foreground">Plan not set up</p>
+          <p className="mt-8 text-5xl font-semibold tracking-tight text-foreground">No retirement scenario set up</p>
           <p className="mt-3 max-w-xl text-base text-muted-foreground">
             Set up a retirement scenario to see your projected income, target gap, and recommended next actions.
           </p>
