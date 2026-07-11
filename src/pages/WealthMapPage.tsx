@@ -252,13 +252,6 @@ function MapCanvas({
     setTimeout(() => zoomTo(1, { duration: 200 }), 250);
   }, [fitView, zoomTo]);
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      fitView({ padding: 0.05, duration: 200 });
-    }, 100);
-    return () => clearTimeout(timer);
-  }, [nodes, edges, fitView]);
-
   return (
     <ReactFlow
       nodes={nodes}
