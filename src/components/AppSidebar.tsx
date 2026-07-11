@@ -4,6 +4,7 @@ import {
   Home,
   LineChart,
   Wallet,
+  Network,
   Zap,
   Receipt,
   User,
