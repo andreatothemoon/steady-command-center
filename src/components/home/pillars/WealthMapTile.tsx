@@ -42,7 +42,7 @@ export default function WealthMapTile({ accounts }: Props) {
 
   return (
     <PillarTile
-      to="/wealth?view=map"
+      to="/wealth-map"
       eyebrow="Allocation"
       title="Wealth map"
       icon={Map}

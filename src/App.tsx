@@ -14,6 +14,7 @@ import WealthPage from "@/pages/WealthPage";
 import ActionsPage from "@/pages/ActionsPage";
 import ProfilePage from "@/pages/ProfilePage";
 import TaxPage from "@/pages/TaxPage";
+import WealthMapPage from "@/pages/WealthMapPage";
 import AuthPage from "@/pages/AuthPage";
 import AcceptInvitePage from "@/pages/AcceptInvitePage";
 import PendingApprovalPage from "@/pages/PendingApprovalPage";
@@ -50,6 +51,7 @@ function ProtectedRoutes() {
             <Route path="/" element={<HomePage />} />
             <Route path="/plan" element={<PlanPage />} />
             <Route path="/wealth" element={<WealthPage />} />
+            <Route path="/wealth-map" element={<WealthMapPage />} />
             <Route path="/actions" element={<ActionsPage />} />
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/tax" element={<TaxPage />} />
