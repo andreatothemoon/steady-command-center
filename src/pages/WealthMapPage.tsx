@@ -389,7 +389,7 @@ export default function WealthMapPage() {
     }));
 
     return { initialNodes: laid, initialEdges: styledEdges, netWorth: nw };
-  }, [accounts, adults, dbProjections]);
+  }, [accounts, adults, dbProjections, groupJoint]);
 
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
