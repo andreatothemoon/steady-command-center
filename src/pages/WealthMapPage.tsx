@@ -382,10 +382,20 @@ export default function WealthMapPage() {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const [draggingAccount, setDraggingAccount] = useState<Account | null>(null);
+  const flowRef = useRef<ReactFlowInstance | null>(null);
+
+  const onInit = useCallback((instance: ReactFlowInstance) => {
+    flowRef.current = instance;
+    instance.fitView({ padding: 0.05, duration: 200 });
+  }, []);
 
   useEffect(() => {
     setNodes(initialNodes);
     setEdges(initialEdges);
+    const timer = setTimeout(() => {
+      flowRef.current?.fitView({ padding: 0.05, duration: 200 });
+    }, 100);
+    return () => clearTimeout(timer);
   }, [initialNodes, initialEdges, setNodes, setEdges]);
 
   const onNodeDragStart = useCallback(
