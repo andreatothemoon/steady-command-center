@@ -51,11 +51,18 @@ import { toast } from "@/hooks/use-toast";
 /* ─── Buckets mirror WealthPage ─── */
 type Bucket = "guaranteed" | "growth" | "safety" | "property";
 
+/* Bucket accent colors mirror WealthPage donut / allocation story */
+const BUCKET_COLOR: Record<Bucket, string> = {
+  guaranteed: "#091540",
+  growth: "#efcb68",
+  safety: "#aeb7b3",
+  property: "#895b1e",
+};
+
 const BUCKETS: {
   key: Bucket;
   label: string;
   icon: LucideIcon;
-  accent: NodeMeta["accent"];
   types: string[];
   description: string;
 }[] = [
@@ -63,7 +70,6 @@ const BUCKETS: {
     key: "guaranteed",
     label: "Guaranteed Income",
     icon: Shield,
-    accent: "violet",
     types: ["db_pension", "workplace_pension", "sipp"],
     description: "Pensions & annuities",
   },
@@ -71,7 +77,6 @@ const BUCKETS: {
     key: "growth",
     label: "Growth Assets",
     icon: TrendingUp,
-    accent: "amber",
     types: ["stocks_and_shares_isa", "cash_isa", "gia", "crypto", "employer_share_scheme"],
     description: "Invested drawdown capacity",
   },
@@ -79,7 +84,6 @@ const BUCKETS: {
     key: "safety",
     label: "Safety Net",
     icon: Landmark,
-    accent: "sky",
     types: ["current_account", "savings"],
     description: "Cash & short-term savings",
   },
@@ -87,7 +91,6 @@ const BUCKETS: {
     key: "property",
     label: "Property & Debt",
     icon: HomeIcon,
-    accent: "orange",
     types: ["property", "mortgage", "loan", "credit_card"],
     description: "Property equity & liabilities",
   },
@@ -121,7 +124,7 @@ interface NodeMeta {
   label: string;
   sublabel?: string;
   count?: number;
-  accent: "amber" | "green" | "orange" | "violet" | "sky" | "rose" | "slate";
+  color: string; // CSS color (hex or hsl()) for icon + ring tint
   icon: LucideIcon;
   accountId?: string;
   memberId?: string;
@@ -129,23 +132,12 @@ interface NodeMeta {
   isNegative?: boolean;
 }
 
-const ACCENT_STYLES: Record<NodeMeta["accent"], { ring: string; icon: string; badge: string; glow: string }> = {
-  amber: { ring: "ring-amber-400/40", icon: "text-amber-400", badge: "bg-amber-400/15 text-amber-300", glow: "shadow-[0_0_40px_-15px_rgba(251,191,36,0.6)]" },
-  green: { ring: "ring-emerald-400/40", icon: "text-emerald-400", badge: "bg-emerald-400/15 text-emerald-300", glow: "shadow-[0_0_40px_-15px_rgba(52,211,153,0.6)]" },
-  orange: { ring: "ring-orange-400/40", icon: "text-orange-400", badge: "bg-orange-400/15 text-orange-300", glow: "shadow-[0_0_40px_-15px_rgba(251,146,60,0.6)]" },
-  violet: { ring: "ring-violet-400/40", icon: "text-violet-400", badge: "bg-violet-400/15 text-violet-300", glow: "shadow-[0_0_40px_-15px_rgba(167,139,250,0.6)]" },
-  sky: { ring: "ring-sky-400/40", icon: "text-sky-400", badge: "bg-sky-400/15 text-sky-300", glow: "shadow-[0_0_40px_-15px_rgba(56,189,248,0.6)]" },
-  rose: { ring: "ring-rose-400/40", icon: "text-rose-400", badge: "bg-rose-400/15 text-rose-300", glow: "shadow-[0_0_40px_-15px_rgba(251,113,133,0.6)]" },
-  slate: { ring: "ring-slate-400/30", icon: "text-slate-300", badge: "bg-slate-400/15 text-slate-200", glow: "shadow-[0_0_40px_-15px_rgba(148,163,184,0.5)]" },
-};
-
 const NODE_WIDTH = 240;
 const NODE_HEIGHT = 76;
 
 function WealthNode({ data, selected }: NodeProps) {
   const meta = data as unknown as NodeMeta;
   const Icon = meta.icon;
-  const styles = ACCENT_STYLES[meta.accent];
   const isRoot = meta.kind === "root";
 
   return (
@@ -153,24 +145,35 @@ function WealthNode({ data, selected }: NodeProps) {
       initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.25, ease: "easeOut" }}
-      className={`group relative flex items-center gap-3 rounded-2xl border border-white/5 bg-[#0f1520] px-4 py-3 ring-1 ${styles.ring} ${styles.glow} ${
-        selected ? "ring-2 ring-primary/60" : ""
-      }`}
-      style={{ width: NODE_WIDTH, minHeight: NODE_HEIGHT }}
+      className="group relative flex items-center gap-3 rounded-2xl border border-border/60 bg-card px-4 py-3 shadow-sm"
+      style={{
+        width: NODE_WIDTH,
+        minHeight: NODE_HEIGHT,
+        boxShadow: `0 1px 2px hsl(var(--foreground) / 0.04), 0 8px 24px -12px ${meta.color}40`,
+        outline: selected ? `2px solid hsl(var(--ring))` : `1px solid ${meta.color}33`,
+        outlineOffset: selected ? 0 : -1,
+      }}
     >
-      {!isRoot && <Handle type="target" position={Position.Top} className="!h-2 !w-2 !border-0 !bg-white/20" />}
+      {!isRoot && <Handle type="target" position={Position.Top} className="!h-2 !w-2 !border-0 !bg-border" />}
       {meta.kind !== "account" && (
-        <Handle type="source" position={Position.Bottom} className="!h-2 !w-2 !border-0 !bg-white/20" />
+        <Handle type="source" position={Position.Bottom} className="!h-2 !w-2 !border-0 !bg-border" />
       )}
 
-      <span className={`flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-white/[0.04] ${styles.icon}`}>
+      <span
+        className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl"
+        style={{ backgroundColor: `${meta.color}1a`, color: meta.color }}
+      >
         <Icon className="h-4 w-4" strokeWidth={2.25} />
       </span>
 
       <div className="min-w-0 flex-1">
-        <p className="truncate text-[13px] font-semibold leading-tight text-white">{meta.label}</p>
+        <p className="truncate text-[13px] font-semibold leading-tight text-foreground">{meta.label}</p>
         {meta.sublabel && (
-          <p className={`mt-0.5 truncate text-[11px] tabular-nums ${meta.isNegative ? "text-rose-300/80" : "text-white/50"}`}>
+          <p
+            className={`mt-0.5 truncate text-[11px] tabular-nums ${
+              meta.isNegative ? "text-destructive" : "text-muted-foreground"
+            }`}
+          >
             {meta.sublabel}
           </p>
         )}
@@ -178,13 +181,14 @@ function WealthNode({ data, selected }: NodeProps) {
 
       {typeof meta.count === "number" && meta.count > 0 && (
         <span
-          className={`absolute -top-2 -right-2 flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-[10px] font-bold ${styles.badge}`}
+          className="absolute -top-2 -right-2 flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-[10px] font-bold"
+          style={{ backgroundColor: `${meta.color}26`, color: meta.color }}
         >
           {meta.count}
         </span>
       )}
 
-      <GripVertical className="h-3.5 w-3.5 flex-shrink-0 text-white/20 transition-colors group-hover:text-white/40" />
+      <GripVertical className="h-3.5 w-3.5 flex-shrink-0 text-muted-foreground/40 transition-colors group-hover:text-muted-foreground" />
     </motion.div>
   );
 }
@@ -264,7 +268,7 @@ export default function WealthMapPage() {
         sublabel: `${formatCurrency(nw, true)} net worth`,
         count: accounts.length,
         icon: Users,
-        accent: "green",
+        color: "hsl(var(--primary))",
       } satisfies NodeMeta as unknown as Record<string, unknown>,
     });
 
@@ -294,7 +298,7 @@ export default function WealthMapPage() {
           sublabel: `${formatCurrency(memberNet, true)} net`,
           count: memberAccounts.length,
           icon: User,
-          accent: "green",
+          color: "hsl(var(--primary))",
           memberId: m.id,
           isNegative: memberNet < 0,
         } satisfies NodeMeta as unknown as Record<string, unknown>,
@@ -321,7 +325,7 @@ export default function WealthMapPage() {
             sublabel: formatWithSuffix(bucket.key, bucketTotal),
             count: bucketAccounts.length,
             icon: bucket.icon,
-            accent: bucket.accent,
+            color: BUCKET_COLOR[bucket.key],
             bucket: bucket.key,
             isNegative: bucketTotal < 0,
           } satisfies NodeMeta as unknown as Record<string, unknown>,
@@ -347,7 +351,7 @@ export default function WealthMapPage() {
               label: a.name,
               sublabel: `${formatCurrency(displayVal, true)}${suffix ? ` ${suffix}` : ""}`,
               icon: ACCOUNT_ICON[a.account_type] ?? Wallet,
-              accent: bucket.accent,
+              color: BUCKET_COLOR[bucket.key],
               accountId: a.id,
               memberId: m.id,
               bucket: bucket.key,
@@ -450,24 +454,25 @@ export default function WealthMapPage() {
             Household → member → bucket → account. Same buckets as the Wealth page. Drag an account onto a member to reassign ownership.
           </p>
         </div>
-        <div className="flex flex-wrap gap-2 text-[11px] text-white/60">
+        <div className="flex flex-wrap gap-2 text-[11px]">
           {BUCKETS.map((b) => {
             const Icon = b.icon;
-            const styles = ACCENT_STYLES[b.accent];
+            const color = BUCKET_COLOR[b.key];
             return (
               <span
                 key={b.key}
-                className={`flex items-center gap-1.5 rounded-full border border-white/10 bg-[#0f1520] px-2.5 py-1 ${styles.icon}`}
+                className="flex items-center gap-1.5 rounded-full border border-border/60 bg-card px-2.5 py-1 text-muted-foreground"
+                style={{ borderColor: `${color}33` }}
               >
-                <Icon className="h-3 w-3" strokeWidth={2.25} />
-                <span className="text-white/70">{b.label}</span>
+                <Icon className="h-3 w-3" strokeWidth={2.25} style={{ color }} />
+                <span className="text-foreground/80">{b.label}</span>
               </span>
             );
           })}
         </div>
       </div>
 
-      <div className="relative flex-1 overflow-hidden rounded-3xl border border-border/60 bg-[#0a0e17]">
+      <div className="card-surface relative flex-1 overflow-hidden !p-0">
         <ReactFlow
           nodes={nodes}
           edges={edges}
@@ -482,23 +487,23 @@ export default function WealthMapPage() {
           minZoom={0.2}
           maxZoom={1.5}
         >
-          <Background color="hsl(215 20% 20%)" gap={24} size={1} />
+          <Background color="hsl(var(--border))" gap={24} size={1} />
           <MiniMap
-            className="!bg-[#0f1520] !border-white/10"
-            maskColor="rgba(10,14,23,0.85)"
-            nodeColor="#1e293b"
-            nodeStrokeColor="#334155"
+            className="!bg-card !border-border"
+            maskColor="hsl(var(--background) / 0.85)"
+            nodeColor="hsl(var(--secondary))"
+            nodeStrokeColor="hsl(var(--border))"
           />
-          <Controls className="!bg-[#0f1520] !border-white/10 [&>button]:!bg-transparent [&>button]:!border-white/10 [&>button]:!text-white/70 [&>button:hover]:!bg-white/5" />
+          <Controls className="!bg-card !border-border [&>button]:!bg-transparent [&>button]:!border-border [&>button]:!text-muted-foreground [&>button:hover]:!bg-secondary" />
         </ReactFlow>
 
-        <div className="pointer-events-none absolute left-6 top-6 rounded-2xl border border-white/10 bg-[#0f1520]/90 px-4 py-2 text-xs text-white/70 backdrop-blur">
-          <span className="text-white/50">Net worth</span>{" "}
-          <span className="font-semibold text-white tabular-nums">{formatCurrency(netWorth, true)}</span>
+        <div className="pointer-events-none absolute left-6 top-6 rounded-2xl border border-border/60 bg-card/90 px-4 py-2 text-xs text-muted-foreground shadow-sm backdrop-blur">
+          <span>Net worth</span>{" "}
+          <span className="font-semibold text-foreground tabular-nums">{formatCurrency(netWorth, true)}</span>
         </div>
 
         {draggingAccount && (
-          <div className="pointer-events-none absolute left-1/2 top-6 -translate-x-1/2 rounded-full bg-primary/90 px-4 py-2 text-xs font-semibold text-primary-foreground shadow-lg">
+          <div className="pointer-events-none absolute left-1/2 top-6 -translate-x-1/2 rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground shadow-lg">
             Drop on a member to reassign {draggingAccount.name}
           </div>
         )}
