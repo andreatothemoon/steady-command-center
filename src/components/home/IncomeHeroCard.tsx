@@ -33,14 +33,14 @@ export default function IncomeHeroCard({ monthlyIncome, retireAge, projection, t
       <div className="hero-surface p-10">
         <div className="py-6">
           <div className="inline-flex items-center gap-2 rounded-full bg-secondary px-4 py-2 text-sm font-medium text-foreground/70">
-            Current Plan
+            Retirement
           </div>
-          <p className="mt-8 text-5xl font-semibold tracking-tight text-foreground">Plan not set up</p>
+          <p className="mt-8 text-5xl font-semibold tracking-tight text-foreground">No retirement scenario set up</p>
           <p className="mt-3 max-w-xl text-base text-muted-foreground">
             Set up a retirement scenario to see your projected income, target gap, and recommended next actions.
           </p>
           <button
-            onClick={() => navigate("/plan")}
+            onClick={() => navigate("/retirement")}
             className="mt-8 inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/92"
           >
             Get Started <ArrowRight className="h-4 w-4" />
@@ -57,7 +57,7 @@ export default function IncomeHeroCard({ monthlyIncome, retireAge, projection, t
       <div className="relative flex flex-col gap-8 xl:grid xl:grid-cols-[minmax(0,1.65fr)_24rem] xl:items-start">
         <div className="max-w-4xl">
           <div className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-white/75 px-4 py-2 text-sm font-medium text-foreground/70 backdrop-blur">
-            Current Plan
+            Retirement
           </div>
 
           <div className="mt-7 flex flex-wrap items-end gap-x-3 gap-y-2">
@@ -94,7 +94,7 @@ export default function IncomeHeroCard({ monthlyIncome, retireAge, projection, t
         </div>
 
         <div className="rounded-[30px] border border-border/70 bg-white/85 p-6 shadow-[0_18px_44px_-30px_hsl(var(--foreground)/0.22)] backdrop-blur">
-          <p className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">Plan Snapshot</p>
+          <p className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">Retirement Snapshot</p>
           <div className="mt-6 space-y-5">
             <div>
               <p className="mb-1 text-sm font-medium text-foreground/60">Confidence</p>
@@ -128,13 +128,13 @@ export default function IncomeHeroCard({ monthlyIncome, retireAge, projection, t
               </div>
             </div>
             <button
-              onClick={() => navigate("/plan")}
+              onClick={() => navigate("/retirement")}
               className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-primary px-6 py-3.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/92"
             >
               Model scenarios <ArrowRight className="h-4 w-4" />
             </button>
             <p className="text-center text-xs text-muted-foreground">
-              Explore contribution, retirement age, and other income changes in your live plan.
+              Explore contribution, retirement age, and other income changes in your retirement scenario.
             </p>
           </div>
         </div>

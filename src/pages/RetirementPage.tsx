@@ -1,5 +1,5 @@
 /**
- * Plan Page — absorbs Retirement + DB Pensions
+ * Retirement Page — scenario modeling, DB pensions and income planning
  * Interactive modeling with sliders, scenario comparison, DB pension integration
  */
 import { useState, useMemo, useEffect, useRef, useCallback } from "react";
@@ -76,7 +76,7 @@ function buildOtherIncomeSources(values: {
   ];
 }
 
-export default function PlanPage() {
+export default function RetirementPage() {
   const { householdId } = useAuth();
   const qc = useQueryClient();
 
@@ -424,8 +424,8 @@ export default function PlanPage() {
   return (
     <motion.div className="space-y-8" variants={stagger.container} initial="initial" animate="animate">
       <motion.div variants={stagger.item}>
-        <h1 className="text-4xl font-semibold tracking-tight text-foreground">Plan</h1>
-        <p className="mt-2 text-muted-foreground">Compare scenarios, explore trade-offs, and tune the assumptions behind your retirement plan.</p>
+        <h1 className="text-4xl font-semibold tracking-tight text-foreground">Retirement</h1>
+        <p className="mt-2 text-muted-foreground">Compare scenarios, explore trade-offs, and tune the assumptions behind your retirement income.</p>
       </motion.div>
 
       <motion.div variants={stagger.item}>

@@ -6,7 +6,7 @@ export default function DoMoreCard() {
 
   return (
     <button
-      onClick={() => navigate("/plan")}
+      onClick={() => navigate("/retirement")}
       className="card-surface group relative flex h-full min-h-[260px] w-full flex-col items-center justify-center gap-5 overflow-hidden p-8 text-center transition-shadow hover:shadow-sm"
     >
       <div>

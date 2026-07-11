@@ -22,7 +22,7 @@ import { useState } from "react";
 
 const navItems = [
   { to: "/", label: "Home", icon: Home },
-  { to: "/plan", label: "Plan", icon: LineChart },
+  { to: "/retirement", label: "Retirement", icon: LineChart },
   { to: "/wealth", label: "Wealth", icon: Wallet },
   { to: "/wealth-map", label: "Wealth map", icon: Network },
   { to: "/actions", label: "Actions", icon: Zap },

@@ -17,9 +17,9 @@ export default function RetirementTile({ projection, retireAge, targetIncome }: 
 
   return (
     <PillarTile
-      to="/plan"
+      to="/retirement"
       eyebrow="Retirement"
-      title={`Plan for age ${retireAge}`}
+      title={`Retirement at ${retireAge}`}
       icon={Target}
       accent="success"
       footer={
