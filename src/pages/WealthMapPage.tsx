@@ -268,7 +268,7 @@ function MapCanvas({
       onNodeDragStop={onNodeDragStop}
       onInit={handleInit}
       nodeTypes={nodeTypes}
-      minZoom={0.5}
+      minZoom={1}
       maxZoom={2}
       proOptions={{ hideAttribution: true }}
     >
@@ -504,7 +504,7 @@ export default function WealthMapPage() {
   );
 
   return (
-    <div className="flex h-[calc(100vh-8rem)] flex-col gap-4">
+    <div className="flex h-[calc(100vh-4rem)] flex-col gap-4">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight text-foreground">Wealth map</h1>
