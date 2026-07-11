@@ -9,20 +9,20 @@ export default function BridgeGapCard({ retireAge }: Props) {
 
   return (
     <div className="card-surface h-full p-6">
-      <div className="mb-8 flex items-start justify-between">
-        <div className="flex h-12 w-12 items-center justify-center rounded-[22px] bg-destructive/10">
-          <Calendar className="h-5 w-5 text-destructive" />
+      <div className="mb-6 flex items-start justify-between">
+        <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-destructive/10">
+          <Calendar className="h-[18px] w-[18px] text-destructive" />
         </div>
-        <div className="rounded-full border border-border/60 bg-white/80 px-3 py-1 text-xs font-medium text-muted-foreground">
+        <div className="rounded-full border border-border/60 bg-white/80 px-2.5 py-0.5 text-[11px] font-medium text-muted-foreground">
           Bridge years
         </div>
       </div>
 
-      <h3 className="mb-3 text-lg font-semibold tracking-tight text-foreground">Bridge Gap</h3>
-      <p className="mb-2 text-3xl font-semibold leading-none tracking-tight text-foreground">
+      <h3 className="mb-2 text-sm font-medium text-muted-foreground">Bridge Gap</h3>
+      <p className="mb-2 text-2xl font-semibold leading-none tracking-tight text-foreground">
         {bridgeYears === 0 ? "None" : `${bridgeYears} years`}
       </p>
-      <p className="text-sm text-muted-foreground">
+      <p className="text-[13px] text-muted-foreground">
         {bridgeYears === 0 ? "State Pension begins when you retire." : "Years to fund before State Pension starts."}
       </p>
     </div>
