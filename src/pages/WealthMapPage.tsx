@@ -51,11 +51,18 @@ import { toast } from "@/hooks/use-toast";
 /* ─── Buckets mirror WealthPage ─── */
 type Bucket = "guaranteed" | "growth" | "safety" | "property";
 
+/* Bucket accent colors mirror WealthPage donut / allocation story */
+const BUCKET_COLOR: Record<Bucket, string> = {
+  guaranteed: "#091540",
+  growth: "#efcb68",
+  safety: "#aeb7b3",
+  property: "#895b1e",
+};
+
 const BUCKETS: {
   key: Bucket;
   label: string;
   icon: LucideIcon;
-  accent: NodeMeta["accent"];
   types: string[];
   description: string;
 }[] = [
@@ -63,7 +70,6 @@ const BUCKETS: {
     key: "guaranteed",
     label: "Guaranteed Income",
     icon: Shield,
-    accent: "violet",
     types: ["db_pension", "workplace_pension", "sipp"],
     description: "Pensions & annuities",
   },
@@ -71,7 +77,6 @@ const BUCKETS: {
     key: "growth",
     label: "Growth Assets",
     icon: TrendingUp,
-    accent: "amber",
     types: ["stocks_and_shares_isa", "cash_isa", "gia", "crypto", "employer_share_scheme"],
     description: "Invested drawdown capacity",
   },
@@ -79,7 +84,6 @@ const BUCKETS: {
     key: "safety",
     label: "Safety Net",
     icon: Landmark,
-    accent: "sky",
     types: ["current_account", "savings"],
     description: "Cash & short-term savings",
   },
@@ -87,7 +91,6 @@ const BUCKETS: {
     key: "property",
     label: "Property & Debt",
     icon: HomeIcon,
-    accent: "orange",
     types: ["property", "mortgage", "loan", "credit_card"],
     description: "Property equity & liabilities",
   },
