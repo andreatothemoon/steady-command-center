@@ -2,10 +2,10 @@ import { motion } from "framer-motion";
 import { Target } from "lucide-react";
 import PillarTile from "./PillarTile";
 import { formatCurrency } from "@/lib/format";
-import type { RetirementResult } from "@/lib/retirementEngine";
+import type { RetirementProjection } from "@/lib/retirementEngine";
 
 interface Props {
-  projection: RetirementResult | null;
+  projection: RetirementProjection | null;
   retireAge: number;
   targetIncome: number;
 }
