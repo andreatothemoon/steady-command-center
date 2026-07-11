@@ -124,7 +124,7 @@ interface NodeMeta {
   label: string;
   sublabel?: string;
   count?: number;
-  accent: "amber" | "green" | "orange" | "violet" | "sky" | "rose" | "slate";
+  color: string; // CSS color (hex or hsl()) for icon + ring tint
   icon: LucideIcon;
   accountId?: string;
   memberId?: string;
@@ -132,23 +132,12 @@ interface NodeMeta {
   isNegative?: boolean;
 }
 
-const ACCENT_STYLES: Record<NodeMeta["accent"], { ring: string; icon: string; badge: string; glow: string }> = {
-  amber: { ring: "ring-amber-400/40", icon: "text-amber-400", badge: "bg-amber-400/15 text-amber-300", glow: "shadow-[0_0_40px_-15px_rgba(251,191,36,0.6)]" },
-  green: { ring: "ring-emerald-400/40", icon: "text-emerald-400", badge: "bg-emerald-400/15 text-emerald-300", glow: "shadow-[0_0_40px_-15px_rgba(52,211,153,0.6)]" },
-  orange: { ring: "ring-orange-400/40", icon: "text-orange-400", badge: "bg-orange-400/15 text-orange-300", glow: "shadow-[0_0_40px_-15px_rgba(251,146,60,0.6)]" },
-  violet: { ring: "ring-violet-400/40", icon: "text-violet-400", badge: "bg-violet-400/15 text-violet-300", glow: "shadow-[0_0_40px_-15px_rgba(167,139,250,0.6)]" },
-  sky: { ring: "ring-sky-400/40", icon: "text-sky-400", badge: "bg-sky-400/15 text-sky-300", glow: "shadow-[0_0_40px_-15px_rgba(56,189,248,0.6)]" },
-  rose: { ring: "ring-rose-400/40", icon: "text-rose-400", badge: "bg-rose-400/15 text-rose-300", glow: "shadow-[0_0_40px_-15px_rgba(251,113,133,0.6)]" },
-  slate: { ring: "ring-slate-400/30", icon: "text-slate-300", badge: "bg-slate-400/15 text-slate-200", glow: "shadow-[0_0_40px_-15px_rgba(148,163,184,0.5)]" },
-};
-
 const NODE_WIDTH = 240;
 const NODE_HEIGHT = 76;
 
 function WealthNode({ data, selected }: NodeProps) {
   const meta = data as unknown as NodeMeta;
   const Icon = meta.icon;
-  const styles = ACCENT_STYLES[meta.accent];
   const isRoot = meta.kind === "root";
 
   return (
@@ -156,24 +145,35 @@ function WealthNode({ data, selected }: NodeProps) {
       initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.25, ease: "easeOut" }}
-      className={`group relative flex items-center gap-3 rounded-2xl border border-white/5 bg-[#0f1520] px-4 py-3 ring-1 ${styles.ring} ${styles.glow} ${
-        selected ? "ring-2 ring-primary/60" : ""
-      }`}
-      style={{ width: NODE_WIDTH, minHeight: NODE_HEIGHT }}
+      className="group relative flex items-center gap-3 rounded-2xl border border-border/60 bg-card px-4 py-3 shadow-sm"
+      style={{
+        width: NODE_WIDTH,
+        minHeight: NODE_HEIGHT,
+        boxShadow: `0 1px 2px hsl(var(--foreground) / 0.04), 0 8px 24px -12px ${meta.color}40`,
+        outline: selected ? `2px solid hsl(var(--ring))` : `1px solid ${meta.color}33`,
+        outlineOffset: selected ? 0 : -1,
+      }}
     >
-      {!isRoot && <Handle type="target" position={Position.Top} className="!h-2 !w-2 !border-0 !bg-white/20" />}
+      {!isRoot && <Handle type="target" position={Position.Top} className="!h-2 !w-2 !border-0 !bg-border" />}
       {meta.kind !== "account" && (
-        <Handle type="source" position={Position.Bottom} className="!h-2 !w-2 !border-0 !bg-white/20" />
+        <Handle type="source" position={Position.Bottom} className="!h-2 !w-2 !border-0 !bg-border" />
       )}
 
-      <span className={`flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-white/[0.04] ${styles.icon}`}>
+      <span
+        className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl"
+        style={{ backgroundColor: `${meta.color}1a`, color: meta.color }}
+      >
         <Icon className="h-4 w-4" strokeWidth={2.25} />
       </span>
 
       <div className="min-w-0 flex-1">
-        <p className="truncate text-[13px] font-semibold leading-tight text-white">{meta.label}</p>
+        <p className="truncate text-[13px] font-semibold leading-tight text-foreground">{meta.label}</p>
         {meta.sublabel && (
-          <p className={`mt-0.5 truncate text-[11px] tabular-nums ${meta.isNegative ? "text-rose-300/80" : "text-white/50"}`}>
+          <p
+            className={`mt-0.5 truncate text-[11px] tabular-nums ${
+              meta.isNegative ? "text-destructive" : "text-muted-foreground"
+            }`}
+          >
             {meta.sublabel}
           </p>
         )}
@@ -181,13 +181,14 @@ function WealthNode({ data, selected }: NodeProps) {
 
       {typeof meta.count === "number" && meta.count > 0 && (
         <span
-          className={`absolute -top-2 -right-2 flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-[10px] font-bold ${styles.badge}`}
+          className="absolute -top-2 -right-2 flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-[10px] font-bold"
+          style={{ backgroundColor: `${meta.color}26`, color: meta.color }}
         >
           {meta.count}
         </span>
       )}
 
-      <GripVertical className="h-3.5 w-3.5 flex-shrink-0 text-white/20 transition-colors group-hover:text-white/40" />
+      <GripVertical className="h-3.5 w-3.5 flex-shrink-0 text-muted-foreground/40 transition-colors group-hover:text-muted-foreground" />
     </motion.div>
   );
 }
