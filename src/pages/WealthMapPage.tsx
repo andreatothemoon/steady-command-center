@@ -245,16 +245,11 @@ function MapCanvas({
   onNodeDragStart: (event: MouseEvent | TouchEvent, node: Node) => void;
   onNodeDragStop: (event: MouseEvent | TouchEvent, node: Node) => void;
 }) {
-  const { fitView, setCenter } = useReactFlow();
+  const { fitView } = useReactFlow();
 
   const handleInit = useCallback(() => {
-    fitView({ padding: 0.05, duration: 0 });
-    const xs = nodes.map((n) => n.position.x);
-    const ys = nodes.map((n) => n.position.y);
-    const centerX = (Math.min(...xs) + Math.max(...xs) + NODE_WIDTH) / 2;
-    const centerY = (Math.min(...ys) + Math.max(...ys) + NODE_HEIGHT) / 2;
-    setCenter(centerX, centerY, { zoom: 1, duration: 200 });
-  }, [fitView, setCenter, nodes]);
+    fitView({ padding: 0.05, duration: 200 });
+  }, [fitView]);
 
   return (
     <ReactFlow
