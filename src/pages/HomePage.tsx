@@ -157,22 +157,6 @@ export default function HomePage() {
         <TaxTile memberANIs={memberANIs} isaUsed={householdIsaUsed} isaLimit={isaLimit} />
       </motion.section>
 
-      {/* Recommended actions */}
-      <motion.section variants={stagger.item} className="space-y-4">
-        <div>
-          <h3 className="text-lg font-semibold text-foreground">Recommended actions</h3>
-          <p className="text-sm text-muted-foreground">
-            Highest-leverage next steps based on the latest tax, account, and retirement data.
-          </p>
-        </div>
-        <TopActionsCard
-          accounts={accounts}
-          memberANIs={memberANIs}
-          isaUsed={householdIsaUsed}
-          isaLimit={isaLimit}
-          showHeader={false}
-        />
-      </motion.section>
     </motion.div>
   );
 }
