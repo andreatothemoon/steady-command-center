@@ -4,7 +4,7 @@
  * Values mirror WealthPage: DB pensions show projected income, guaranteed bucket
  * shows estimated annual income, others show balances.
  */
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ReactFlow,
   Background,
