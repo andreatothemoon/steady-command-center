@@ -298,7 +298,7 @@ export default function WealthMapPage() {
           sublabel: `${formatCurrency(memberNet, true)} net`,
           count: memberAccounts.length,
           icon: User,
-          accent: "green",
+          color: "hsl(var(--primary))",
           memberId: m.id,
           isNegative: memberNet < 0,
         } satisfies NodeMeta as unknown as Record<string, unknown>,
