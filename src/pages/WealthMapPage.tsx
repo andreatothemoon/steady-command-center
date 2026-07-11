@@ -247,6 +247,10 @@ function MapCanvas({
 }) {
   const { fitView } = useReactFlow();
 
+  const handleInit = useCallback(() => {
+    fitView({ padding: 0.05, duration: 200 });
+  }, [fitView]);
+
   useEffect(() => {
     const timer = setTimeout(() => {
       fitView({ padding: 0.05, duration: 200 });
@@ -262,6 +266,7 @@ function MapCanvas({
       onEdgesChange={onEdgesChange}
       onNodeDragStart={onNodeDragStart}
       onNodeDragStop={onNodeDragStop}
+      onInit={handleInit}
       nodeTypes={nodeTypes}
       minZoom={0.5}
       maxZoom={2}
