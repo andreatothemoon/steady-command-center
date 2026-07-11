@@ -2,6 +2,7 @@ import { NavLink, useLocation } from "react-router-dom";
 import { useIsAdmin } from "@/hooks/useApprovalStatus";
 import {
   Home,
+  Compass,
   LineChart,
   Wallet,
   Network,
@@ -22,6 +23,7 @@ import { useState } from "react";
 
 const navItems = [
   { to: "/", label: "Home", icon: Home },
+  { to: "/plan", label: "Plan", icon: Compass },
   { to: "/retirement", label: "Retirement", icon: LineChart },
   { to: "/wealth", label: "Wealth", icon: Wallet },
   { to: "/wealth-map", label: "Wealth map", icon: Network },

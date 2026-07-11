@@ -1,62 +1,117 @@
-# Home page restructure — WealthOS hub
 
-Reframe the home page as the entry point to the six WealthOS pillars, with a concise hero and one tile per pillar linking to its dedicated page.
+# Plan — Life Planning & Decision Engine
 
-## New home page architecture
+A new flagship area of WealthOS focused on **life decisions**, not spreadsheets. Note: the existing "Plan" nav item was recently renamed to **Retirement** — this new **Plan** feature slots back into the primary navigation as a distinct, higher-level page. Retirement stays as a specialised sub-tool.
+
+## Goals
+
+- Help users answer "Can I…?" questions (buy a house, retire early, move country, sell business).
+- Every change instantly translates numbers into **life outcomes** ("delays FI by 18 months"), never raw deltas.
+- Feel 100% native to WealthOS: same tokens, shadcn components, spacing, motion, drawer-on-mobile / dialog-on-desktop.
+- Lay down a reusable **planning system** that future AI Planner, Monte Carlo, Tax, Estate modules plug into without redesign.
+
+## Architecture — Planning System
+
+Pages render objects; they never calculate. All logic lives in a planning engine module.
 
 ```text
-┌──────────────────────────────────────────────────────────────┐
-│  HERO                                                        │
-│  Total wealth · household · quick actions                    │
-└──────────────────────────────────────────────────────────────┘
-
-┌───────────────┬───────────────┬───────────────┐
-│ Household     │ Wealth map    │ Retirement    │
-│ wealth        │ (allocation)  │ planning      │
-├───────────────┼───────────────┼───────────────┤
-│ Life          │ Insights      │ Tax           │
-│ planning      │               │               │
-└───────────────┴───────────────┴───────────────┘
-
-┌──────────────────────────────────────────────────────────────┐
-│  Recommended actions (kept, condensed)                       │
-└──────────────────────────────────────────────────────────────┘
+src/planning/
+  types.ts              Decision, Event, FinancialEffect, Scenario, Goal,
+                        Projection, Recommendation
+  engine/
+    index.ts            planFromScenario(scenario, context) -> Projection
+    effects.ts          eventToEffects(event) — pure mapping
+    projection.ts       cash-flow + net-worth roll-forward, FI date, confidence
+    goals.ts            evaluateGoals(projection, goals)
+    recommendations.ts  ruleset producing Recommendation[]
+    impact.ts           diffProjections(before, after) -> ImpactSummary
+  store/
+    PlanContext.tsx     React context: activeScenario, scenarios, decisions,
+                        goals, derived projection (useMemo), setters
+    seed.ts             realistic seed scenarios/events/goals for the household
+                        (Andrea, Giulia, Charlotte, Victoria)
+  hooks/
+    usePlan.ts          selector hooks (useProjection, useScenario, useImpact)
 ```
 
-## Pillar tiles (each links to its detail page)
+Object shape (summary — matches the brief):
 
-1. **Household wealth** → `/wealth` — total net worth, delta, member split, top accounts preview. Reuses `AccountsStackCard` styling.
-2. **Wealth map** → `/wealth?view=map` — allocation donut (cash / investments / property / pensions) with % split. New small `WealthMapCard` wrapping `AllocationDonut`.
-3. **Retirement planning** → `/plan` — projected monthly income, target, readiness %, retire age. Condensed from the current right-column tile.
-4. **Life planning** → `/plan?view=scenarios` — scenario modelling entry: active scenario name, "what if" chips (retire earlier, income change, life event). New `LifePlanningCard`.
-5. **Insights** → `/actions` — 1-line headline insight (e.g. biggest opportunity), count of open insights. New `InsightsCard`.
-6. **Tax** → `/tax` — current tax year, household ANI status (OK / near taper / over taper), ISA allowance used. New `TaxCard`.
+- **Decision** → creates → **Events** → produce → **FinancialEffects** → engine → **Projection** → measures **Goals** → engine → **Recommendations**.
+- Engine is pure/synchronous for v1; async AI hooks land later behind the same interface.
+- Persistence: **in-memory (context + localStorage)** for v1 so we ship the experience without new DB schemas. Backend tables come in a follow-up once the model is validated. This is called out in the plan so the user can confirm.
 
-## Sections removed / merged from current home
+## Plan Page — `/plan`
 
-- Standalone `ReadinessCard`, `GuaranteedIncomeCard`, `BridgeGapCard` row → folded into the Retirement tile; details live on `/plan`.
-- `IncomeTimeline` chart → moved off home (already on `/plan`).
-- `DoMoreCard` → replaced by Life planning tile.
-- Right-column retirement plan panel → replaced by Retirement tile.
-- `TopActionsCard` (Recommended actions) → kept at bottom, unchanged.
+Route added in `src/App.tsx`; nav item added to `AppSidebar` (icon: `Compass` or `Sparkles`, above Retirement).
 
-## Files
+Sections, top to bottom:
 
-New:
-- `src/components/home/pillars/HouseholdWealthTile.tsx`
-- `src/components/home/pillars/WealthMapTile.tsx`
-- `src/components/home/pillars/RetirementTile.tsx`
-- `src/components/home/pillars/LifePlanningTile.tsx`
-- `src/components/home/pillars/InsightsTile.tsx`
-- `src/components/home/pillars/TaxTile.tsx`
+1. **PlanHero** — page title "Plan" / "Explore your future with confidence." + summary card: FI date, Est. retirement income, Confidence, Active scenario chip. Calm, single card, no big charts.
+2. **ScenarioSelector** — horizontal scrollable chip/card row. Switching animates the whole page with `fade-in` + number tweens. Includes "＋ New scenario".
+3. **LifeTimeline** — horizontal scrollable rail, Today marker on the left, decades on the right. Events rendered as `TimelineEventCard`s grouped by year. Supports:
+   - Click → opens `TimelineEventEditor` in Drawer (mobile) / Sheet (desktop).
+   - Drag to reschedule (dnd-kit horizontal).
+   - "＋" affordance between years to create.
+   - Duplicate / delete from editor.
+4. **GoalsRail** — grid of `GoalCard`s with confidence pill (High / On track / At risk) + progress bar + estimated completion year. Click → details sheet.
+5. **DecisionsSection** — "Considering" list of `DecisionCard`s (proposals not yet accepted). Accept → converts to events, Reject → archives. Empty state invites: "What are you thinking about?"
+6. **InsightsSection** — `InsightCard` list generated by the recommendation engine, written in plain-English life terms.
 
-Edited:
-- `src/pages/HomePage.tsx` — new layout: hero + 3×2 pillar grid + recommended actions.
+**FloatingImpactCard** — appears bottom-right (bottom sheet on mobile) whenever an unsaved edit is active in the editor, showing before → after for FI date / income / confidence + one suggested mitigation. Dismiss or Apply.
 
-Untouched: detail pages, business logic, hooks, retirement engine.
+## Components (all under `src/components/plan/`)
 
-## Notes
+Reusable, prop-driven, no fetching inside:
 
-- Presentation-only change; all data comes from existing hooks (`useAccounts`, `useHouseholdProfiles`, `useTaxSummaries`, `useDBPensions`, `useSelectedRetirementScenario`).
-- Tiles share a consistent card format: small uppercase eyebrow, headline metric (text-2xl), one line of supporting context, chevron affordance. No gradients.
-- Deep links (`?view=map`, `?view=scenarios`) are added as query params; wiring those views inside `/wealth` and `/plan` is out of scope for this pass (tiles still navigate correctly and land on the right page).
+- `PlanHero.tsx`
+- `ScenarioSelector.tsx`
+- `LifeTimeline.tsx`, `TimelineEventCard.tsx`, `TimelineEventEditor.tsx`
+- `DecisionCard.tsx`, `DecisionImpactCard.tsx`
+- `GoalCard.tsx`, `GoalDetails.tsx`
+- `RecommendationCard.tsx`, `InsightCard.tsx`
+- `ProjectionSummary.tsx`
+- `FloatingImpactCard.tsx`
+
+All use existing shadcn primitives (`Card`, `Sheet`, `Drawer`, `Badge`, `Button`), existing tokens, existing `animate-fade-in` / `hover-scale` utilities. No new colours, gradients, or fonts.
+
+## Seed Data (v1)
+
+To make the page feel alive from first load:
+
+- Scenarios: **Current**, **Early Retirement**, **Move to Italy**, **Entrepreneur** (Andrea sells company).
+- Events on the Current timeline: Buy family home (2027), Charlotte starts school (2028), Business exit (2035), Semi-retirement (2040), Full retirement (2046).
+- Goals: Financial Independence 2046, Children's Education, Holiday Home, £2M Legacy, Complete Norseman.
+- Decisions being considered: "Reduce to 4-day week", "Buy holiday home in Puglia".
+
+Seeds are stored in `src/planning/store/seed.ts` and merged with anything persisted in localStorage.
+
+## Out of scope for v1 (called out so we don't sneak it in)
+
+- No new Supabase tables — persistence is local. Migrations arrive once the model is validated.
+- No Monte Carlo, no real tax engine — confidence uses a simple deterministic heuristic (savings-rate + horizon).
+- No AI generation of decisions yet — the interface is designed so an AI hook drops in later.
+- Existing Retirement page and engine are untouched.
+
+## Files to add / change
+
+Add:
+
+- `src/pages/PlanPage.tsx`
+- `src/planning/**` (types, engine, store, hooks, seed)
+- `src/components/plan/**` (components listed above)
+
+Edit:
+
+- `src/App.tsx` — register `/plan` route.
+- `src/components/AppSidebar.tsx` — add "Plan" nav item above "Retirement".
+
+## Verification
+
+- `tsgo` typecheck passes.
+- Manual walk-through via Playwright screenshot of `/plan` on desktop viewport to confirm hero, timeline, scenarios, goals, insights render and scenario switching updates the hero numbers.
+
+---
+
+**Confirm before I build:**
+1. OK to ship v1 with **local (in-browser) persistence** and add DB tables in a follow-up? (Keeps this change focused and reversible.)
+2. Nav order: **Home · Plan · Retirement · Wealth · Actions · Profile** — good?
