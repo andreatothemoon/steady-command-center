@@ -325,7 +325,7 @@ export default function WealthMapPage() {
             sublabel: formatWithSuffix(bucket.key, bucketTotal),
             count: bucketAccounts.length,
             icon: bucket.icon,
-            accent: bucket.accent,
+            color: BUCKET_COLOR[bucket.key],
             bucket: bucket.key,
             isNegative: bucketTotal < 0,
           } satisfies NodeMeta as unknown as Record<string, unknown>,
