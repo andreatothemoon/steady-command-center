@@ -76,7 +76,7 @@ function buildOtherIncomeSources(values: {
   ];
 }
 
-export default function PlanPage() {
+export default function RetirementPage() {
   const { householdId } = useAuth();
   const qc = useQueryClient();
 
