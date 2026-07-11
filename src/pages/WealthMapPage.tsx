@@ -510,7 +510,7 @@ export default function WealthMapPage() {
         </div>
       </div>
 
-      <div className="card-surface relative flex-1 overflow-hidden !p-0">
+      <div ref={wrapperRef} className="card-surface relative flex-1 overflow-hidden !p-0">
         <ReactFlow
           nodes={nodes}
           edges={edges}
@@ -521,10 +521,17 @@ export default function WealthMapPage() {
           onInit={onInit}
           nodeTypes={nodeTypes}
           fitView
-          fitViewOptions={{ padding: 0.05 }}
+          fitViewOptions={{ padding: 0.12, maxZoom: 1 }}
           proOptions={{ hideAttribution: true }}
-          minZoom={0.5}
+          minZoom={0.3}
           maxZoom={2}
+          panOnScroll
+          panOnDrag
+          zoomOnScroll
+          zoomOnPinch
+          zoomOnDoubleClick={false}
+          nodesDraggable
+          selectionOnDrag={false}
         >
           <Background color="hsl(var(--border))" gap={24} size={1} />
           <MiniMap
