@@ -36,6 +36,11 @@ import {
   Building2,
   Bitcoin,
   GripVertical,
+  Plus,
+  Minus,
+  Maximize2,
+  RotateCcw,
+  UsersRound,
   type LucideIcon,
 } from "lucide-react";
 import { useAccounts, useUpdateAccount, type Account } from "@/hooks/useAccounts";
