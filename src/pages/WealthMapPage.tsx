@@ -283,7 +283,7 @@ export default function WealthMapPage() {
   }, [initialNodes, initialEdges, setNodes, setEdges]);
 
   const onNodeDragStart = useCallback(
-    (_e: React.MouseEvent, node: Node) => {
+    (_e: MouseEvent | TouchEvent, node: Node) => {
       const meta = node.data as unknown as NodeMeta;
       if (meta.kind !== "account" || !meta.accountId) return;
       const acct = accounts.find((a) => a.id === meta.accountId) ?? null;
@@ -293,7 +293,7 @@ export default function WealthMapPage() {
   );
 
   const onNodeDragStop = useCallback(
-    (event: React.MouseEvent, node: Node) => {
+    (event: MouseEvent | TouchEvent, node: Node) => {
       const meta = node.data as unknown as NodeMeta;
       if (meta.kind !== "account" || !meta.accountId || !draggingAccount) {
         setDraggingAccount(null);
