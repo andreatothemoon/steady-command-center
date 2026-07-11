@@ -386,14 +386,14 @@ export default function WealthMapPage() {
 
   const onInit = useCallback((instance: ReactFlowInstance) => {
     flowRef.current = instance;
-    instance.fitView({ padding: 0.05, duration: 200 });
+    instance.fitView({ padding: 0.05, minZoom: 0.75, maxZoom: 0.75, duration: 200 });
   }, []);
 
   useEffect(() => {
     setNodes(initialNodes);
     setEdges(initialEdges);
     const timer = setTimeout(() => {
-      flowRef.current?.fitView({ padding: 0.05, duration: 200 });
+      flowRef.current?.fitView({ padding: 0.05, minZoom: 0.75, maxZoom: 0.75, duration: 200 });
     }, 100);
     return () => clearTimeout(timer);
   }, [initialNodes, initialEdges, setNodes, setEdges]);
