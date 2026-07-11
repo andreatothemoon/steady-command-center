@@ -40,7 +40,7 @@ export default function IncomeHeroCard({ monthlyIncome, retireAge, projection, t
             Set up a retirement scenario to see your projected income, target gap, and recommended next actions.
           </p>
           <button
-            onClick={() => navigate("/plan")}
+            onClick={() => navigate("/retirement")}
             className="mt-8 inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/92"
           >
             Get Started <ArrowRight className="h-4 w-4" />
