@@ -245,11 +245,12 @@ function MapCanvas({
   onNodeDragStart: (event: MouseEvent | TouchEvent, node: Node) => void;
   onNodeDragStop: (event: MouseEvent | TouchEvent, node: Node) => void;
 }) {
-  const { fitView } = useReactFlow();
+  const { fitView, zoomTo } = useReactFlow();
 
   const handleInit = useCallback(() => {
     fitView({ padding: 0.05, duration: 200 });
-  }, [fitView]);
+    setTimeout(() => zoomTo(1, { duration: 200 }), 250);
+  }, [fitView, zoomTo]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -268,7 +269,7 @@ function MapCanvas({
       onNodeDragStop={onNodeDragStop}
       onInit={handleInit}
       nodeTypes={nodeTypes}
-      minZoom={1}
+      minZoom={0.5}
       maxZoom={2}
       proOptions={{ hideAttribution: true }}
     >
