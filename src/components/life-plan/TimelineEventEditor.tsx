@@ -153,9 +153,11 @@ export default function TimelineEventEditor({ event, open, onOpenChange }: Props
               Save
             </Button>
           </div>
+          </div>
         </div>
-      </div>
+      </ResponsiveDialogContent>
     </ResponsiveDialog>
+
   );
 }
 
