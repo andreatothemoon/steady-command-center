@@ -10,7 +10,7 @@ export default function DoMoreCard() {
       className="card-surface group relative flex h-full min-h-[260px] w-full flex-col items-center justify-center gap-5 overflow-hidden p-8 text-center transition-shadow hover:shadow-sm"
     >
       <div>
-        <h3 className="text-lg font-semibold tracking-tight text-foreground">Do more with your wealth</h3>
+        <h3 className="text-lg font-semibold tracking-tight text-foreground">Do more with your assets</h3>
         <p className="mt-2 max-w-xs text-[13px] text-muted-foreground">
           Model scenarios, unlock tax efficiency, and plan the bridge to retirement.
         </p>
