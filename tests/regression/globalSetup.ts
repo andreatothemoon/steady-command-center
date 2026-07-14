@@ -33,6 +33,17 @@ export default async function globalSetup(_config: FullConfig) {
     );
   }
 
+  // 0. Ensure the test user is provisioned (idempotent, admin-API-backed).
+  const provisionCtx = await request.newContext();
+  const provisionRes = await provisionCtx.post(
+    `${supabaseUrl}/functions/v1/provision-regression-user`,
+    { headers: { apikey: anonKey, Authorization: `Bearer ${anonKey}` }, data: {} },
+  );
+  if (!provisionRes.ok()) {
+    throw new Error(`Provisioning regression user failed: ${provisionRes.status()} ${await provisionRes.text()}`);
+  }
+  await provisionCtx.dispose();
+
   // Sign in via REST → grab tokens → write Playwright storageState + localStorage seed.
   const ctx = await request.newContext();
   const res = await ctx.post(`${supabaseUrl}/auth/v1/token?grant_type=password`, {
