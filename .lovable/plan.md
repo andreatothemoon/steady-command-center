@@ -1,117 +1,83 @@
+# Regression Pack
 
-# Plan — Life Planning & Decision Engine
+End-to-end Playwright suite that walks the app page by page as a dedicated seeded user. One command runs it; I run it automatically after any non-trivial feature change before I tell you I'm done.
 
-A new flagship area of WealthOS focused on **life decisions**, not spreadsheets. Note: the existing "Plan" nav item was recently renamed to **Retirement** — this new **Plan** feature slots back into the primary navigation as a distinct, higher-level page. Retirement stays as a specialised sub-tool.
-
-## Goals
-
-- Help users answer "Can I…?" questions (buy a house, retire early, move country, sell business).
-- Every change instantly translates numbers into **life outcomes** ("delays FI by 18 months"), never raw deltas.
-- Feel 100% native to WealthOS: same tokens, shadcn components, spacing, motion, drawer-on-mobile / dialog-on-desktop.
-- Lay down a reusable **planning system** that future AI Planner, Monte Carlo, Tax, Estate modules plug into without redesign.
-
-## Architecture — Planning System
-
-Pages render objects; they never calculate. All logic lives in a planning engine module.
+## Layout
 
 ```text
-src/planning/
-  types.ts              Decision, Event, FinancialEffect, Scenario, Goal,
-                        Projection, Recommendation
-  engine/
-    index.ts            planFromScenario(scenario, context) -> Projection
-    effects.ts          eventToEffects(event) — pure mapping
-    projection.ts       cash-flow + net-worth roll-forward, FI date, confidence
-    goals.ts            evaluateGoals(projection, goals)
-    recommendations.ts  ruleset producing Recommendation[]
-    impact.ts           diffProjections(before, after) -> ImpactSummary
-  store/
-    PlanContext.tsx     React context: activeScenario, scenarios, decisions,
-                        goals, derived projection (useMemo), setters
-    seed.ts             realistic seed scenarios/events/goals for the household
-                        (Andrea, Giulia, Charlotte, Victoria)
-  hooks/
-    usePlan.ts          selector hooks (useProjection, useScenario, useImpact)
+tests/regression/
+  README.md                  how to run, how to extend
+  playwright.config.ts       localhost:8080, chromium, 1 worker, video on failure
+  seed/
+    seed.ts                  idempotent: creates test user, household, members,
+                             accounts, DB pension, cash flows, snapshots
+    reset.ts                 wipes test-household data (keeps user)
+  fixtures/
+    auth.ts                  signs in once, reuses storageState for all tests
+    testUser.ts              reads REGRESSION_EMAIL / REGRESSION_PASSWORD
+  journeys/
+    01-auth.spec.ts          sign in, wrong password, sign out, pending-approval page
+    02-home.spec.ts          hero net worth, pillar tiles render, quick actions
+    03-assets.spec.ts        add / edit / snapshot / CSV import+export / delete account
+    04-retirement.spec.ts    scenarios list, projection chart, DB pension edit
+    05-plan.spec.ts          plan context save/load, milestones
+    06-tax.spec.ts           tax year summary, ANI calculation shows
+    07-actions.spec.ts       stale-account action opens, severity colours present
+    08-wealth-map.spec.ts    map nodes render, drag reassign
+    09-profile.spec.ts       profile edit, NI number gated to owner
+    10-household.spec.ts     invite create, invite accept flow (second browser context)
+    11-admin-approval.spec.ts  admin sees pending queue, approve/reject
+  smoke/
+    routes.spec.ts           every route mounts with no console error
+snapshots/                   reference screenshots per journey (gitignored artifacts)
 ```
 
-Object shape (summary — matches the brief):
+## Seeded test data
 
-- **Decision** → creates → **Events** → produce → **FinancialEffects** → engine → **Projection** → measures **Goals** → engine → **Recommendations**.
-- Engine is pure/synchronous for v1; async AI hooks land later behind the same interface.
-- Persistence: **in-memory (context + localStorage)** for v1 so we ship the experience without new DB schemas. Backend tables come in a follow-up once the model is validated. This is called out in the plan so the user can confirm.
+Idempotent SQL migration + a Node seed script that hits the auth admin API through an edge function `seed-regression-user` (service-role only, gated behind `LOVABLE_ENV !== 'production'`).
 
-## Plan Page — `/plan`
+Seeded fixture:
+- User: `regression@wealthos.test` / password from secret
+- Household "Regression Household", approved, role `user`
+- 3 members: Test Adult A (primary, owner), Test Adult B, Test Child
+- 5 accounts: current, ISA, SIPP, mortgage (debt), property
+- 1 DB pension with 3 accrual slices
+- 6 cash-flow entries across current + prior tax year
+- 2 monthly account snapshots
 
-Route added in `src/App.tsx`; nav item added to `AppSidebar` (icon: `Compass` or `Sparkles`, above Retirement).
+Reset script clears account/pension/cashflow rows for that household so each run starts deterministic. The user itself is preserved to keep the login fast.
 
-Sections, top to bottom:
+## Run modes
 
-1. **PlanHero** — page title "Plan" / "Explore your future with confidence." + summary card: FI date, Est. retirement income, Confidence, Active scenario chip. Calm, single card, no big charts.
-2. **ScenarioSelector** — horizontal scrollable chip/card row. Switching animates the whole page with `fade-in` + number tweens. Includes "＋ New scenario".
-3. **LifeTimeline** — horizontal scrollable rail, Today marker on the left, decades on the right. Events rendered as `TimelineEventCard`s grouped by year. Supports:
-   - Click → opens `TimelineEventEditor` in Drawer (mobile) / Sheet (desktop).
-   - Drag to reschedule (dnd-kit horizontal).
-   - "＋" affordance between years to create.
-   - Duplicate / delete from editor.
-4. **GoalsRail** — grid of `GoalCard`s with confidence pill (High / On track / At risk) + progress bar + estimated completion year. Click → details sheet.
-5. **DecisionsSection** — "Considering" list of `DecisionCard`s (proposals not yet accepted). Accept → converts to events, Reject → archives. Empty state invites: "What are you thinking about?"
-6. **InsightsSection** — `InsightCard` list generated by the recommendation engine, written in plain-English life terms.
+- `bun run regression` — full suite, ~2–4 min. Prints pass/fail summary + failing screenshot paths.
+- `bun run regression:smoke` — routes-only smoke, ~15 s.
+- `bun run regression -- --grep assets` — filter to one journey.
+- **Auto-run policy**: after any feature change touching pages, data flow, RLS, or shared components, I run `bun run regression:smoke` before claiming done; I run the full pack when the change spans multiple journeys or backend.
 
-**FloatingImpactCard** — appears bottom-right (bottom sheet on mobile) whenever an unsaved edit is active in the editor, showing before → after for FI date / income / confidence + one suggested mitigation. Dismiss or Apply.
+## Secrets
 
-## Components (all under `src/components/plan/`)
+- `REGRESSION_EMAIL` — plain, added to `.env` template
+- `REGRESSION_PASSWORD` — stored via `add_secret`, also read from local `.env` for tests
+- Seed edge function uses existing `SUPABASE_SERVICE_ROLE_KEY`
 
-Reusable, prop-driven, no fetching inside:
+## Guardrails
 
-- `PlanHero.tsx`
-- `ScenarioSelector.tsx`
-- `LifeTimeline.tsx`, `TimelineEventCard.tsx`, `TimelineEventEditor.tsx`
-- `DecisionCard.tsx`, `DecisionImpactCard.tsx`
-- `GoalCard.tsx`, `GoalDetails.tsx`
-- `RecommendationCard.tsx`, `InsightCard.tsx`
-- `ProjectionSummary.tsx`
-- `FloatingImpactCard.tsx`
+- Suite refuses to run if `VITE_SUPABASE_URL` points at anything other than the dev project (checked in `playwright.config.ts` global setup).
+- Every test starts by calling `reset.ts` for the seeded household so ordering doesn't matter.
+- Console errors during any journey fail the test (listener attached in `fixtures/auth.ts`).
+- Google OAuth is not exercised end-to-end (broker is external); instead the auth journey asserts the button initiates `/~oauth/initiate` and the callback code path is covered by a mocked response.
 
-All use existing shadcn primitives (`Card`, `Sheet`, `Drawer`, `Badge`, `Button`), existing tokens, existing `animate-fade-in` / `hover-scale` utilities. No new colours, gradients, or fonts.
+## Deliverables in this build
 
-## Seed Data (v1)
+1. Playwright config + fixtures + seed edge function + seed/reset scripts
+2. All 11 journey specs + smoke spec, each with 3–8 assertions
+3. `tests/regression/README.md` explaining run commands, adding new journeys, and the auto-run policy
+4. `package.json` scripts: `regression`, `regression:smoke`, `regression:seed`, `regression:reset`
+5. First green run captured, failing-test screenshot flow demonstrated
 
-To make the page feel alive from first load:
+## Out of scope
 
-- Scenarios: **Current**, **Early Retirement**, **Move to Italy**, **Entrepreneur** (Andrea sells company).
-- Events on the Current timeline: Buy family home (2027), Charlotte starts school (2028), Business exit (2035), Semi-retirement (2040), Full retirement (2046).
-- Goals: Financial Independence 2046, Children's Education, Holiday Home, £2M Legacy, Complete Norseman.
-- Decisions being considered: "Reduce to 4-day week", "Buy holiday home in Puglia".
-
-Seeds are stored in `src/planning/store/seed.ts` and merged with anything persisted in localStorage.
-
-## Out of scope for v1 (called out so we don't sneak it in)
-
-- No new Supabase tables — persistence is local. Migrations arrive once the model is validated.
-- No Monte Carlo, no real tax engine — confidence uses a simple deterministic heuristic (savings-rate + horizon).
-- No AI generation of decisions yet — the interface is designed so an AI hook drops in later.
-- Existing Retirement page and engine are untouched.
-
-## Files to add / change
-
-Add:
-
-- `src/pages/PlanPage.tsx`
-- `src/planning/**` (types, engine, store, hooks, seed)
-- `src/components/plan/**` (components listed above)
-
-Edit:
-
-- `src/App.tsx` — register `/plan` route.
-- `src/components/AppSidebar.tsx` — add "Plan" nav item above "Retirement".
-
-## Verification
-
-- `tsgo` typecheck passes.
-- Manual walk-through via Playwright screenshot of `/plan` on desktop viewport to confirm hero, timeline, scenarios, goals, insights render and scenario switching updates the hero numbers.
-
----
-
-**Confirm before I build:**
-1. OK to ship v1 with **local (in-browser) persistence** and add DB tables in a follow-up? (Keeps this change focused and reversible.)
-2. Nav order: **Home · Plan · Retirement · Wealth · Actions · Profile** — good?
+- Visual/pixel diffing (can add later with `toHaveScreenshot`)
+- CI integration (no CI yet; can wire to GitHub Actions when you add one)
+- Load/perf testing
+- Real Google OAuth exchange (external broker)
