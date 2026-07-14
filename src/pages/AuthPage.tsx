@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable/index";
+import { createLovableAuth } from "@lovable.dev/cloud-auth-js";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,6 +9,19 @@ import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { useInvitationByToken, useAcceptInvitation } from "@/hooks/useHouseholdInvitations";
 import { useAuth } from "@/contexts/AuthContext";
+
+const getManagedAuth = () =>
+  createLovableAuth({
+    supportedOAuthOrigins: Array.from(
+      new Set([
+        "https://oauth.lovable.app",
+        "https://lovable.dev",
+        window.location.origin,
+        "https://steady-command-center.lovable.app",
+        "https://wealthos.andreadiprata.com",
+      ])
+    ),
+  });
 
 export default function AuthPage() {
   const [searchParams] = useSearchParams();
@@ -62,7 +75,7 @@ export default function AuthPage() {
     setGoogleLoading(true);
 
     try {
-      const result = await lovable.auth.signInWithOAuth("google", {
+      const result = await getManagedAuth().signInWithOAuth("google", {
         redirect_uri: window.location.origin,
       });
 
