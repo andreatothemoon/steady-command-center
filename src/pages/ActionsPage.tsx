@@ -59,7 +59,7 @@ function buildActions(accounts: Account[], memberANIs: MemberANI[], isaUsed: num
     actions.push({
       id: `stale-${a.id}`,
       title: `Update ${a.name}`,
-      description: `Refresh this account so your wealth and retirement model reflects current balances and debt.`,
+      description: `Refresh this account so your assets and retirement model reflects current balances and debt.`,
       impact: "Sharper planning accuracy",
       secondaryImpact: `${days} days old`,
       monthlyGain: null,

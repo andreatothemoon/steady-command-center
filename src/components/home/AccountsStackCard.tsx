@@ -106,7 +106,7 @@ export default function AccountsStackCard({ accounts, netWorth }: Props) {
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <p className="text-lg font-semibold leading-tight tracking-tight text-foreground">
-              Household wealth
+              Household assets
             </p>
             <p className="mt-1 text-[13px] text-muted-foreground">
               <span className="tabular-nums">{formatCurrency(netWorth)}</span>

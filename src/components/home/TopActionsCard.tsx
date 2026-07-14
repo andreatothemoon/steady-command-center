@@ -39,7 +39,7 @@ export default function TopActionsCard({ accounts, memberANIs = [], isaUsed = 0,
     actions.push({
       id: `stale-${a.id}`,
       title: `Update ${a.name}`,
-      impact: "Sharper retirement and wealth projections",
+      impact: "Sharper retirement and asset projections",
       secondary: `${days} days old`,
       severity: days > 180 ? "high" : "medium",
       route: "/wealth",

@@ -123,13 +123,13 @@ export default function HomePage() {
       {/* HERO */}
       <motion.section variants={stagger.item} className="flex flex-col gap-6">
         <div>
-          <p className="text-sm text-muted-foreground">Total wealth</p>
+          <p className="text-sm text-muted-foreground">Total assets</p>
           <div className="mt-1 flex items-end gap-3">
             <h1 className="text-[2.5rem] font-semibold tracking-tight text-foreground sm:text-[2.75rem]">
               {formatCurrency(netWorth)}
             </h1>
             <button
-              aria-label="View wealth history"
+              aria-label="View assets history"
               className="mb-2 flex h-8 w-8 items-center justify-center rounded-full bg-secondary/70 text-foreground transition-colors hover:bg-secondary"
             >
               <BarChart3 className="h-4 w-4" />

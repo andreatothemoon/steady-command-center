@@ -188,7 +188,7 @@ export default function WealthPage() {
     <motion.div className="space-y-8" variants={stagger.container} initial="initial" animate="animate">
       <motion.div variants={stagger.item} className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <h1 className="text-4xl font-semibold tracking-tight text-foreground">Wealth</h1>
+          <h1 className="text-4xl font-semibold tracking-tight text-foreground">Assets</h1>
           <p className="mt-2 text-muted-foreground">
             {isLoading ? "Loading…" : "Your complete financial picture across pensions, investments, cash, property, and debt."}
           </p>
@@ -214,7 +214,7 @@ export default function WealthPage() {
             <div className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-accent/[0.06]" />
             <div className="relative flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between">
               <div>
-                <p className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">Wealth Overview</p>
+                <p className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">Assets Overview</p>
                 <p className="mt-2 text-5xl font-semibold tracking-[-0.06em] text-foreground">{formatCurrency(netWorth)}</p>
                 <p className="mt-3 max-w-2xl text-sm text-muted-foreground">
                   {accounts.length} account{accounts.length !== 1 ? "s" : ""} mapped into retirement income and liquidity.
