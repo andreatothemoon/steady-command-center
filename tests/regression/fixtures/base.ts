@@ -35,16 +35,11 @@ export const test = base.extend<Fixtures>({
   resetSeed: async ({}, use) => {
     const supabaseUrl = process.env.REGRESSION_SUPABASE_URL!;
     const anonKey = process.env.REGRESSION_SUPABASE_ANON!;
-    const accessToken = process.env.REGRESSION_ACCESS_TOKEN!;
 
     async function reset() {
-      const res = await fetch(`${supabaseUrl}/rest/v1/rpc/reset_regression_household`, {
+      const res = await fetch(`${supabaseUrl}/functions/v1/provision-regression-user`, {
         method: "POST",
-        headers: {
-          apikey: anonKey,
-          Authorization: `Bearer ${accessToken}`,
-          "Content-Type": "application/json",
-        },
+        headers: { apikey: anonKey, Authorization: `Bearer ${anonKey}`, "Content-Type": "application/json" },
         body: "{}",
       });
       if (!res.ok) {
