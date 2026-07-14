@@ -34,12 +34,19 @@ export default function AuthCallbackPage() {
 
       const accessToken = params.get("access_token");
       const refreshToken = params.get("refresh_token");
+      const code = params.get("code");
 
       if (accessToken && refreshToken) {
-        await supabase.auth.setSession({
+        const { error: sessionError } = await supabase.auth.setSession({
           access_token: accessToken,
           refresh_token: refreshToken,
         });
+
+        if (sessionError) throw sessionError;
+      } else if (code) {
+        const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+
+        if (exchangeError) throw exchangeError;
       }
 
       if (window.location.search || window.location.hash) {
@@ -48,12 +55,13 @@ export default function AuthCallbackPage() {
 
       const {
         data: { user },
+        error: userError,
       } = await supabase.auth.getUser();
 
       if (cancelled) return;
 
-      if (!user) {
-        setMessage("Google sign-in could not be completed. Please try again.");
+      if (userError || !user) {
+        setMessage(userError?.message ?? "Google sign-in could not be completed. Please try again.");
         window.setTimeout(() => navigate("/auth", { replace: true }), 1800);
         return;
       }
@@ -68,7 +76,11 @@ export default function AuthCallbackPage() {
       navigate("/", { replace: true });
     };
 
-    void finishSignIn();
+    void finishSignIn().catch((error) => {
+      if (cancelled) return;
+      setMessage(error instanceof Error ? error.message : "Google sign-in could not be completed.");
+      window.setTimeout(() => navigate("/auth", { replace: true }), 1800);
+    });
 
     return () => {
       cancelled = true;
