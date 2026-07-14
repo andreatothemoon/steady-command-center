@@ -112,7 +112,7 @@ export default function AuthPage() {
   const handleGoogleSignIn = async () => {
     setGoogleLoading(true);
     const callbackListener = createCallbackListener();
-    let timeoutId: ReturnType<typeof window.setTimeout> | undefined;
+    let timeoutId: number | undefined;
 
     try {
       const timeoutPromise = new Promise<never>((_, reject) => {
