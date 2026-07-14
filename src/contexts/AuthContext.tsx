@@ -27,22 +27,51 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (!session?.user) {
+    let mounted = true;
+
+    const applySession = (nextSession: Session | null) => {
+      if (!mounted) return;
+
+      setSession(nextSession);
+      setUser(nextSession?.user ?? null);
+
+      if (!nextSession?.user) {
         setHouseholdId(null);
         setLoading(false);
       }
-    });
+    };
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    const verifyInitialSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!mounted) return;
+
+      if (!session?.user) {
+        applySession(null);
+        return;
+      }
+
+      const { data, error } = await supabase.auth.getUser();
+      if (!mounted) return;
+
+      if (error || !data.user) {
+        applySession(null);
+        return;
+      }
+
       setSession(session);
-      setUser(session?.user ?? null);
-      if (!session?.user) setLoading(false);
+      setUser(data.user);
+    };
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      applySession(session);
     });
 
-    return () => subscription.unsubscribe();
+    void verifyInitialSession();
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   // Fetch household when user changes
