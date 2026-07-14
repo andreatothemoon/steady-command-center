@@ -188,7 +188,7 @@ export default function WealthPage() {
     <motion.div className="space-y-8" variants={stagger.container} initial="initial" animate="animate">
       <motion.div variants={stagger.item} className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <h1 className="text-4xl font-semibold tracking-tight text-foreground">Wealth</h1>
+          <h1 className="text-4xl font-semibold tracking-tight text-foreground">Assets</h1>
           <p className="mt-2 text-muted-foreground">
             {isLoading ? "Loading…" : "Your complete financial picture across pensions, investments, cash, property, and debt."}
           </p>
