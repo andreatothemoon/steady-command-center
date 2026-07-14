@@ -47,7 +47,6 @@ Deno.serve(async (req) => {
       if (error) throw error;
       userId = created.user!.id;
     } else {
-      // Force password back to canonical value in case a previous test mutated it.
       await supabase.auth.admin.updateUserById(userId, {
         password: TEST_PASSWORD,
         email_confirm: true,
@@ -90,29 +89,27 @@ Deno.serve(async (req) => {
       });
     }
 
-    // 4. Wipe existing test-household data (idempotent, keeps user & household)
-    await supabase.from("account_snapshots").delete().in(
-      "account_id",
-      (await supabase
-        .from("accounts")
-        .select("id")
-        .eq("household_id", householdId!)).data?.map((a) => a.id) ?? [],
-    );
-    await supabase.from("holdings").delete().in(
-      "account_id",
-      (await supabase
-        .from("accounts")
-        .select("id")
-        .eq("household_id", householdId!)).data?.map((a) => a.id) ?? [],
-    );
+    // 4. Wipe existing test-household data (idempotent)
+    const { data: acctIds } = await supabase
+      .from("accounts")
+      .select("id")
+      .eq("household_id", householdId!);
+    const accountIdList = (acctIds ?? []).map((a) => a.id);
+
+    const { data: pensionIds } = await supabase
+      .from("db_pensions")
+      .select("id")
+      .eq("household_id", householdId!);
+    const pensionIdList = (pensionIds ?? []).map((p) => p.id);
+
+    if (accountIdList.length) {
+      await supabase.from("account_snapshots").delete().in("account_id", accountIdList);
+      await supabase.from("holdings").delete().in("account_id", accountIdList);
+    }
     await supabase.from("cash_flows").delete().eq("household_id", householdId);
-    await supabase.from("db_accrual_slices").delete().in(
-      "pension_id",
-      (await supabase
-        .from("db_pensions")
-        .select("id")
-        .eq("household_id", householdId!)).data?.map((p) => p.id) ?? [],
-    );
+    if (pensionIdList.length) {
+      await supabase.from("db_accrual_slices").delete().in("pension_id", pensionIdList);
+    }
     await supabase.from("db_pensions").delete().eq("household_id", householdId);
     await supabase.from("accounts").delete().eq("household_id", householdId);
     await supabase.from("household_profiles").delete().eq(
@@ -125,96 +122,76 @@ Deno.serve(async (req) => {
     }
 
     // 5. Seed profiles
-    const { data: profs } = await supabase
-      .from("household_profiles")
-      .insert([
-        {
-          household_id: householdId,
-          name: "Test Adult A",
-          role: "adult",
-          is_primary: true,
-        },
-        {
-          household_id: householdId,
-          name: "Test Adult B",
-          role: "adult",
-          is_primary: false,
-        },
-        {
-          household_id: householdId,
-          name: "Test Child",
-          role: "child",
-          is_primary: false,
-        },
-      ])
-      .select("id, name");
-    const adultA = profs?.find((p) => p.name === "Test Adult A")?.id;
-    const adultB = profs?.find((p) => p.name === "Test Adult B")?.id;
+    await supabase.from("household_profiles").insert([
+      { household_id: householdId, name: "Test Adult A", role: "adult", is_primary: true },
+      { household_id: householdId, name: "Test Adult B", role: "adult", is_primary: false },
+      { household_id: householdId, name: "Test Child", role: "child", is_primary: false },
+    ]);
 
-    // 6. Seed accounts
+    // 6. Seed accounts (real schema)
+    const now = new Date().toISOString();
     const { data: accts } = await supabase
       .from("accounts")
       .insert([
         {
           household_id: householdId,
-          owner_profile_id: adultA,
+          owner_name: "Test Adult A",
           name: "Test Current",
-          type: "current",
-          balance: 4200,
-          currency: "GBP",
-          last_updated: new Date().toISOString(),
+          account_type: "current_account",
+          wrapper_type: "none",
+          current_value: 4200,
+          last_updated: now,
         },
         {
           household_id: householdId,
-          owner_profile_id: adultA,
+          owner_name: "Test Adult A",
           name: "Test ISA",
-          type: "isa",
-          balance: 28500,
-          currency: "GBP",
-          last_updated: new Date().toISOString(),
+          account_type: "stocks_and_shares_isa",
+          wrapper_type: "isa",
+          current_value: 28500,
+          last_updated: now,
         },
         {
           household_id: householdId,
-          owner_profile_id: adultB,
+          owner_name: "Test Adult B",
           name: "Test SIPP",
-          type: "sipp",
-          balance: 61000,
-          currency: "GBP",
-          last_updated: new Date().toISOString(),
+          account_type: "sipp",
+          wrapper_type: "sipp",
+          current_value: 61000,
+          last_updated: now,
         },
         {
           household_id: householdId,
-          owner_profile_id: adultA,
+          owner_name: "Test Adult A",
           name: "Test Property",
-          type: "property",
-          balance: 425000,
-          currency: "GBP",
-          last_updated: new Date().toISOString(),
+          account_type: "property",
+          wrapper_type: "none",
+          current_value: 425000,
+          last_updated: now,
         },
         {
           household_id: householdId,
-          owner_profile_id: adultA,
+          owner_name: "Test Adult A",
           name: "Test Mortgage",
-          type: "mortgage",
-          balance: -210000,
-          currency: "GBP",
-          last_updated: new Date().toISOString(),
+          account_type: "mortgage",
+          wrapper_type: "none",
+          current_value: -210000,
+          last_updated: now,
         },
       ])
       .select("id, name");
 
     // 7. Snapshots for two prior months
     if (accts?.length) {
-      const now = new Date();
+      const today = new Date();
       const snaps: any[] = [];
       accts.forEach((a) => {
         for (let i = 1; i <= 2; i++) {
-          const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+          const d = new Date(today.getFullYear(), today.getMonth() - i, 1);
           snaps.push({
             account_id: a.id,
             snapshot_date: d.toISOString().slice(0, 10),
-            balance: Math.random() * 1000 + 1000,
-            currency: "GBP",
+            balance: Math.round(Math.random() * 1000 + 1000),
           });
         }
       });
@@ -225,30 +202,27 @@ Deno.serve(async (req) => {
     await supabase.from("cash_flows").insert([
       {
         household_id: householdId,
-        profile_id: adultA,
-        type: "income",
-        category: "salary",
+        flow_type: "income",
         amount: 65000,
-        tax_year_start: "2025-04-06",
+        flow_date: "2025-05-01",
         description: "Test salary",
+        tag: "salary",
       },
       {
         household_id: householdId,
-        profile_id: adultA,
-        type: "pension_contribution",
-        category: "employer",
+        flow_type: "pension_contribution",
         amount: 5200,
-        tax_year_start: "2025-04-06",
+        flow_date: "2025-05-01",
         description: "Employer pension",
+        tag: "employer",
       },
       {
         household_id: householdId,
-        profile_id: adultB,
-        type: "income",
-        category: "salary",
+        flow_type: "income",
         amount: 48000,
-        tax_year_start: "2025-04-06",
+        flow_date: "2025-05-01",
         description: "Test salary B",
+        tag: "salary",
       },
     ]);
 
@@ -257,36 +231,25 @@ Deno.serve(async (req) => {
       .from("db_pensions")
       .insert({
         household_id: householdId,
-        profile_id: adultA,
-        scheme_name: "Test Career Average Scheme",
-        pension_type: "care",
-        normal_retirement_age: 67,
-        accrual_rate: 0.019,
+        name: "Test Career Average",
+        scheme_type: "CARE",
+        current_age: 42,
+        retirement_age: 67,
+        current_salary: 65000,
+        salary_growth_rate: 0.03,
+        accrual_rate: 54,
+        revaluation_type: "CPI",
         revaluation_rate: 0.02,
+        indexation_type: "CPI",
       })
       .select("id")
       .single();
 
     if (pension?.id) {
       await supabase.from("db_accrual_slices").insert([
-        {
-          pension_id: pension.id,
-          tax_year_start: "2023-04-06",
-          pensionable_earnings: 55000,
-          accrual_rate: 0.019,
-        },
-        {
-          pension_id: pension.id,
-          tax_year_start: "2024-04-06",
-          pensionable_earnings: 60000,
-          accrual_rate: 0.019,
-        },
-        {
-          pension_id: pension.id,
-          tax_year_start: "2025-04-06",
-          pensionable_earnings: 65000,
-          accrual_rate: 0.019,
-        },
+        { pension_id: pension.id, year: 2023, pensionable_salary: 55000, accrual_rate: 54, pension_earned: 55000 / 54, revalued_value: 55000 / 54 },
+        { pension_id: pension.id, year: 2024, pensionable_salary: 60000, accrual_rate: 54, pension_earned: 60000 / 54, revalued_value: 60000 / 54 },
+        { pension_id: pension.id, year: 2025, pensionable_salary: 65000, accrual_rate: 54, pension_earned: 65000 / 54, revalued_value: 65000 / 54 },
       ]);
     }
 
