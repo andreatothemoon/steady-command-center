@@ -10,6 +10,52 @@ import { useToast } from "@/hooks/use-toast";
 import { useInvitationByToken, useAcceptInvitation } from "@/hooks/useHouseholdInvitations";
 import { useAuth } from "@/contexts/AuthContext";
 
+type OAuthTokenResult = {
+  tokens?: { access_token: string; refresh_token: string };
+  error: Error | null;
+  redirected?: boolean;
+};
+
+function createOAuthMessageFallback() {
+  const allowedOrigins = new Set([
+    window.location.origin,
+    "https://oauth.lovable.app",
+    "https://lovable.dev",
+  ]);
+
+  let cleanup = () => {};
+  const promise = new Promise<OAuthTokenResult>((resolve) => {
+    const handleMessage = (event: MessageEvent) => {
+      if (!allowedOrigins.has(event.origin)) return;
+      const data = event.data;
+      if (!data || typeof data !== "object" || data.type !== "authorization_response") return;
+
+      const response = data.response;
+      if (response?.error) {
+        resolve({
+          error: new Error(response.error_description ?? response.error ?? "Google sign-in failed"),
+        });
+        return;
+      }
+
+      if (response?.access_token && response?.refresh_token) {
+        resolve({
+          tokens: {
+            access_token: response.access_token,
+            refresh_token: response.refresh_token,
+          },
+          error: null,
+        });
+      }
+    };
+
+    cleanup = () => window.removeEventListener("message", handleMessage);
+    window.addEventListener("message", handleMessage);
+  });
+
+  return { promise, cleanup };
+}
+
 export default function AuthPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -28,6 +74,10 @@ export default function AuthPage() {
   const { data: invite } = useInvitationByToken(inviteToken);
   const accept = useAcceptInvitation();
   const { user } = useAuth();
+
+  useEffect(() => {
+    if (user) setGoogleLoading(false);
+  }, [user]);
 
   // Persist invite token across the auth round-trip
   useEffect(() => {
@@ -56,11 +106,26 @@ export default function AuthPage() {
 
   const handleGoogleSignIn = async () => {
     setGoogleLoading(true);
+    const fallback = createOAuthMessageFallback();
+    let timeoutId: number | null = null;
+    const timeout = new Promise<OAuthTokenResult>((resolve) => {
+      timeoutId = window.setTimeout(() => {
+        resolve({ error: new Error("Google sign-in timed out. Please try again.") });
+      }, 30000);
+    });
+
     try {
-      const result = await lovable.auth.signInWithOAuth("google", {
-        redirect_uri: window.location.origin,
-      });
-      console.log("[google-oauth] result", result);
+      const result = await Promise.race([
+        lovable.auth.signInWithOAuth("google", {
+          redirect_uri: window.location.origin,
+        }),
+        fallback.promise,
+        timeout,
+      ]);
+
+      fallback.cleanup();
+      if (timeoutId) window.clearTimeout(timeoutId);
+
       if (result?.error) {
         const err: any = result.error;
         const msg = err?.message || err?.error_description || err?.error || JSON.stringify(err);
@@ -68,14 +133,23 @@ export default function AuthPage() {
         setGoogleLoading(false);
         return;
       }
-      if (result?.redirected) {
-        // Browser is navigating to Google — keep loading state
+      if (result?.tokens) {
+        await supabase.auth.setSession(result.tokens);
+      }
+      const { data } = await supabase.auth.getUser();
+      if (data.user) {
+        setGoogleLoading(false);
+        navigate("/", { replace: true });
         return;
       }
-      // Tokens received; onAuthStateChange will pick up the session
+      if (result?.redirected) {
+        // Full-page OAuth will unload this route. If it doesn't, the timeout above resets the CTA.
+        return;
+      }
       setGoogleLoading(false);
     } catch (error: any) {
-      console.error("[google-oauth] threw", error);
+      fallback.cleanup();
+      if (timeoutId) window.clearTimeout(timeoutId);
       toast({
         title: "Google sign-in failed",
         description: error?.message || String(error),
