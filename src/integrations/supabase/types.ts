@@ -1082,6 +1082,7 @@ export type Database = {
           read_ct: number
         }[]
       }
+      reset_regression_household: { Args: never; Returns: undefined }
       set_ni_number: {
         Args: { _ni_number: string; _profile_id: string }
         Returns: undefined
