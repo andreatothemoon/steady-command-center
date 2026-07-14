@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { createLovableAuth } from "@lovable.dev/cloud-auth-js";
+import { lovable } from "@/integrations/lovable";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,18 +10,56 @@ import { useToast } from "@/hooks/use-toast";
 import { useInvitationByToken, useAcceptInvitation } from "@/hooks/useHouseholdInvitations";
 import { useAuth } from "@/contexts/AuthContext";
 
-const getManagedAuth = () =>
-  createLovableAuth({
-    supportedOAuthOrigins: Array.from(
-      new Set([
-        "https://oauth.lovable.app",
-        "https://lovable.dev",
-        window.location.origin,
-        "https://steady-command-center.lovable.app",
-        "https://wealthos.andreadiprata.com",
-      ])
-    ),
+const AUTH_CALLBACK_MESSAGE = "wealthos:auth-callback";
+const GOOGLE_SIGN_IN_TIMEOUT_MS = 120_000;
+
+const getGoogleRedirectUri = () => `${window.location.origin}/auth/callback`;
+
+const createCallbackListener = () => {
+  let resolved = false;
+  let resolveCallback: () => void = () => {};
+
+  const promise = new Promise<void>((resolve) => {
+    resolveCallback = () => {
+      if (!resolved) {
+        resolved = true;
+        resolve();
+      }
+    };
   });
+
+  const onMessage = (event: MessageEvent) => {
+    if (event.origin !== window.location.origin) return;
+    if (event.data?.type === AUTH_CALLBACK_MESSAGE) resolveCallback();
+  };
+
+  window.addEventListener("message", onMessage);
+
+  return {
+    promise,
+    cleanup: () => window.removeEventListener("message", onMessage),
+  };
+};
+
+const waitForAuthenticatedUser = async () => {
+  const deadline = Date.now() + 10_000;
+
+  while (Date.now() < deadline) {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (user) return user;
+
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    if (session?.user) return session.user;
+
+    await new Promise((resolve) => window.setTimeout(resolve, 250));
+  }
+
+  return null;
+};
 
 export default function AuthPage() {
   const [searchParams] = useSearchParams();
@@ -73,11 +111,23 @@ export default function AuthPage() {
 
   const handleGoogleSignIn = async () => {
     setGoogleLoading(true);
+    const callbackListener = createCallbackListener();
+    let timeoutId: ReturnType<typeof window.setTimeout> | undefined;
 
     try {
-      const result = await getManagedAuth().signInWithOAuth("google", {
-        redirect_uri: window.location.origin,
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        timeoutId = window.setTimeout(() => {
+          reject(new Error("Google sign-in took too long. Please close the Google window and try again."));
+        }, GOOGLE_SIGN_IN_TIMEOUT_MS);
       });
+
+      const result = await Promise.race([
+        lovable.auth.signInWithOAuth("google", {
+          redirect_uri: getGoogleRedirectUri(),
+        }),
+        callbackListener.promise.then(() => ({ error: null, redirected: false as const })),
+        timeoutPromise,
+      ]);
 
       if (result?.error) {
         const err: any = result.error;
@@ -86,20 +136,19 @@ export default function AuthPage() {
         setGoogleLoading(false);
         return;
       }
-      if (result?.tokens) {
-        await supabase.auth.setSession(result.tokens);
+
+      if (result?.redirected) {
+        // Full-page OAuth will unload this route and finish on /auth/callback.
+        return;
       }
-      const { data: sessionData } = await supabase.auth.getSession();
-      const user = sessionData.session?.user ?? (await supabase.auth.getUser()).data.user;
-      if (user) {
+
+      const signedInUser = await waitForAuthenticatedUser();
+      if (signedInUser) {
         setGoogleLoading(false);
         navigate("/", { replace: true });
         return;
       }
-      if (result?.redirected) {
-        // Full-page OAuth will unload this route.
-        return;
-      }
+
       toast({
         title: "Google sign-in failed",
         description: "Google sign-in completed, but no session was found. Please try again.",
@@ -113,6 +162,9 @@ export default function AuthPage() {
         variant: "destructive",
       });
       setGoogleLoading(false);
+    } finally {
+      if (timeoutId) window.clearTimeout(timeoutId);
+      callbackListener.cleanup();
     }
   };
 
