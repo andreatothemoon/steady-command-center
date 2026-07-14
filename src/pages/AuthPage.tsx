@@ -60,12 +60,27 @@ export default function AuthPage() {
       const result = await lovable.auth.signInWithOAuth("google", {
         redirect_uri: window.location.origin,
       });
-      if (result.error) {
-        toast({ title: "Error", description: String(result.error), variant: "destructive" });
+      console.log("[google-oauth] result", result);
+      if (result?.error) {
+        const err: any = result.error;
+        const msg = err?.message || err?.error_description || err?.error || JSON.stringify(err);
+        toast({ title: "Google sign-in failed", description: msg, variant: "destructive" });
+        setGoogleLoading(false);
+        return;
       }
+      if (result?.redirected) {
+        // Browser is navigating to Google — keep loading state
+        return;
+      }
+      // Tokens received; onAuthStateChange will pick up the session
+      setGoogleLoading(false);
     } catch (error: any) {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
-    } finally {
+      console.error("[google-oauth] threw", error);
+      toast({
+        title: "Google sign-in failed",
+        description: error?.message || String(error),
+        variant: "destructive",
+      });
       setGoogleLoading(false);
     }
   };
