@@ -1,9 +1,9 @@
 import { test, expect, gotoAuthed } from "../fixtures/base";
 
 test.describe("Admin approvals", () => {
-  test("regression user (non-admin) sees no pending approvals", async ({ page }) => {
+  test("regression user (non-admin) cannot access admin approvals", async ({ page }) => {
     await gotoAuthed(page, "/admin/approvals");
-    // RLS should hide all approval rows from non-admin users.
-    await expect(page.locator("body")).toContainText(/no user signups yet/i, { timeout: 10_000 });
+    // Non-admin users hit the 404 page.
+    await expect(page.locator("body")).toContainText(/404|not found/i, { timeout: 10_000 });
   });
 });
