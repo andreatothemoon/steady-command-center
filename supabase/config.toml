@@ -5,3 +5,6 @@ verify_jwt = true
 
 [functions.snapshot-accounts]
 verify_jwt = true
+
+[functions.provision-regression-user]
+verify_jwt = false
