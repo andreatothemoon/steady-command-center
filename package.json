@@ -12,9 +12,9 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
-    "regression": "playwright test --config=tests/regression/playwright.config.ts",
-    "regression:smoke": "playwright test --config=tests/regression/playwright.config.ts --project=smoke",
-    "regression:journeys": "playwright test --config=tests/regression/playwright.config.ts --project=journeys"
+    "regression": "PLAYWRIGHT_BROWSERS_PATH=${PLAYWRIGHT_BROWSERS_PATH:-} playwright test --config=tests/regression/playwright.config.ts",
+    "regression:smoke": "PLAYWRIGHT_BROWSERS_PATH=${PLAYWRIGHT_BROWSERS_PATH:-} playwright test --config=tests/regression/playwright.config.ts --project=smoke",
+    "regression:journeys": "PLAYWRIGHT_BROWSERS_PATH=${PLAYWRIGHT_BROWSERS_PATH:-} playwright test --config=tests/regression/playwright.config.ts --project=journeys"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
