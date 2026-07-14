@@ -23,8 +23,8 @@ export default function HouseholdWealthTile({ accounts, netWorth, adults }: Prop
   return (
     <PillarTile
       to="/wealth"
-      eyebrow="Wealth"
-      title="Household wealth"
+      eyebrow="Assets"
+      title="Household assets"
       icon={Wallet}
       accent="primary"
       footer={
