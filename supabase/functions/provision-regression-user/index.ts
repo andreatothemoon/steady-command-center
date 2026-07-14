@@ -49,8 +49,10 @@ Deno.serve(async (req) => {
       if (error) throw error;
     }
 
-    // 2. Approve + role
-    await supabase.from("user_approvals").upsert({ user_id: userId, status: "approved" });
+    // 2. Approve + role (explicit onConflict — both tables have unique(user_id[, role]))
+    await supabase
+      .from("user_approvals")
+      .upsert({ user_id: userId, status: "approved" }, { onConflict: "user_id" });
     await supabase
       .from("user_roles")
       .upsert({ user_id: userId, role: "user" }, { onConflict: "user_id,role" });
