@@ -3,6 +3,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const BASE_URL = process.env.REGRESSION_BASE_URL ?? "http://localhost:8080";
 
 export default defineConfig({
   testDir: ".",
