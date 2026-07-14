@@ -10,52 +10,6 @@ import { useToast } from "@/hooks/use-toast";
 import { useInvitationByToken, useAcceptInvitation } from "@/hooks/useHouseholdInvitations";
 import { useAuth } from "@/contexts/AuthContext";
 
-type OAuthTokenResult = {
-  tokens?: { access_token: string; refresh_token: string };
-  error: Error | null;
-  redirected?: boolean;
-};
-
-function createOAuthMessageFallback() {
-  const allowedOrigins = new Set([
-    window.location.origin,
-    "https://oauth.lovable.app",
-    "https://lovable.dev",
-  ]);
-
-  let cleanup = () => {};
-  const promise = new Promise<OAuthTokenResult>((resolve) => {
-    const handleMessage = (event: MessageEvent) => {
-      if (!allowedOrigins.has(event.origin)) return;
-      const data = event.data;
-      if (!data || typeof data !== "object" || data.type !== "authorization_response") return;
-
-      const response = data.response;
-      if (response?.error) {
-        resolve({
-          error: new Error(response.error_description ?? response.error ?? "Google sign-in failed"),
-        });
-        return;
-      }
-
-      if (response?.access_token && response?.refresh_token) {
-        resolve({
-          tokens: {
-            access_token: response.access_token,
-            refresh_token: response.refresh_token,
-          },
-          error: null,
-        });
-      }
-    };
-
-    cleanup = () => window.removeEventListener("message", handleMessage);
-    window.addEventListener("message", handleMessage);
-  });
-
-  return { promise, cleanup };
-}
-
 export default function AuthPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -106,25 +60,11 @@ export default function AuthPage() {
 
   const handleGoogleSignIn = async () => {
     setGoogleLoading(true);
-    const fallback = createOAuthMessageFallback();
-    let timeoutId: number | null = null;
-    const timeout = new Promise<OAuthTokenResult>((resolve) => {
-      timeoutId = window.setTimeout(() => {
-        resolve({ error: new Error("Google sign-in timed out. Please try again.") });
-      }, 30000);
-    });
 
     try {
-      const result = await Promise.race([
-        lovable.auth.signInWithOAuth("google", {
-          redirect_uri: window.location.origin,
-        }),
-        fallback.promise,
-        timeout,
-      ]);
-
-      fallback.cleanup();
-      if (timeoutId) window.clearTimeout(timeoutId);
+      const result = await lovable.auth.signInWithOAuth("google", {
+        redirect_uri: window.location.origin,
+      });
 
       if (result?.error) {
         const err: any = result.error;
@@ -136,20 +76,24 @@ export default function AuthPage() {
       if (result?.tokens) {
         await supabase.auth.setSession(result.tokens);
       }
-      const { data } = await supabase.auth.getUser();
-      if (data.user) {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const user = sessionData.session?.user ?? (await supabase.auth.getUser()).data.user;
+      if (user) {
         setGoogleLoading(false);
         navigate("/", { replace: true });
         return;
       }
       if (result?.redirected) {
-        // Full-page OAuth will unload this route. If it doesn't, the timeout above resets the CTA.
+        // Full-page OAuth will unload this route.
         return;
       }
+      toast({
+        title: "Google sign-in failed",
+        description: "Google sign-in completed, but no session was found. Please try again.",
+        variant: "destructive",
+      });
       setGoogleLoading(false);
     } catch (error: any) {
-      fallback.cleanup();
-      if (timeoutId) window.clearTimeout(timeoutId);
       toast({
         title: "Google sign-in failed",
         description: error?.message || String(error),
