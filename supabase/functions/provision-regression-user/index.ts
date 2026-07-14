@@ -42,8 +42,10 @@ Deno.serve(async (req) => {
       if (error) throw error;
       userId = created.user!.id;
     } else {
+      // Do NOT update password on repeat calls — that invalidates active sessions
+      // and breaks the storageState the Playwright suite reuses. Only ensure the
+      // email is confirmed (idempotent).
       const { error } = await supabase.auth.admin.updateUserById(userId, {
-        password: TEST_PASSWORD,
         email_confirm: true,
       });
       if (error) throw error;
