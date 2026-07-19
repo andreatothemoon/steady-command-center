@@ -20,13 +20,13 @@ import { formatOwnerGroup } from "@/lib/accountOwners";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import AllocationDonut from "@/components/AllocationDonut";
 import AddAccountDialog from "@/components/AddAccountDialog";
 import EditAccountDialog from "@/components/EditAccountDialog";
 import ImportAccountsDialog from "@/components/ImportAccountsDialog";
 import DBPensionDialog from "@/components/db-pension/DBPensionDialog";
 import { exportAccountsCsv } from "@/lib/csvAccounts";
-import { DEFAULT_DRAWDOWN_RATE, UK_STATE_PENSION_FULL } from "@/lib/retirementEngine";
+import { DEFAULT_DRAWDOWN_RATE } from "@/lib/retirementEngine";
+
 
 /* ─── bucket definitions ─── */
 type Bucket = "guaranteed" | "growth" | "safety" | "property";
