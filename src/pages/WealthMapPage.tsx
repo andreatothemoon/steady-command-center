@@ -536,15 +536,44 @@ export default function WealthMapPage() {
         <div>
           <h1 className="text-2xl font-semibold tracking-tight text-foreground">Wealth map</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Household → member → bucket → account. Same buckets as the Wealth page. Drag an account onto a member to reassign ownership.
+            Household → {groupBy === "region" ? "region" : "owner"} → asset type → account.
+            {groupBy === "owner" && " Drag an account onto a member to reassign ownership."}
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2 text-[11px]">
+          {/* Group-by selector */}
+          <div className="flex items-center gap-0.5 rounded-full border border-border/60 bg-card p-0.5">
+            {([
+              { key: "owner", label: "Owner", icon: User },
+              { key: "region", label: "Geography", icon: Globe2 },
+            ] as const).map((opt) => {
+              const Icon = opt.icon;
+              const active = groupBy === opt.key;
+              return (
+                <button
+                  key={opt.key}
+                  type="button"
+                  onClick={() => setGroupBy(opt.key)}
+                  className={`flex items-center gap-1.5 rounded-full px-2.5 py-1 transition-colors ${
+                    active
+                      ? "bg-primary/10 text-primary"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                  aria-pressed={active}
+                >
+                  <Icon className="h-3 w-3" strokeWidth={2.25} />
+                  <span className="font-medium">{opt.label}</span>
+                </button>
+              );
+            })}
+          </div>
+
           <button
             type="button"
             onClick={() => setGroupJoint((v) => !v)}
-            className={`flex items-center gap-1.5 rounded-full border px-2.5 py-1 transition-colors ${
-              groupJoint
+            disabled={groupBy !== "owner"}
+            className={`flex items-center gap-1.5 rounded-full border px-2.5 py-1 transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${
+              groupJoint && groupBy === "owner"
                 ? "border-primary/40 bg-primary/10 text-primary"
                 : "border-border/60 bg-card text-muted-foreground hover:bg-secondary"
             }`}
