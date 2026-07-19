@@ -69,9 +69,39 @@ export default function WealthPage() {
   const { data: accounts = [], isLoading } = useAccounts();
   const { data: dbPensions = [] } = useDBPensions();
   const upsertMutation = useUpsertDBPension();
+  const updateAccount = useUpdateAccount();
+  const { toast } = useToast();
   const [addOpen, setAddOpen] = useState(false);
   const [editAccount, setEditAccount] = useState<Account | null>(null);
   const [importOpen, setImportOpen] = useState(false);
+  const [confirmingId, setConfirmingId] = useState<string | null>(null);
+  const [bulkConfirming, setBulkConfirming] = useState(false);
+
+  const handleConfirm = async (account: Account) => {
+    setConfirmingId(account.id);
+    try {
+      await updateAccount.mutateAsync({ id: account.id, last_updated: new Date().toISOString() });
+      toast({ title: "Confirmed", description: `${account.name} marked as up to date.` });
+    } catch (e: any) {
+      toast({ title: "Failed to confirm", description: e?.message ?? "Try again", variant: "destructive" });
+    } finally {
+      setConfirmingId(null);
+    }
+  };
+
+  const handleConfirmAll = async () => {
+    if (accounts.length === 0) return;
+    setBulkConfirming(true);
+    const now = new Date().toISOString();
+    try {
+      await Promise.all(accounts.map((a) => updateAccount.mutateAsync({ id: a.id, last_updated: now })));
+      toast({ title: "All accounts confirmed", description: `${accounts.length} accounts marked as up to date.` });
+    } catch (e: any) {
+      toast({ title: "Some confirmations failed", description: e?.message ?? "Try again", variant: "destructive" });
+    } finally {
+      setBulkConfirming(false);
+    }
+  };
 
   // DB pension dialog state
   const [dbDialogOpen, setDbDialogOpen] = useState(false);
