@@ -9,9 +9,10 @@ import { projectDBPension } from "@/lib/dbPensionEngine";
 import { toDBPensionParams } from "@/lib/dbPensionRates";
 import {
   Plus, Upload, Download, Inbox, Clock, Link2, Shield,
-  TrendingUp, Landmark, Home as HomeIcon, Building2,
+  TrendingUp, Landmark, Home as HomeIcon, Building2, CheckCircle2, RefreshCw,
 } from "lucide-react";
-import { useAccounts, type Account } from "@/hooks/useAccounts";
+import { useAccounts, useUpdateAccount, type Account } from "@/hooks/useAccounts";
+import { useToast } from "@/hooks/use-toast";
 import { useDBPensions, useUpsertDBPension } from "@/hooks/useDBPensions";
 import type { DBPension, DBPensionInput } from "@/hooks/useDBPensions";
 import { accountTypeLabels } from "@/data/types";
@@ -68,9 +69,39 @@ export default function WealthPage() {
   const { data: accounts = [], isLoading } = useAccounts();
   const { data: dbPensions = [] } = useDBPensions();
   const upsertMutation = useUpsertDBPension();
+  const updateAccount = useUpdateAccount();
+  const { toast } = useToast();
   const [addOpen, setAddOpen] = useState(false);
   const [editAccount, setEditAccount] = useState<Account | null>(null);
   const [importOpen, setImportOpen] = useState(false);
+  const [confirmingId, setConfirmingId] = useState<string | null>(null);
+  const [bulkConfirming, setBulkConfirming] = useState(false);
+
+  const handleConfirm = async (account: Account) => {
+    setConfirmingId(account.id);
+    try {
+      await updateAccount.mutateAsync({ id: account.id, last_updated: new Date().toISOString() });
+      toast({ title: "Confirmed", description: `${account.name} marked as up to date.` });
+    } catch (e: any) {
+      toast({ title: "Failed to confirm", description: e?.message ?? "Try again", variant: "destructive" });
+    } finally {
+      setConfirmingId(null);
+    }
+  };
+
+  const handleConfirmAll = async () => {
+    if (accounts.length === 0) return;
+    setBulkConfirming(true);
+    const now = new Date().toISOString();
+    try {
+      await Promise.all(accounts.map((a) => updateAccount.mutateAsync({ id: a.id, last_updated: now })));
+      toast({ title: "All accounts confirmed", description: `${accounts.length} accounts marked as up to date.` });
+    } catch (e: any) {
+      toast({ title: "Some confirmations failed", description: e?.message ?? "Try again", variant: "destructive" });
+    } finally {
+      setBulkConfirming(false);
+    }
+  };
 
   // DB pension dialog state
   const [dbDialogOpen, setDbDialogOpen] = useState(false);
@@ -157,6 +188,18 @@ export default function WealthPage() {
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
+            {accounts.length > 0 && (
+              <Button
+                size="sm"
+                variant="outline"
+                className="gap-2 rounded-xl"
+                onClick={handleConfirmAll}
+                disabled={bulkConfirming}
+              >
+                <RefreshCw className={cn("h-4 w-4", bulkConfirming && "animate-spin")} />
+                {bulkConfirming ? "Confirming…" : "Confirm all"}
+              </Button>
+            )}
             <Button size="sm" variant="outline" className="gap-2 rounded-xl" onClick={() => setImportOpen(true)}>
               <Upload className="h-4 w-4" /> Import
             </Button>
@@ -235,7 +278,7 @@ export default function WealthPage() {
                           <div
                             key={account.id}
                             className={cn(
-                              "flex items-center justify-between px-6 py-4 transition-colors cursor-pointer hover:bg-secondary/50",
+                              "group flex items-center justify-between px-6 py-4 transition-colors cursor-pointer hover:bg-secondary/50",
                               index !== items.length - 1 && "border-b border-border"
                             )}
                             onClick={() => handleAccountClick(account)}
@@ -284,28 +327,46 @@ export default function WealthPage() {
                                 )}
                               </p>
                             </div>
-                            <div className="text-right flex-shrink-0">
-                              {isDbPension ? (
-                                <>
-                                  <p className="text-sm font-semibold tabular-nums text-primary">
-                                    {formatCurrency(displayVal)}<span className="text-[10px] font-normal text-muted-foreground">/yr</span>
-                                  </p>
-                                  <p className="text-[10px] text-primary/70 tabular-nums">
-                                    ≈ {formatCurrency(Math.round(displayVal / 12))}/mo at retirement
-                                  </p>
-                                </>
-                              ) : (
-                                <>
-                                  <p className={cn("text-sm font-semibold tabular-nums", displayVal < 0 ? "text-destructive" : "text-card-foreground")}>
-                                    {formatCurrency(displayVal)}
-                                  </p>
-                                  {income != null && (
-                                    <p className="text-[10px] text-primary tabular-nums">
-                                      +{formatCurrency(Math.round(income / 12))}/mo income
+                            <div className="flex items-center gap-3 flex-shrink-0">
+                              <div className="text-right">
+                                {isDbPension ? (
+                                  <>
+                                    <p className="text-sm font-semibold tabular-nums text-primary">
+                                      {formatCurrency(displayVal)}<span className="text-[10px] font-normal text-muted-foreground">/yr</span>
                                     </p>
+                                    <p className="text-[10px] text-primary/70 tabular-nums">
+                                      ≈ {formatCurrency(Math.round(displayVal / 12))}/mo at retirement
+                                    </p>
+                                  </>
+                                ) : (
+                                  <>
+                                    <p className={cn("text-sm font-semibold tabular-nums", displayVal < 0 ? "text-destructive" : "text-card-foreground")}>
+                                      {formatCurrency(displayVal)}
+                                    </p>
+                                    {income != null && (
+                                      <p className="text-[10px] text-primary tabular-nums">
+                                        +{formatCurrency(Math.round(income / 12))}/mo income
+                                      </p>
+                                    )}
+                                    {income == null && <p className="text-[10px] text-muted-foreground capitalize">{account.source_type}</p>}
+                                  </>
+                                )}
+                              </div>
+                              {!isDbPension && (
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  className="h-8 w-8 p-0 rounded-lg opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity"
+                                  title={account.last_updated ? `Last confirmed ${daysAgo(account.last_updated)}d ago — click to reconfirm` : "Confirm as up to date"}
+                                  disabled={confirmingId === account.id || bulkConfirming}
+                                  onClick={(e) => { e.stopPropagation(); handleConfirm(account); }}
+                                >
+                                  {confirmingId === account.id ? (
+                                    <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+                                  ) : (
+                                    <CheckCircle2 className="h-3.5 w-3.5 text-muted-foreground hover:text-success" />
                                   )}
-                                  {income == null && <p className="text-[10px] text-muted-foreground capitalize">{account.source_type}</p>}
-                                </>
+                                </Button>
                               )}
                             </div>
                           </div>
