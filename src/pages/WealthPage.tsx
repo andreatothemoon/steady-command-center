@@ -99,61 +99,8 @@ export default function WealthPage() {
     });
     return map;
   }, [dbPensions]);
-  const allocation = useMemo(() => {
-    const totals = (Object.keys(buckets) as Bucket[]).map((bucket) => {
-      let total: number;
-      if (bucket === "property") {
-        // Show net equity: property values minus linked mortgages/loans/credit cards
-        total = buckets[bucket].reduce((sum, account) => sum + Number(account.current_value), 0);
-        total = Math.max(total, 0);
-      } else if (bucket === "guaranteed") {
-        // Show estimated annual income: DB projected income + DC drawdown
-        total = buckets[bucket].reduce((sum, account) => {
-          if (account.account_type === "db_pension") return sum + (dbProjections[account.id]?.projected ?? 0);
-          const val = Number(account.current_value);
-          if (val > 0) return sum + Math.round(val * DEFAULT_DRAWDOWN_RATE);
-          return sum;
-        }, 0);
-      } else {
-        total = buckets[bucket].reduce((sum, account) => {
-          return sum + Math.abs(Number(account.current_value));
-        }, 0);
-      }
-      return { bucket, total, meta: bucketMeta[bucket] };
-    });
-    const grossTotal = totals.reduce((sum, item) => sum + item.total, 0);
-    return totals
-      .filter((item) => item.total > 0)
-      .sort((a, b) => b.total - a.total)
-      .map((item) => ({
-        ...item,
-        share: grossTotal > 0 ? (item.total / grossTotal) * 100 : 0,
-      }));
-  }, [buckets, dbProjections]);
-  const leadingAllocation = allocation[0] ?? null;
 
-  // Income contribution estimate
-  const dcIncome = accounts
-    .filter(a => ["sipp", "workplace_pension", "stocks_and_shares_isa", "cash_isa", "gia", "crypto", "employer_share_scheme"].includes(a.account_type) && Number(a.current_value) > 0)
-    .reduce((s, a) => s + Number(a.current_value) * DEFAULT_DRAWDOWN_RATE, 0);
 
-  const dbIncome = useMemo(() =>
-    Object.values(dbProjections).reduce((s, p) => s + p.projected, 0),
-    [dbProjections]
-  );
-
-  const totalIncomeEstimate = dcIncome + dbIncome + UK_STATE_PENSION_FULL;
-  const guaranteedIncomeMonthly = Math.round((dbIncome + UK_STATE_PENSION_FULL) / 12);
-  const drawdownCapacityMonthly = Math.round(dcIncome / 12);
-  const liquidityCoverageMonths = dcIncome > 0
-    ? Math.max(
-        0,
-        Math.round(
-          buckets.safety.reduce((sum, account) => sum + Number(account.current_value), 0) /
-            Math.max(drawdownCapacityMonthly, 1)
-        )
-      )
-    : 0;
 
   // DB pension handlers
   const handleDbSave = (input: DBPensionInput & { id?: string }) => {
