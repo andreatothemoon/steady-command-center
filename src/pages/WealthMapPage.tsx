@@ -282,27 +282,59 @@ export default function WealthMapPage() {
       } satisfies NodeMeta as unknown as Record<string, unknown>,
     });
 
-    const memberList: { id: string; name: string; isJoint?: boolean }[] =
-      adults.length > 0
-        ? adults.map((a) => ({ id: a.id, name: a.name }))
-        : [{ id: "unassigned", name: "Unassigned" }];
+    type Group = {
+      id: string;
+      name: string;
+      color: string;
+      icon: LucideIcon;
+      isJoint?: boolean;
+      filter: (a: Account) => boolean;
+    };
 
-    if (groupJoint && adults.length > 1) {
-      memberList.push({ id: "joint", name: "Joint", isJoint: true });
+    let groupList: Group[] = [];
+
+    if (groupBy === "region") {
+      const regionsPresent = new Set<Region>();
+      accounts.forEach((a) => regionsPresent.add(accountRegion(a)));
+      groupList = Array.from(regionsPresent).map((r) => ({
+        id: `region:${r}`,
+        name: `${REGION_META[r].flag} ${REGION_META[r].label}`,
+        color: REGION_META[r].color,
+        icon: Globe2,
+        filter: (a: Account) => accountRegion(a) === r,
+      }));
+    } else {
+      const memberList: { id: string; name: string; isJoint?: boolean }[] =
+        adults.length > 0
+          ? adults.map((a) => ({ id: a.id, name: a.name }))
+          : [{ id: "unassigned", name: "Unassigned" }];
+
+      if (groupJoint && adults.length > 1) {
+        memberList.push({ id: "joint", name: "Joint", isJoint: true });
+      }
+
+      groupList = memberList.map((m) => ({
+        id: m.id,
+        name: m.name,
+        color: m.isJoint ? "#4F8CFF" : "hsl(var(--primary))",
+        icon: m.isJoint ? UsersRound : User,
+        isJoint: m.isJoint,
+        filter: (a: Account) => {
+          const owners = splitOwnerNames(a.owner_name);
+          if (m.id === "unassigned") return owners.length === 0;
+          if (m.isJoint) return owners.length > 1;
+          if (groupJoint && owners.length > 1 && adults.length > 1) return false;
+          return owners.includes(m.name.toLowerCase());
+        },
+      }));
     }
 
-    memberList.forEach((m) => {
-      const memberAccounts = accounts.filter((a) => {
-        const owners = splitOwnerNames(a.owner_name);
-        if (m.id === "unassigned") return owners.length === 0;
-        if (m.isJoint) return owners.length > 1;
-        if (groupJoint && owners.length > 1 && adults.length > 1) return false;
-        return owners.includes(m.name.toLowerCase());
-      });
-      if (memberAccounts.length === 0 && m.id !== "unassigned") return;
+    groupList.forEach((g) => {
+      const memberAccounts = accounts.filter(g.filter);
+      if (memberAccounts.length === 0 && g.id !== "unassigned") return;
 
       const memberNet = memberAccounts.reduce((s, a) => s + Number(a.current_value), 0);
-      const memberNodeId = `member:${m.id}`;
+      const memberNodeId = `member:${g.id}`;
 
       nodes.push({
         id: memberNodeId,
@@ -310,12 +342,12 @@ export default function WealthMapPage() {
         position: { x: 0, y: 0 },
         data: {
           kind: "member",
-          label: m.name,
+          label: g.name,
           sublabel: `${formatCurrency(memberNet, true)} net`,
           count: memberAccounts.length,
-          icon: m.isJoint ? UsersRound : User,
-          color: m.isJoint ? "#4F8CFF" : "hsl(var(--primary))",
-          memberId: m.id,
+          icon: g.icon,
+          color: g.color,
+          memberId: g.id,
           isNegative: memberNet < 0,
         } satisfies NodeMeta as unknown as Record<string, unknown>,
       });
