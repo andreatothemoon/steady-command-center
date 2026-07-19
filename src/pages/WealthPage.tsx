@@ -20,13 +20,13 @@ import { formatOwnerGroup } from "@/lib/accountOwners";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import AllocationDonut from "@/components/AllocationDonut";
 import AddAccountDialog from "@/components/AddAccountDialog";
 import EditAccountDialog from "@/components/EditAccountDialog";
 import ImportAccountsDialog from "@/components/ImportAccountsDialog";
 import DBPensionDialog from "@/components/db-pension/DBPensionDialog";
 import { exportAccountsCsv } from "@/lib/csvAccounts";
-import { DEFAULT_DRAWDOWN_RATE, UK_STATE_PENSION_FULL } from "@/lib/retirementEngine";
+import { DEFAULT_DRAWDOWN_RATE } from "@/lib/retirementEngine";
+
 
 /* ─── bucket definitions ─── */
 type Bucket = "guaranteed" | "growth" | "safety" | "property";
@@ -99,61 +99,8 @@ export default function WealthPage() {
     });
     return map;
   }, [dbPensions]);
-  const allocation = useMemo(() => {
-    const totals = (Object.keys(buckets) as Bucket[]).map((bucket) => {
-      let total: number;
-      if (bucket === "property") {
-        // Show net equity: property values minus linked mortgages/loans/credit cards
-        total = buckets[bucket].reduce((sum, account) => sum + Number(account.current_value), 0);
-        total = Math.max(total, 0);
-      } else if (bucket === "guaranteed") {
-        // Show estimated annual income: DB projected income + DC drawdown
-        total = buckets[bucket].reduce((sum, account) => {
-          if (account.account_type === "db_pension") return sum + (dbProjections[account.id]?.projected ?? 0);
-          const val = Number(account.current_value);
-          if (val > 0) return sum + Math.round(val * DEFAULT_DRAWDOWN_RATE);
-          return sum;
-        }, 0);
-      } else {
-        total = buckets[bucket].reduce((sum, account) => {
-          return sum + Math.abs(Number(account.current_value));
-        }, 0);
-      }
-      return { bucket, total, meta: bucketMeta[bucket] };
-    });
-    const grossTotal = totals.reduce((sum, item) => sum + item.total, 0);
-    return totals
-      .filter((item) => item.total > 0)
-      .sort((a, b) => b.total - a.total)
-      .map((item) => ({
-        ...item,
-        share: grossTotal > 0 ? (item.total / grossTotal) * 100 : 0,
-      }));
-  }, [buckets, dbProjections]);
-  const leadingAllocation = allocation[0] ?? null;
 
-  // Income contribution estimate
-  const dcIncome = accounts
-    .filter(a => ["sipp", "workplace_pension", "stocks_and_shares_isa", "cash_isa", "gia", "crypto", "employer_share_scheme"].includes(a.account_type) && Number(a.current_value) > 0)
-    .reduce((s, a) => s + Number(a.current_value) * DEFAULT_DRAWDOWN_RATE, 0);
 
-  const dbIncome = useMemo(() =>
-    Object.values(dbProjections).reduce((s, p) => s + p.projected, 0),
-    [dbProjections]
-  );
-
-  const totalIncomeEstimate = dcIncome + dbIncome + UK_STATE_PENSION_FULL;
-  const guaranteedIncomeMonthly = Math.round((dbIncome + UK_STATE_PENSION_FULL) / 12);
-  const drawdownCapacityMonthly = Math.round(dcIncome / 12);
-  const liquidityCoverageMonths = dcIncome > 0
-    ? Math.max(
-        0,
-        Math.round(
-          buckets.safety.reduce((sum, account) => sum + Number(account.current_value), 0) /
-            Math.max(drawdownCapacityMonthly, 1)
-        )
-      )
-    : 0;
 
   // DB pension handlers
   const handleDbSave = (input: DBPensionInput & { id?: string }) => {
@@ -186,128 +133,45 @@ export default function WealthPage() {
 
   return (
     <motion.div className="space-y-8" variants={stagger.container} initial="initial" animate="animate">
-      <motion.div variants={stagger.item} className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-        <div>
-          <h1 className="text-4xl font-semibold tracking-tight text-foreground">Assets</h1>
-          <p className="mt-2 text-muted-foreground">
-            {isLoading ? "Loading…" : "Your complete financial picture across pensions, investments, cash, property, and debt."}
-          </p>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <Button size="sm" variant="outline" className="gap-2 rounded-xl" onClick={() => setImportOpen(true)}>
-            <Upload className="h-4 w-4" /> Import
-          </Button>
-          {accounts.length > 0 && (
-            <Button size="sm" variant="outline" className="gap-2 rounded-xl" onClick={() => exportAccountsCsv(accounts)}>
-              <Download className="h-4 w-4" /> Export
+      <motion.section variants={stagger.item} className="flex flex-col gap-6">
+        <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <p className="text-sm text-muted-foreground">Total assets</p>
+            <h1 className="mt-1 text-[2.5rem] font-semibold tracking-tight text-foreground sm:text-[2.75rem]">
+              {isLoading ? "…" : formatCurrency(netWorth)}
+            </h1>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {accounts.length} account{accounts.length === 1 ? "" : "s"}
+              {!isLoading && (
+                <>
+                  {" · "}
+                  <span className="text-foreground/80 tabular-nums">{formatCurrency(totalAssets, true)}</span> assets
+                  {totalLiabilities < 0 && (
+                    <>
+                      {" · "}
+                      <span className="text-destructive tabular-nums">{formatCurrency(totalLiabilities, true)}</span> liabilities
+                    </>
+                  )}
+                </>
+              )}
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button size="sm" variant="outline" className="gap-2 rounded-xl" onClick={() => setImportOpen(true)}>
+              <Upload className="h-4 w-4" /> Import
             </Button>
-          )}
-          <Button size="sm" className="gap-2 rounded-xl" onClick={() => setAddOpen(true)}>
-            <Plus className="h-4 w-4" /> Add Account
-          </Button>
-        </div>
-      </motion.div>
-
-      {!isLoading && accounts.length > 0 && (
-        <>
-          <motion.div variants={stagger.item} className="hero-surface p-10">
-            <div className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-accent/[0.06]" />
-            <div className="relative flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between">
-              <div>
-                <p className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">Assets Overview</p>
-                <p className="mt-2 text-5xl font-semibold tracking-[-0.06em] text-foreground">{formatCurrency(netWorth)}</p>
-                <p className="mt-3 max-w-2xl text-sm text-muted-foreground">
-                  {accounts.length} account{accounts.length !== 1 ? "s" : ""} mapped into retirement income and liquidity.
-                </p>
-              </div>
-              <div className="grid gap-6 sm:grid-cols-3">
-                <div>
-                  <p className="text-sm text-muted-foreground">Retirement income estimate</p>
-                  <p className="mt-1 text-2xl font-semibold tracking-tight text-foreground">
-                    {formatCurrency(Math.round(totalIncomeEstimate / 12))}/mo
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Total assets</p>
-                  <p className="mt-1 text-2xl font-semibold tracking-tight text-foreground">{formatCurrency(totalAssets)}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Liabilities</p>
-                  <p className="mt-1 text-2xl font-semibold tracking-tight text-destructive">{formatCurrency(totalLiabilities)}</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="relative mt-8 grid gap-4 lg:grid-cols-3">
-              <div className="rounded-[24px] border border-border/60 bg-white/75 px-5 py-4 backdrop-blur">
-                <p className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">Guaranteed Base</p>
-                <p className="mt-2 text-2xl font-semibold tracking-tight text-foreground">{formatCurrency(guaranteedIncomeMonthly)}/mo</p>
-                <p className="mt-1 text-sm text-muted-foreground">Projected DB income plus full State Pension.</p>
-              </div>
-              <div className="rounded-[24px] border border-border/60 bg-white/75 px-5 py-4 backdrop-blur">
-                <p className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">Flexible Capacity</p>
-                <p className="mt-2 text-2xl font-semibold tracking-tight text-foreground">{formatCurrency(drawdownCapacityMonthly)}/mo</p>
-                <p className="mt-1 text-sm text-muted-foreground">Illustrative drawdown from invested DC and growth assets.</p>
-              </div>
-              <div className="rounded-[24px] border border-border/60 bg-white/75 px-5 py-4 backdrop-blur">
-                <p className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">Safety Buffer</p>
-                <p className="mt-2 text-2xl font-semibold tracking-tight text-foreground">{liquidityCoverageMonths} months</p>
-                <p className="mt-1 text-sm text-muted-foreground">Approximate coverage from cash and savings against flexible spending.</p>
-              </div>
-            </div>
-
-            {leadingAllocation && (
-              <div className="relative mt-8 border-t border-border/60 pt-6">
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Largest allocation</p>
-                    <p className="mt-1 text-lg font-semibold text-foreground">{leadingAllocation.meta.label}</p>
-                  </div>
-                  <p className="text-sm text-muted-foreground">
-                    {leadingAllocation.share.toFixed(0)}% of your gross balance footprint
-                  </p>
-                </div>
-              </div>
+            {accounts.length > 0 && (
+              <Button size="sm" variant="outline" className="gap-2 rounded-xl" onClick={() => exportAccountsCsv(accounts)}>
+                <Download className="h-4 w-4" /> Export
+              </Button>
             )}
-          </motion.div>
+            <Button size="sm" className="gap-2 rounded-xl" onClick={() => setAddOpen(true)}>
+              <Plus className="h-4 w-4" /> Add Account
+            </Button>
+          </div>
+        </div>
+      </motion.section>
 
-          <motion.div variants={stagger.item} className="grid gap-6 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
-            <AllocationDonut accounts={accounts} />
-            <div className="card-surface p-8">
-              <p className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">Allocation Story</p>
-              <h2 className="mt-2 text-2xl font-semibold text-foreground">How your capital is positioned</h2>
-              <p className="mt-2 text-sm text-muted-foreground">
-                These buckets translate assets into retirement roles: dependable income, growth, liquidity, and property exposure.
-              </p>
-              <div className="mt-6 space-y-4">
-                {allocation.map((item) => (
-                  <div key={item.bucket} className="space-y-2">
-                    <div className="flex items-center justify-between gap-4">
-                      <div className="flex items-center gap-3">
-                        <div className="h-3 w-3 rounded-full bg-primary" style={{ backgroundColor: item.bucket === "guaranteed" ? "#091540" : item.bucket === "growth" ? "#efcb68" : item.bucket === "safety" ? "#aeb7b3" : "#895b1e" }} />
-                        <div>
-                          <span className="text-sm font-medium text-foreground">{item.meta.label}</span>
-                          <p className="text-xs text-muted-foreground">{item.meta.description}</p>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-sm font-semibold text-foreground">{formatCurrency(Math.round(item.total))}{item.bucket === "guaranteed" ? "/yr" : ""}</p>
-                        <p className="text-xs text-muted-foreground">{item.share.toFixed(1)}%</p>
-                      </div>
-                    </div>
-                    <div className="h-2 overflow-hidden rounded-full bg-secondary">
-                      <div
-                        className="h-full rounded-full bg-primary"
-                        style={{ width: `${Math.max(item.share, 4)}%`, backgroundColor: item.bucket === "guaranteed" ? "#091540" : item.bucket === "growth" ? "#efcb68" : item.bucket === "safety" ? "#aeb7b3" : "#895b1e" }}
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </motion.div>
-        </>
-      )}
 
       {isLoading ? (
         <div className="space-y-4">{[1, 2, 3].map((i) => <Skeleton key={i} className="h-20 w-full rounded-xl" />)}</div>
