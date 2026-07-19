@@ -327,28 +327,46 @@ export default function WealthPage() {
                                 )}
                               </p>
                             </div>
-                            <div className="text-right flex-shrink-0">
-                              {isDbPension ? (
-                                <>
-                                  <p className="text-sm font-semibold tabular-nums text-primary">
-                                    {formatCurrency(displayVal)}<span className="text-[10px] font-normal text-muted-foreground">/yr</span>
-                                  </p>
-                                  <p className="text-[10px] text-primary/70 tabular-nums">
-                                    ≈ {formatCurrency(Math.round(displayVal / 12))}/mo at retirement
-                                  </p>
-                                </>
-                              ) : (
-                                <>
-                                  <p className={cn("text-sm font-semibold tabular-nums", displayVal < 0 ? "text-destructive" : "text-card-foreground")}>
-                                    {formatCurrency(displayVal)}
-                                  </p>
-                                  {income != null && (
-                                    <p className="text-[10px] text-primary tabular-nums">
-                                      +{formatCurrency(Math.round(income / 12))}/mo income
+                            <div className="flex items-center gap-3 flex-shrink-0">
+                              <div className="text-right">
+                                {isDbPension ? (
+                                  <>
+                                    <p className="text-sm font-semibold tabular-nums text-primary">
+                                      {formatCurrency(displayVal)}<span className="text-[10px] font-normal text-muted-foreground">/yr</span>
                                     </p>
+                                    <p className="text-[10px] text-primary/70 tabular-nums">
+                                      ≈ {formatCurrency(Math.round(displayVal / 12))}/mo at retirement
+                                    </p>
+                                  </>
+                                ) : (
+                                  <>
+                                    <p className={cn("text-sm font-semibold tabular-nums", displayVal < 0 ? "text-destructive" : "text-card-foreground")}>
+                                      {formatCurrency(displayVal)}
+                                    </p>
+                                    {income != null && (
+                                      <p className="text-[10px] text-primary tabular-nums">
+                                        +{formatCurrency(Math.round(income / 12))}/mo income
+                                      </p>
+                                    )}
+                                    {income == null && <p className="text-[10px] text-muted-foreground capitalize">{account.source_type}</p>}
+                                  </>
+                                )}
+                              </div>
+                              {!isDbPension && (
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  className="h-8 w-8 p-0 rounded-lg opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity"
+                                  title={account.last_updated ? `Last confirmed ${daysAgo(account.last_updated)}d ago — click to reconfirm` : "Confirm as up to date"}
+                                  disabled={confirmingId === account.id || bulkConfirming}
+                                  onClick={(e) => { e.stopPropagation(); handleConfirm(account); }}
+                                >
+                                  {confirmingId === account.id ? (
+                                    <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+                                  ) : (
+                                    <CheckCircle2 className="h-3.5 w-3.5 text-muted-foreground hover:text-success" />
                                   )}
-                                  {income == null && <p className="text-[10px] text-muted-foreground capitalize">{account.source_type}</p>}
-                                </>
+                                </Button>
                               )}
                             </div>
                           </div>
