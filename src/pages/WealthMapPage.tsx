@@ -361,7 +361,7 @@ export default function WealthMapPage() {
           (s, a) => s + accountBucketContribution(a, bucket.key, dbProjections[a.id]?.projected),
           0,
         );
-        const bucketNodeId = `bucket:${m.id}:${bucket.key}`;
+        const bucketNodeId = `bucket:${g.id}:${bucket.key}`;
 
         nodes.push({
           id: bucketNodeId,
@@ -386,7 +386,7 @@ export default function WealthMapPage() {
         });
 
         bucketAccounts.forEach((a) => {
-          const acctNodeId = `acct:${m.id}:${a.id}`;
+          const acctNodeId = `acct:${g.id}:${a.id}`;
           const displayVal = accountDisplayValue(a, dbProjections[a.id]?.projected);
           const suffix = a.account_type === "db_pension" ? "/yr projected" : "";
 
@@ -401,7 +401,7 @@ export default function WealthMapPage() {
               icon: ACCOUNT_ICON[a.account_type] ?? Wallet,
               color: BUCKET_COLOR[bucket.key],
               accountId: a.id,
-              memberId: m.id,
+              memberId: g.id,
               bucket: bucket.key,
               isNegative: displayVal < 0,
             } satisfies NodeMeta as unknown as Record<string, unknown>,
