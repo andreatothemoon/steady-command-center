@@ -278,7 +278,7 @@ export default function WealthPage() {
                           <div
                             key={account.id}
                             className={cn(
-                              "flex items-center justify-between px-6 py-4 transition-colors cursor-pointer hover:bg-secondary/50",
+                              "group flex items-center justify-between px-6 py-4 transition-colors cursor-pointer hover:bg-secondary/50",
                               index !== items.length - 1 && "border-b border-border"
                             )}
                             onClick={() => handleAccountClick(account)}
