@@ -148,12 +148,12 @@ export default function WealthMapHeroTile({ accounts, netWorth }: Props) {
 
   /* ── By region (heuristic; defaults to UK) ── */
   const geoSlices = useMemo<Slice[]>(() => {
-    const map = new Map<Region, number>();
+    const totals: Partial<Record<Region, number>> = {};
     positiveAccounts.forEach((a) => {
       const r = accountRegion(a);
-      map.set(r, (map.get(r) ?? 0) + Number(a.current_value));
+      totals[r] = (totals[r] ?? 0) + Number(a.current_value);
     });
-    return Array.from(map.entries()).map(([region, value]) => ({
+    return (Object.entries(totals) as [Region, number][]).map(([region, value]) => ({
       key: region,
       label: `${REGION_META[region].flag}  ${REGION_META[region].label}`,
       value,
