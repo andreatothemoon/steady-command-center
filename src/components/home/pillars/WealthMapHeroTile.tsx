@@ -128,14 +128,16 @@ export default function WealthMapHeroTile({ accounts, netWorth }: Props) {
 
   /* ── By owner (joint accounts split evenly across owners) ── */
   const ownerSlices = useMemo<Slice[]>(() => {
-    const map = new Map<string, number>();
+    const totals: Record<string, number> = {};
     positiveAccounts.forEach((a) => {
       const owners = splitOwnerNames(a.owner_name);
       const list = owners.length > 0 ? owners : ["unassigned"];
       const share = Number(a.current_value) / list.length;
-      list.forEach((o) => map.set(o, (map.get(o) ?? 0) + share));
+      list.forEach((o) => {
+        totals[o] = (totals[o] ?? 0) + share;
+      });
     });
-    return Array.from(map.entries()).map(([key, value], i) => ({
+    return Object.entries(totals).map(([key, value], i) => ({
       key,
       label: key === "unassigned" ? "Unassigned" : key.charAt(0).toUpperCase() + key.slice(1),
       value,
