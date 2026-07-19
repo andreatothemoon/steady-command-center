@@ -41,6 +41,7 @@ import {
   Maximize2,
   RotateCcw,
   UsersRound,
+  Globe2,
   type LucideIcon,
 } from "lucide-react";
 import { useAccounts, useUpdateAccount, type Account } from "@/hooks/useAccounts";
@@ -51,6 +52,7 @@ import { projectDBPension } from "@/lib/dbPensionEngine";
 import { toDBPensionParams } from "@/lib/dbPensionRates";
 import { DEFAULT_DRAWDOWN_RATE } from "@/lib/retirementEngine";
 import { splitOwnerNames } from "@/lib/accountOwners";
+import { accountRegion, REGION_META, type Region } from "@/lib/geography";
 import { formatCurrency } from "@/lib/format";
 import { toast } from "@/hooks/use-toast";
 
