@@ -16,15 +16,16 @@ import {
 } from "@/lib/retirementEngine";
 import type { DBPensionParams } from "@/lib/dbPensionEngine";
 import QuickActionsRow from "@/components/home/QuickActionsRow";
+import WealthMapHeroTile from "@/components/home/pillars/WealthMapHeroTile";
+import WealthChangeTile from "@/components/home/pillars/WealthChangeTile";
+import PlanTrackTile from "@/components/home/pillars/PlanTrackTile";
+import NextLifeEventTile from "@/components/home/pillars/NextLifeEventTile";
+import AssetsBreakdownRow from "@/components/home/AssetsBreakdownRow";
 import HouseholdWealthTile from "@/components/home/pillars/HouseholdWealthTile";
-import WealthMapTile from "@/components/home/pillars/WealthMapTile";
 import RetirementTile from "@/components/home/pillars/RetirementTile";
-import LifePlanningTile from "@/components/home/pillars/LifePlanningTile";
-import InsightsTile from "@/components/home/pillars/InsightsTile";
 import TaxTile from "@/components/home/pillars/TaxTile";
 import type { MemberANI } from "@/types/tax";
 import { formatCurrency } from "@/lib/format";
-import { BarChart3 } from "lucide-react";
 
 import { CURRENT_TAX_YEAR } from "@/lib/constants";
 import { heroStagger as stagger } from "@/lib/animation";
@@ -120,21 +121,13 @@ export default function HomePage() {
 
   return (
     <motion.div className="flex flex-col gap-10" variants={stagger.container} initial="initial" animate="animate">
-      {/* HERO */}
+      {/* HERO — total assets summary */}
       <motion.section variants={stagger.item} className="flex flex-col gap-6">
         <div>
           <p className="text-sm text-muted-foreground">Total assets</p>
-          <div className="mt-1 flex items-end gap-3">
-            <h1 className="text-[2.5rem] font-semibold tracking-tight text-foreground sm:text-[2.75rem]">
-              {formatCurrency(netWorth)}
-            </h1>
-            <button
-              aria-label="View assets history"
-              className="mb-2 flex h-8 w-8 items-center justify-center rounded-full bg-secondary/70 text-foreground transition-colors hover:bg-secondary"
-            >
-              <BarChart3 className="h-4 w-4" />
-            </button>
-          </div>
+          <h1 className="mt-1 text-[2.5rem] font-semibold tracking-tight text-foreground sm:text-[2.75rem]">
+            {formatCurrency(netWorth)}
+          </h1>
           <p className="mt-1 text-sm text-muted-foreground">
             Across {accounts.length} account{accounts.length === 1 ? "" : "s"} · {adults.map((a) => a.name).join(" & ") || "your household"}
           </p>
@@ -142,21 +135,32 @@ export default function HomePage() {
         <QuickActionsRow />
       </motion.section>
 
-      {/* PILLAR GRID */}
-      <motion.section variants={stagger.item} className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
-        <HouseholdWealthTile accounts={accounts} netWorth={netWorth} adults={adults} />
-        <WealthMapTile accounts={accounts} />
-        <RetirementTile projection={projection} retireAge={retireAge} targetIncome={targetIncome} />
-        <LifePlanningTile scenarioName={scenario?.name ?? null} />
-        <InsightsTile
-          accounts={accounts}
-          memberANIs={memberANIs}
-          isaUsed={householdIsaUsed}
-          isaLimit={isaLimit}
-        />
-        <TaxTile memberANIs={memberANIs} isaUsed={householdIsaUsed} isaLimit={isaLimit} />
+      {/* LEVEL 1 — Wealth map hero + three side tiles */}
+      <motion.section
+        variants={stagger.item}
+        className="grid grid-cols-1 gap-5 lg:grid-cols-4"
+      >
+        <div className="lg:col-span-3">
+          <WealthMapHeroTile accounts={accounts} netWorth={netWorth} />
+        </div>
+        <div className="flex flex-col gap-5 lg:col-span-1">
+          <WealthChangeTile />
+          <PlanTrackTile projection={projection} scenarioName={scenario?.name ?? null} />
+          <NextLifeEventTile />
+        </div>
       </motion.section>
 
+      {/* LEVEL 2 — Assets breakdown */}
+      <motion.section variants={stagger.item}>
+        <AssetsBreakdownRow accounts={accounts} />
+      </motion.section>
+
+      {/* LEVEL 3 — Tax · Retirement · Household */}
+      <motion.section variants={stagger.item} className="grid grid-cols-1 gap-5 md:grid-cols-3">
+        <TaxTile memberANIs={memberANIs} isaUsed={householdIsaUsed} isaLimit={isaLimit} />
+        <RetirementTile projection={projection} retireAge={retireAge} targetIncome={targetIncome} />
+        <HouseholdWealthTile accounts={accounts} netWorth={netWorth} adults={adults} />
+      </motion.section>
     </motion.div>
   );
 }
