@@ -188,6 +188,18 @@ export default function WealthPage() {
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
+            {accounts.length > 0 && (
+              <Button
+                size="sm"
+                variant="outline"
+                className="gap-2 rounded-xl"
+                onClick={handleConfirmAll}
+                disabled={bulkConfirming}
+              >
+                <RefreshCw className={cn("h-4 w-4", bulkConfirming && "animate-spin")} />
+                {bulkConfirming ? "Confirming…" : "Confirm all"}
+              </Button>
+            )}
             <Button size="sm" variant="outline" className="gap-2 rounded-xl" onClick={() => setImportOpen(true)}>
               <Upload className="h-4 w-4" /> Import
             </Button>
