@@ -41,6 +41,7 @@ import {
   Maximize2,
   RotateCcw,
   UsersRound,
+  Globe2,
   type LucideIcon,
 } from "lucide-react";
 import { useAccounts, useUpdateAccount, type Account } from "@/hooks/useAccounts";
@@ -51,6 +52,7 @@ import { projectDBPension } from "@/lib/dbPensionEngine";
 import { toDBPensionParams } from "@/lib/dbPensionRates";
 import { DEFAULT_DRAWDOWN_RATE } from "@/lib/retirementEngine";
 import { splitOwnerNames } from "@/lib/accountOwners";
+import { accountRegion, REGION_META, type Region } from "@/lib/geography";
 import { formatCurrency } from "@/lib/format";
 import { toast } from "@/hooks/use-toast";
 
@@ -239,6 +241,7 @@ export default function WealthMapPage() {
   const adults = useMemo(() => profiles.filter((p) => p.role === "adult"), [profiles]);
   const updateAccount = useUpdateAccount();
   const [groupJoint, setGroupJoint] = useState(true);
+  const [groupBy, setGroupBy] = useState<"owner" | "region">("owner");
 
   // DB pension projections keyed by account_id — same as WealthPage
   const dbProjections = useMemo(() => {
@@ -279,27 +282,59 @@ export default function WealthMapPage() {
       } satisfies NodeMeta as unknown as Record<string, unknown>,
     });
 
-    const memberList: { id: string; name: string; isJoint?: boolean }[] =
-      adults.length > 0
-        ? adults.map((a) => ({ id: a.id, name: a.name }))
-        : [{ id: "unassigned", name: "Unassigned" }];
+    type Group = {
+      id: string;
+      name: string;
+      color: string;
+      icon: LucideIcon;
+      isJoint?: boolean;
+      filter: (a: Account) => boolean;
+    };
 
-    if (groupJoint && adults.length > 1) {
-      memberList.push({ id: "joint", name: "Joint", isJoint: true });
+    let groupList: Group[] = [];
+
+    if (groupBy === "region") {
+      const regionsPresent = new Set<Region>();
+      accounts.forEach((a) => regionsPresent.add(accountRegion(a)));
+      groupList = Array.from(regionsPresent).map((r) => ({
+        id: `region:${r}`,
+        name: `${REGION_META[r].flag} ${REGION_META[r].label}`,
+        color: REGION_META[r].color,
+        icon: Globe2,
+        filter: (a: Account) => accountRegion(a) === r,
+      }));
+    } else {
+      const memberList: { id: string; name: string; isJoint?: boolean }[] =
+        adults.length > 0
+          ? adults.map((a) => ({ id: a.id, name: a.name }))
+          : [{ id: "unassigned", name: "Unassigned" }];
+
+      if (groupJoint && adults.length > 1) {
+        memberList.push({ id: "joint", name: "Joint", isJoint: true });
+      }
+
+      groupList = memberList.map((m) => ({
+        id: m.id,
+        name: m.name,
+        color: m.isJoint ? "#4F8CFF" : "hsl(var(--primary))",
+        icon: m.isJoint ? UsersRound : User,
+        isJoint: m.isJoint,
+        filter: (a: Account) => {
+          const owners = splitOwnerNames(a.owner_name);
+          if (m.id === "unassigned") return owners.length === 0;
+          if (m.isJoint) return owners.length > 1;
+          if (groupJoint && owners.length > 1 && adults.length > 1) return false;
+          return owners.includes(m.name.toLowerCase());
+        },
+      }));
     }
 
-    memberList.forEach((m) => {
-      const memberAccounts = accounts.filter((a) => {
-        const owners = splitOwnerNames(a.owner_name);
-        if (m.id === "unassigned") return owners.length === 0;
-        if (m.isJoint) return owners.length > 1;
-        if (groupJoint && owners.length > 1 && adults.length > 1) return false;
-        return owners.includes(m.name.toLowerCase());
-      });
-      if (memberAccounts.length === 0 && m.id !== "unassigned") return;
+    groupList.forEach((g) => {
+      const memberAccounts = accounts.filter(g.filter);
+      if (memberAccounts.length === 0 && g.id !== "unassigned") return;
 
       const memberNet = memberAccounts.reduce((s, a) => s + Number(a.current_value), 0);
-      const memberNodeId = `member:${m.id}`;
+      const memberNodeId = `member:${g.id}`;
 
       nodes.push({
         id: memberNodeId,
@@ -307,12 +342,12 @@ export default function WealthMapPage() {
         position: { x: 0, y: 0 },
         data: {
           kind: "member",
-          label: m.name,
+          label: g.name,
           sublabel: `${formatCurrency(memberNet, true)} net`,
           count: memberAccounts.length,
-          icon: m.isJoint ? UsersRound : User,
-          color: m.isJoint ? "#4F8CFF" : "hsl(var(--primary))",
-          memberId: m.id,
+          icon: g.icon,
+          color: g.color,
+          memberId: g.id,
           isNegative: memberNet < 0,
         } satisfies NodeMeta as unknown as Record<string, unknown>,
       });
@@ -326,7 +361,7 @@ export default function WealthMapPage() {
           (s, a) => s + accountBucketContribution(a, bucket.key, dbProjections[a.id]?.projected),
           0,
         );
-        const bucketNodeId = `bucket:${m.id}:${bucket.key}`;
+        const bucketNodeId = `bucket:${g.id}:${bucket.key}`;
 
         nodes.push({
           id: bucketNodeId,
@@ -351,7 +386,7 @@ export default function WealthMapPage() {
         });
 
         bucketAccounts.forEach((a) => {
-          const acctNodeId = `acct:${m.id}:${a.id}`;
+          const acctNodeId = `acct:${g.id}:${a.id}`;
           const displayVal = accountDisplayValue(a, dbProjections[a.id]?.projected);
           const suffix = a.account_type === "db_pension" ? "/yr projected" : "";
 
@@ -366,7 +401,7 @@ export default function WealthMapPage() {
               icon: ACCOUNT_ICON[a.account_type] ?? Wallet,
               color: BUCKET_COLOR[bucket.key],
               accountId: a.id,
-              memberId: m.id,
+              memberId: g.id,
               bucket: bucket.key,
               isNegative: displayVal < 0,
             } satisfies NodeMeta as unknown as Record<string, unknown>,
@@ -389,7 +424,7 @@ export default function WealthMapPage() {
     }));
 
     return { initialNodes: laid, initialEdges: styledEdges, netWorth: nw };
-  }, [accounts, adults, dbProjections, groupJoint]);
+  }, [accounts, adults, dbProjections, groupJoint, groupBy]);
 
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
@@ -501,15 +536,44 @@ export default function WealthMapPage() {
         <div>
           <h1 className="text-2xl font-semibold tracking-tight text-foreground">Wealth map</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Household → member → bucket → account. Same buckets as the Wealth page. Drag an account onto a member to reassign ownership.
+            Household → {groupBy === "region" ? "region" : "owner"} → asset type → account.
+            {groupBy === "owner" && " Drag an account onto a member to reassign ownership."}
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2 text-[11px]">
+          {/* Group-by selector */}
+          <div className="flex items-center gap-0.5 rounded-full border border-border/60 bg-card p-0.5">
+            {([
+              { key: "owner", label: "Owner", icon: User },
+              { key: "region", label: "Geography", icon: Globe2 },
+            ] as const).map((opt) => {
+              const Icon = opt.icon;
+              const active = groupBy === opt.key;
+              return (
+                <button
+                  key={opt.key}
+                  type="button"
+                  onClick={() => setGroupBy(opt.key)}
+                  className={`flex items-center gap-1.5 rounded-full px-2.5 py-1 transition-colors ${
+                    active
+                      ? "bg-primary/10 text-primary"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                  aria-pressed={active}
+                >
+                  <Icon className="h-3 w-3" strokeWidth={2.25} />
+                  <span className="font-medium">{opt.label}</span>
+                </button>
+              );
+            })}
+          </div>
+
           <button
             type="button"
             onClick={() => setGroupJoint((v) => !v)}
-            className={`flex items-center gap-1.5 rounded-full border px-2.5 py-1 transition-colors ${
-              groupJoint
+            disabled={groupBy !== "owner"}
+            className={`flex items-center gap-1.5 rounded-full border px-2.5 py-1 transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${
+              groupJoint && groupBy === "owner"
                 ? "border-primary/40 bg-primary/10 text-primary"
                 : "border-border/60 bg-card text-muted-foreground hover:bg-secondary"
             }`}
