@@ -186,128 +186,45 @@ export default function WealthPage() {
 
   return (
     <motion.div className="space-y-8" variants={stagger.container} initial="initial" animate="animate">
-      <motion.div variants={stagger.item} className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-        <div>
-          <h1 className="text-4xl font-semibold tracking-tight text-foreground">Assets</h1>
-          <p className="mt-2 text-muted-foreground">
-            {isLoading ? "Loading…" : "Your complete financial picture across pensions, investments, cash, property, and debt."}
-          </p>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <Button size="sm" variant="outline" className="gap-2 rounded-xl" onClick={() => setImportOpen(true)}>
-            <Upload className="h-4 w-4" /> Import
-          </Button>
-          {accounts.length > 0 && (
-            <Button size="sm" variant="outline" className="gap-2 rounded-xl" onClick={() => exportAccountsCsv(accounts)}>
-              <Download className="h-4 w-4" /> Export
+      <motion.section variants={stagger.item} className="flex flex-col gap-6">
+        <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <p className="text-sm text-muted-foreground">Total assets</p>
+            <h1 className="mt-1 text-[2.5rem] font-semibold tracking-tight text-foreground sm:text-[2.75rem]">
+              {isLoading ? "…" : formatCurrency(netWorth)}
+            </h1>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {accounts.length} account{accounts.length === 1 ? "" : "s"}
+              {!isLoading && (
+                <>
+                  {" · "}
+                  <span className="text-foreground/80 tabular-nums">{formatCurrency(totalAssets, true)}</span> assets
+                  {totalLiabilities < 0 && (
+                    <>
+                      {" · "}
+                      <span className="text-destructive tabular-nums">{formatCurrency(totalLiabilities, true)}</span> liabilities
+                    </>
+                  )}
+                </>
+              )}
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button size="sm" variant="outline" className="gap-2 rounded-xl" onClick={() => setImportOpen(true)}>
+              <Upload className="h-4 w-4" /> Import
             </Button>
-          )}
-          <Button size="sm" className="gap-2 rounded-xl" onClick={() => setAddOpen(true)}>
-            <Plus className="h-4 w-4" /> Add Account
-          </Button>
-        </div>
-      </motion.div>
-
-      {!isLoading && accounts.length > 0 && (
-        <>
-          <motion.div variants={stagger.item} className="hero-surface p-10">
-            <div className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-accent/[0.06]" />
-            <div className="relative flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between">
-              <div>
-                <p className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">Assets Overview</p>
-                <p className="mt-2 text-5xl font-semibold tracking-[-0.06em] text-foreground">{formatCurrency(netWorth)}</p>
-                <p className="mt-3 max-w-2xl text-sm text-muted-foreground">
-                  {accounts.length} account{accounts.length !== 1 ? "s" : ""} mapped into retirement income and liquidity.
-                </p>
-              </div>
-              <div className="grid gap-6 sm:grid-cols-3">
-                <div>
-                  <p className="text-sm text-muted-foreground">Retirement income estimate</p>
-                  <p className="mt-1 text-2xl font-semibold tracking-tight text-foreground">
-                    {formatCurrency(Math.round(totalIncomeEstimate / 12))}/mo
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Total assets</p>
-                  <p className="mt-1 text-2xl font-semibold tracking-tight text-foreground">{formatCurrency(totalAssets)}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Liabilities</p>
-                  <p className="mt-1 text-2xl font-semibold tracking-tight text-destructive">{formatCurrency(totalLiabilities)}</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="relative mt-8 grid gap-4 lg:grid-cols-3">
-              <div className="rounded-[24px] border border-border/60 bg-white/75 px-5 py-4 backdrop-blur">
-                <p className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">Guaranteed Base</p>
-                <p className="mt-2 text-2xl font-semibold tracking-tight text-foreground">{formatCurrency(guaranteedIncomeMonthly)}/mo</p>
-                <p className="mt-1 text-sm text-muted-foreground">Projected DB income plus full State Pension.</p>
-              </div>
-              <div className="rounded-[24px] border border-border/60 bg-white/75 px-5 py-4 backdrop-blur">
-                <p className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">Flexible Capacity</p>
-                <p className="mt-2 text-2xl font-semibold tracking-tight text-foreground">{formatCurrency(drawdownCapacityMonthly)}/mo</p>
-                <p className="mt-1 text-sm text-muted-foreground">Illustrative drawdown from invested DC and growth assets.</p>
-              </div>
-              <div className="rounded-[24px] border border-border/60 bg-white/75 px-5 py-4 backdrop-blur">
-                <p className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">Safety Buffer</p>
-                <p className="mt-2 text-2xl font-semibold tracking-tight text-foreground">{liquidityCoverageMonths} months</p>
-                <p className="mt-1 text-sm text-muted-foreground">Approximate coverage from cash and savings against flexible spending.</p>
-              </div>
-            </div>
-
-            {leadingAllocation && (
-              <div className="relative mt-8 border-t border-border/60 pt-6">
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Largest allocation</p>
-                    <p className="mt-1 text-lg font-semibold text-foreground">{leadingAllocation.meta.label}</p>
-                  </div>
-                  <p className="text-sm text-muted-foreground">
-                    {leadingAllocation.share.toFixed(0)}% of your gross balance footprint
-                  </p>
-                </div>
-              </div>
+            {accounts.length > 0 && (
+              <Button size="sm" variant="outline" className="gap-2 rounded-xl" onClick={() => exportAccountsCsv(accounts)}>
+                <Download className="h-4 w-4" /> Export
+              </Button>
             )}
-          </motion.div>
+            <Button size="sm" className="gap-2 rounded-xl" onClick={() => setAddOpen(true)}>
+              <Plus className="h-4 w-4" /> Add Account
+            </Button>
+          </div>
+        </div>
+      </motion.section>
 
-          <motion.div variants={stagger.item} className="grid gap-6 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
-            <AllocationDonut accounts={accounts} />
-            <div className="card-surface p-8">
-              <p className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">Allocation Story</p>
-              <h2 className="mt-2 text-2xl font-semibold text-foreground">How your capital is positioned</h2>
-              <p className="mt-2 text-sm text-muted-foreground">
-                These buckets translate assets into retirement roles: dependable income, growth, liquidity, and property exposure.
-              </p>
-              <div className="mt-6 space-y-4">
-                {allocation.map((item) => (
-                  <div key={item.bucket} className="space-y-2">
-                    <div className="flex items-center justify-between gap-4">
-                      <div className="flex items-center gap-3">
-                        <div className="h-3 w-3 rounded-full bg-primary" style={{ backgroundColor: item.bucket === "guaranteed" ? "#091540" : item.bucket === "growth" ? "#efcb68" : item.bucket === "safety" ? "#aeb7b3" : "#895b1e" }} />
-                        <div>
-                          <span className="text-sm font-medium text-foreground">{item.meta.label}</span>
-                          <p className="text-xs text-muted-foreground">{item.meta.description}</p>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-sm font-semibold text-foreground">{formatCurrency(Math.round(item.total))}{item.bucket === "guaranteed" ? "/yr" : ""}</p>
-                        <p className="text-xs text-muted-foreground">{item.share.toFixed(1)}%</p>
-                      </div>
-                    </div>
-                    <div className="h-2 overflow-hidden rounded-full bg-secondary">
-                      <div
-                        className="h-full rounded-full bg-primary"
-                        style={{ width: `${Math.max(item.share, 4)}%`, backgroundColor: item.bucket === "guaranteed" ? "#091540" : item.bucket === "growth" ? "#efcb68" : item.bucket === "safety" ? "#aeb7b3" : "#895b1e" }}
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </motion.div>
-        </>
-      )}
 
       {isLoading ? (
         <div className="space-y-4">{[1, 2, 3].map((i) => <Skeleton key={i} className="h-20 w-full rounded-xl" />)}</div>
