@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowUpRight, Map } from "lucide-react";
+import { ArrowUpRight, Map as MapIcon } from "lucide-react";
 import { formatCurrency } from "@/lib/format";
 import { splitOwnerNames } from "@/lib/accountOwners";
 import { accountRegion, REGION_META, type Region } from "@/lib/geography";
