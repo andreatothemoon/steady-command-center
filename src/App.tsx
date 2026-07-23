@@ -17,6 +17,7 @@ import ProfilePage from "@/pages/ProfilePage";
 import TaxPage from "@/pages/TaxPage";
 import WealthMapPage from "@/pages/WealthMapPage";
 import AuthPage from "@/pages/AuthPage";
+import AuthCallbackPage from "@/pages/AuthCallbackPage";
 import AcceptInvitePage from "@/pages/AcceptInvitePage";
 import PendingApprovalPage from "@/pages/PendingApprovalPage";
 import AdminApprovalsPage from "@/pages/AdminApprovalsPage";
@@ -83,6 +84,7 @@ const App = () => (
       <AuthProvider>
         <BrowserRouter>
           <Routes>
+            <Route path="/auth/callback" element={<AuthCallbackPage />} />
             <Route path="/auth" element={<AuthRoute />} />
             <Route path="/invite/:token" element={<AcceptInvitePage />} />
             <Route path="/*" element={<ProtectedRoutes />} />
