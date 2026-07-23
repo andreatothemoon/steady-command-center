@@ -91,9 +91,9 @@ export default function AuthPage() {
         .then((result) => ({ type: "oauth" as const, result }))
         .catch((error) => ({ type: "error" as const, error }));
 
-      const sessionPromise = waitForAuthenticatedUser().then((ok) => ({
-        type: ok ? ("session" as const) : ("timeout" as const),
-      }));
+      const sessionPromise = waitForAuthenticatedUser().then((ok) =>
+        ok ? ({ type: "session" as const }) : ({ type: "timeout" as const }),
+      );
 
       const outcome = await Promise.race([oauthPromise, sessionPromise]);
 
