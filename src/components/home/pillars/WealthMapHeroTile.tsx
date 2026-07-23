@@ -109,15 +109,10 @@ export default function WealthMapHeroTile({ accounts, netWorth }: Props) {
   const navigate = useNavigate();
   const [focus, setFocus] = useState<RegionFocus>("all");
 
-  const positiveAccounts = useMemo(
-    () => accounts.filter((a) => Number(a.current_value) > 0),
-    [accounts],
-  );
-
-  /* Owner cells — split joint accounts equally, filtered by region focus */
+  /* Owner cells — split joint accounts equally, net of liabilities, filtered by region focus */
   const ownerCells = useMemo<OwnerCell[]>(() => {
     const byOwner = new Map<string, { total: number; byRegion: Map<Region, number> }>();
-    positiveAccounts.forEach((a) => {
+    accounts.forEach((a) => {
       const region = accountRegion(a);
       if (!inFocus(region, focus)) return;
       const owners = splitOwnerNames(a.owner_name);
@@ -130,8 +125,9 @@ export default function WealthMapHeroTile({ accounts, netWorth }: Props) {
         byOwner.set(o, entry);
       });
     });
-    const total = Array.from(byOwner.values()).reduce((s, v) => s + v.total, 0);
+    const total = Array.from(byOwner.values()).reduce((s, v) => s + Math.max(v.total, 0), 0);
     return Array.from(byOwner.entries())
+      .filter(([, v]) => v.total > 0)
       .map(([name, v], idx) => ({
         key: name,
         label: titleCase(name),
@@ -143,19 +139,20 @@ export default function WealthMapHeroTile({ accounts, netWorth }: Props) {
           .sort((a, b) => b.value - a.value),
       }))
       .sort((a, b) => b.value - a.value);
-  }, [positiveAccounts, focus]);
+  }, [accounts, focus]);
 
   const treemap = useMemo(() => layoutTreemap(ownerCells), [ownerCells]);
 
-  /* Region totals across household (unfiltered — the geography strip is the picker) */
+  /* Region totals across household — net of liabilities */
   const regionTotals = useMemo(() => {
     const map = new Map<Region, number>();
-    positiveAccounts.forEach((a) => {
+    accounts.forEach((a) => {
       const region = accountRegion(a);
       map.set(region, (map.get(region) ?? 0) + Number(a.current_value));
     });
-    const total = Array.from(map.values()).reduce((s, v) => s + v, 0);
+    const total = Array.from(map.values()).reduce((s, v) => s + Math.max(v, 0), 0);
     return Array.from(map.entries())
+      .filter(([, v]) => v > 0)
       .map(([region, value]) => ({
         region,
         value,
@@ -163,7 +160,7 @@ export default function WealthMapHeroTile({ accounts, netWorth }: Props) {
         meta: REGION_META[region],
       }))
       .sort((a, b) => b.value - a.value);
-  }, [positiveAccounts]);
+  }, [accounts]);
 
   const focusedTotal = useMemo(
     () => ownerCells.reduce((s, c) => s + c.value, 0),
