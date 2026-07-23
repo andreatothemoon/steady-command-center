@@ -1,11 +1,21 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowUpRight, Map as MapIcon } from "lucide-react";
 import { formatCurrency } from "@/lib/format";
 import { splitOwnerNames } from "@/lib/accountOwners";
 import { accountRegion, REGION_META, type Region } from "@/lib/geography";
+import { cn } from "@/lib/utils";
 import type { Account } from "@/hooks/useAccounts";
+
+type RegionFocus = "all" | "uk" | "international";
+const FOCUS_OPTIONS: { key: RegionFocus; label: string }[] = [
+  { key: "all", label: "All" },
+  { key: "uk", label: "UK" },
+  { key: "international", label: "International" },
+];
+const inFocus = (r: Region, f: RegionFocus) =>
+  f === "all" ? true : f === "uk" ? r === "uk" : r !== "uk";
 
 interface Props {
   accounts: Account[];
