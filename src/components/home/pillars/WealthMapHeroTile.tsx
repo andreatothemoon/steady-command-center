@@ -164,7 +164,7 @@ export default function WealthMapHeroTile({ accounts, netWorth }: Props) {
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-3">
           <span className="flex h-9 w-9 items-center justify-center rounded-full bg-secondary text-primary">
-            <Map className="h-[16px] w-[16px]" strokeWidth={2} />
+            <MapIcon className="h-[16px] w-[16px]" strokeWidth={2} />
           </span>
           <div>
             <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
