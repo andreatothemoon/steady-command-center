@@ -71,34 +71,6 @@ export default function AuthPage() {
   const handleGoogleSignIn = async () => {
     setGoogleLoading(true);
 
-    // Detect if we're running inside an iframe (Lovable editor preview).
-    // The SDK's default iframe flow uses a popup + postMessage handoff which
-    // is unreliable in the preview — the tokens never reach us. Instead, we
-    // force a full-page redirect inside the iframe: the broker returns to the
-    // same iframe with tokens in the URL hash, and Supabase parses them.
-    let isInIframe = false;
-    try {
-      isInIframe = window.self !== window.top;
-    } catch {
-      isInIframe = true;
-    }
-
-    if (isInIframe) {
-      const state =
-        typeof crypto !== "undefined" && crypto.getRandomValues
-          ? [...crypto.getRandomValues(new Uint8Array(16))]
-              .map((b) => b.toString(16).padStart(2, "0"))
-              .join("")
-          : Math.random().toString(36).slice(2);
-      const params = new URLSearchParams({
-        provider: "google",
-        redirect_uri: window.location.origin,
-        state,
-      });
-      window.location.href = `/~oauth/initiate?${params.toString()}`;
-      return;
-    }
-
     try {
       const result = await lovable.auth.signInWithOAuth("google", {
         redirect_uri: window.location.origin,
