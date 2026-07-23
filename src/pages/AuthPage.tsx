@@ -71,15 +71,40 @@ export default function AuthPage() {
   const handleGoogleSignIn = async () => {
     setGoogleLoading(true);
 
+    // Detect if we're running inside an iframe (Lovable editor preview).
+    // The SDK's default iframe flow uses a popup + postMessage handoff which
+    // is unreliable in the preview — the tokens never reach us. Instead, we
+    // force a full-page redirect inside the iframe: the broker returns to the
+    // same iframe with tokens in the URL hash, and Supabase parses them.
+    let isInIframe = false;
+    try {
+      isInIframe = window.self !== window.top;
+    } catch {
+      isInIframe = true;
+    }
+
+    if (isInIframe) {
+      const state =
+        typeof crypto !== "undefined" && crypto.getRandomValues
+          ? [...crypto.getRandomValues(new Uint8Array(16))]
+              .map((b) => b.toString(16).padStart(2, "0"))
+              .join("")
+          : Math.random().toString(36).slice(2);
+      const params = new URLSearchParams({
+        provider: "google",
+        redirect_uri: window.location.origin,
+        state,
+      });
+      window.location.href = `/~oauth/initiate?${params.toString()}`;
+      return;
+    }
+
     try {
       const result = await lovable.auth.signInWithOAuth("google", {
         redirect_uri: window.location.origin,
       });
 
-      if (result?.redirected) {
-        // Full-page OAuth will unload this route.
-        return;
-      }
+      if (result?.redirected) return;
 
       if (result?.tokens) {
         setGoogleLoading(false);
@@ -87,9 +112,6 @@ export default function AuthPage() {
         return;
       }
 
-      // Preview-iframe fallback: the popup may have completed sign-in and
-      // written the session to localStorage even though the postMessage
-      // handoff was blocked. Poll for a session before giving up.
       const ok = await waitForSession();
       if (ok) {
         setGoogleLoading(false);
@@ -97,21 +119,15 @@ export default function AuthPage() {
         return;
       }
 
-      if (result?.error) {
-        const err: any = result.error;
-        const msg = err?.message || err?.error_description || err?.error || JSON.stringify(err);
-        toast({ title: "Google sign-in failed", description: msg, variant: "destructive" });
-      } else {
-        toast({
-          title: "Google sign-in failed",
-          description:
-            "Preview blocked the OAuth handoff. Open the app in a new tab and try again.",
-          variant: "destructive",
-        });
-      }
+      const err: any = result?.error;
+      toast({
+        title: "Google sign-in failed",
+        description:
+          err?.message || err?.error_description || "Please try again.",
+        variant: "destructive",
+      });
       setGoogleLoading(false);
     } catch (error: any) {
-      // Even on throw, session may have been set — check once before failing.
       const ok = await waitForSession(3000);
       if (ok) {
         setGoogleLoading(false);
