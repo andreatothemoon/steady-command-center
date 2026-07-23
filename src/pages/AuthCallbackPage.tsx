@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { OAUTH_STATE_STORAGE_KEY } from "@/lib/lovableOAuth";
 
 const OAUTH_COMPLETE_MESSAGE = "wealthos_oauth_complete";
 
@@ -11,7 +12,10 @@ const getOAuthParams = () => {
   return {
     accessToken: hashParams.get("access_token") ?? queryParams.get("access_token"),
     refreshToken: hashParams.get("refresh_token") ?? queryParams.get("refresh_token"),
-    state: hashParams.get("state") ?? queryParams.get("state"),
+    state:
+      hashParams.get("state") ??
+      queryParams.get("state") ??
+      localStorage.getItem(OAUTH_STATE_STORAGE_KEY),
     code: queryParams.get("code") ?? hashParams.get("code"),
     error:
       queryParams.get("error_description") ??
@@ -30,6 +34,7 @@ export default function AuthCallbackPage() {
 
     const notifyOpener = (tokens?: { access_token: string; refresh_token: string }, state?: string | null) => {
       localStorage.setItem(OAUTH_COMPLETE_MESSAGE, String(Date.now()));
+      localStorage.removeItem(OAUTH_STATE_STORAGE_KEY);
 
       if (window.opener && !window.opener.closed) {
         if (tokens) {
