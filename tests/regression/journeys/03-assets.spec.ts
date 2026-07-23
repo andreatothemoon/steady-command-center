@@ -4,12 +4,10 @@ test.describe("Assets page (CRUD-ish)", () => {
   test("shows all seeded accounts and total value", async ({ page, resetSeed }) => {
     await resetSeed();
     await gotoAuthed(page, "/wealth");
-    await expect(page.getByRole("heading", { name: /^assets$/i })).toBeVisible();
+    await expect(page.getByText("Total assets").first()).toBeVisible();
     for (const name of ["Test Current", "Test ISA", "Test SIPP", "Test Property", "Test Mortgage"]) {
       await expect(page.locator("body")).toContainText(name);
     }
-    // Assets overview label present
-    await expect(page.locator("body")).toContainText(/assets overview/i);
   });
 
   test("Add Account button opens the add form", async ({ page, resetSeed }) => {

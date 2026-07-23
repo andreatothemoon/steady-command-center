@@ -170,12 +170,20 @@ export default function WealthMapHeroTile({ accounts, netWorth }: Props) {
   const displayedTotal = focus === "all" ? netWorth : focusedTotal;
 
   return (
-    <motion.button
+    <motion.div
+      role="link"
+      tabIndex={0}
       onClick={() => navigate("/wealth-map")}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          navigate("/wealth-map");
+        }
+      }}
       whileHover="hover"
       initial="rest"
       animate="rest"
-      className="card-surface group relative flex h-full min-h-[440px] w-full flex-col overflow-hidden p-6 text-left transition-shadow hover:shadow-md md:p-8"
+      className="card-surface group relative flex h-full min-h-[440px] w-full cursor-pointer flex-col overflow-hidden p-6 text-left transition-shadow hover:shadow-md md:p-8"
     >
       {/* Header */}
       <div className="flex items-start justify-between gap-3">
@@ -344,6 +352,6 @@ export default function WealthMapHeroTile({ accounts, netWorth }: Props) {
           </>
         )}
       </div>
-    </motion.button>
+    </motion.div>
   );
 }
