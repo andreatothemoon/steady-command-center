@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable";
+import { signInWithManagedOAuth } from "@/lib/lovableOAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -32,6 +32,35 @@ export default function AuthPage() {
   useEffect(() => {
     if (user) setGoogleLoading(false);
   }, [user]);
+
+  useEffect(() => {
+    const completeIfAuthenticated = async () => {
+      const ok = await waitForAuthenticatedUser(3000);
+      if (!ok) return;
+
+      setGoogleLoading(false);
+      navigate("/", { replace: true });
+    };
+
+    const handleOAuthMessage = (event: MessageEvent) => {
+      if (event.origin !== window.location.origin) return;
+      if (event.data?.type !== "wealthos_oauth_complete") return;
+      void completeIfAuthenticated();
+    };
+
+    const handleStorage = (event: StorageEvent) => {
+      if (event.key !== "wealthos_oauth_complete") return;
+      void completeIfAuthenticated();
+    };
+
+    window.addEventListener("message", handleOAuthMessage);
+    window.addEventListener("storage", handleStorage);
+
+    return () => {
+      window.removeEventListener("message", handleOAuthMessage);
+      window.removeEventListener("storage", handleStorage);
+    };
+  }, [navigate]);
 
   // Persist invite token across the auth round-trip
   useEffect(() => {
@@ -84,8 +113,7 @@ export default function AuthPage() {
     setGoogleLoading(true);
 
     try {
-      const oauthPromise = lovable.auth
-        .signInWithOAuth("google", {
+      const oauthPromise = signInWithManagedOAuth("google", {
           redirect_uri: `${window.location.origin}/auth/callback`,
         })
         .then((result) => ({ type: "oauth" as const, result }))

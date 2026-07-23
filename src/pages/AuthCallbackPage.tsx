@@ -11,6 +11,7 @@ const getOAuthParams = () => {
   return {
     accessToken: hashParams.get("access_token") ?? queryParams.get("access_token"),
     refreshToken: hashParams.get("refresh_token") ?? queryParams.get("refresh_token"),
+    state: hashParams.get("state") ?? queryParams.get("state"),
     code: queryParams.get("code") ?? hashParams.get("code"),
     error:
       queryParams.get("error_description") ??
@@ -27,34 +28,56 @@ export default function AuthCallbackPage() {
   useEffect(() => {
     let active = true;
 
-    const notifyOpener = () => {
+    const notifyOpener = (tokens?: { access_token: string; refresh_token: string }, state?: string | null) => {
       localStorage.setItem(OAUTH_COMPLETE_MESSAGE, String(Date.now()));
 
       if (window.opener && !window.opener.closed) {
+        if (tokens) {
+          window.opener.postMessage(
+            {
+              type: "authorization_response",
+              response: {
+                state,
+                access_token: tokens.access_token,
+                refresh_token: tokens.refresh_token,
+              },
+            },
+            window.location.origin,
+          );
+        }
+
         window.opener.postMessage({ type: OAUTH_COMPLETE_MESSAGE }, window.location.origin);
       }
     };
 
     const complete = async () => {
-      const { accessToken, refreshToken, code, error } = getOAuthParams();
+      const { accessToken, refreshToken, state, code, error } = getOAuthParams();
+      let tokens: { access_token: string; refresh_token: string } | undefined;
 
       if (error) throw new Error(error);
 
       if (accessToken && refreshToken) {
+        tokens = { access_token: accessToken, refresh_token: refreshToken };
         const { error: sessionError } = await supabase.auth.setSession({
           access_token: accessToken,
           refresh_token: refreshToken,
         });
         if (sessionError) throw sessionError;
       } else if (code) {
-        const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+        const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
         if (exchangeError) throw exchangeError;
+        if (data.session) {
+          tokens = {
+            access_token: data.session.access_token,
+            refresh_token: data.session.refresh_token,
+          };
+        }
       }
 
       const { data, error: userError } = await supabase.auth.getUser();
       if (userError || !data.user) throw userError ?? new Error("No authenticated user returned");
 
-      notifyOpener();
+      notifyOpener(tokens, state);
 
       if (!active) return;
       setMessage("Signed in. Redirecting…");
