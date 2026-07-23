@@ -20,6 +20,26 @@ const HOUSEHOLD_NAME = "Regression Household";
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: CORS });
 
+  // Require a shared secret so only trusted CI systems can invoke this
+  // provisioning endpoint (it uses the service role to create/reset accounts).
+  const expectedToken = Deno.env.get("SEED_ADMIN_TOKEN");
+  if (!expectedToken) {
+    return json({ error: "Provisioning endpoint disabled" }, 503);
+  }
+  const providedToken =
+    req.headers.get("x-seed-admin-token") ??
+    req.headers.get("authorization")?.replace(/^Bearer\s+/i, "") ??
+    "";
+  const a = new TextEncoder().encode(providedToken);
+  const b = new TextEncoder().encode(expectedToken);
+  let ok = a.length === b.length;
+  for (let i = 0; i < Math.max(a.length, b.length); i++) {
+    if ((a[i] ?? 0) !== (b[i] ?? 0)) ok = false;
+  }
+  if (!ok) {
+    return json({ error: "Unauthorized" }, 401);
+  }
+
   try {
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
