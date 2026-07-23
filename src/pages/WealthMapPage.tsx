@@ -20,7 +20,7 @@ import {
   type ReactFlowInstance,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import dagre from "dagre";
+import dagre from "@dagrejs/dagre";
 import { motion } from "framer-motion";
 import {
   Users,
