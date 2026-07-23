@@ -1,11 +1,21 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowUpRight, Map as MapIcon } from "lucide-react";
 import { formatCurrency } from "@/lib/format";
 import { splitOwnerNames } from "@/lib/accountOwners";
 import { accountRegion, REGION_META, type Region } from "@/lib/geography";
+import { cn } from "@/lib/utils";
 import type { Account } from "@/hooks/useAccounts";
+
+type RegionFocus = "all" | "uk" | "international";
+const FOCUS_OPTIONS: { key: RegionFocus; label: string }[] = [
+  { key: "all", label: "All" },
+  { key: "uk", label: "UK" },
+  { key: "international", label: "International" },
+];
+const inFocus = (r: Region, f: RegionFocus) =>
+  f === "all" ? true : f === "uk" ? r === "uk" : r !== "uk";
 
 interface Props {
   accounts: Account[];
@@ -94,21 +104,24 @@ function titleCase(s: string) {
     .join(" ");
 }
 
+
 export default function WealthMapHeroTile({ accounts, netWorth }: Props) {
   const navigate = useNavigate();
+  const [focus, setFocus] = useState<RegionFocus>("all");
 
   const positiveAccounts = useMemo(
     () => accounts.filter((a) => Number(a.current_value) > 0),
     [accounts],
   );
 
-  /* Owner cells — split joint accounts equally between owners */
+  /* Owner cells — split joint accounts equally, filtered by region focus */
   const ownerCells = useMemo<OwnerCell[]>(() => {
     const byOwner = new Map<string, { total: number; byRegion: Map<Region, number> }>();
     positiveAccounts.forEach((a) => {
+      const region = accountRegion(a);
+      if (!inFocus(region, focus)) return;
       const owners = splitOwnerNames(a.owner_name);
       const share = Number(a.current_value) / Math.max(owners.length, 1);
-      const region = accountRegion(a);
       const list = owners.length > 0 ? owners : ["unassigned"];
       list.forEach((o) => {
         const entry = byOwner.get(o) ?? { total: 0, byRegion: new Map() };
@@ -130,11 +143,11 @@ export default function WealthMapHeroTile({ accounts, netWorth }: Props) {
           .sort((a, b) => b.value - a.value),
       }))
       .sort((a, b) => b.value - a.value);
-  }, [positiveAccounts]);
+  }, [positiveAccounts, focus]);
 
   const treemap = useMemo(() => layoutTreemap(ownerCells), [ownerCells]);
 
-  /* Region totals across household */
+  /* Region totals across household (unfiltered — the geography strip is the picker) */
   const regionTotals = useMemo(() => {
     const map = new Map<Region, number>();
     positiveAccounts.forEach((a) => {
@@ -151,6 +164,13 @@ export default function WealthMapHeroTile({ accounts, netWorth }: Props) {
       }))
       .sort((a, b) => b.value - a.value);
   }, [positiveAccounts]);
+
+  const focusedTotal = useMemo(
+    () => ownerCells.reduce((s, c) => s + c.value, 0),
+    [ownerCells],
+  );
+  const focusedPct = netWorth > 0 ? (focusedTotal / netWorth) * 100 : 0;
+  const displayedTotal = focus === "all" ? netWorth : focusedTotal;
 
   return (
     <motion.button
@@ -184,21 +204,62 @@ export default function WealthMapHeroTile({ accounts, netWorth }: Props) {
         </motion.span>
       </div>
 
+      {/* Region focus control */}
+      <div
+        role="tablist"
+        aria-label="Region focus"
+        onClick={(e) => e.stopPropagation()}
+        className="mt-5 inline-flex w-fit items-center gap-1 rounded-full border border-border/60 bg-secondary/50 p-1"
+      >
+        {FOCUS_OPTIONS.map((opt) => {
+          const active = focus === opt.key;
+          return (
+            <button
+              key={opt.key}
+              type="button"
+              role="tab"
+              aria-selected={active}
+              onClick={(e) => {
+                e.stopPropagation();
+                setFocus(opt.key);
+              }}
+              className={cn(
+                "rounded-full px-3 py-1 text-[11px] font-medium uppercase tracking-[0.1em] transition-colors",
+                active
+                  ? "bg-background text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground",
+              )}
+            >
+              {opt.label}
+            </button>
+          );
+        })}
+      </div>
+
       {/* Hero number */}
-      <div className="mt-6">
+      <div className="mt-5">
         <p className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
-          Total net worth
+          {focus === "all"
+            ? "Total net worth"
+            : focus === "uk"
+              ? "UK-based wealth"
+              : "International wealth"}
         </p>
         <p className="mt-2 text-[2.75rem] font-semibold leading-none tracking-tight text-foreground tabular-nums md:text-[3rem]">
-          {formatCurrency(netWorth)}
+          {formatCurrency(displayedTotal)}
         </p>
+        {focus !== "all" && (
+          <p className="mt-1.5 text-[12px] text-muted-foreground tabular-nums">
+            {Math.round(focusedPct)}% of {formatCurrency(netWorth, true)} total
+          </p>
+        )}
       </div>
 
       {/* Owner treemap */}
       <div className="mt-6 flex-1">
         <div className="mb-2 flex items-baseline justify-between">
           <p className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
-            By owner
+            By owner{focus !== "all" ? ` · ${focus === "uk" ? "UK" : "International"}` : ""}
           </p>
           <p className="text-[11px] text-muted-foreground">
             {ownerCells.length} {ownerCells.length === 1 ? "person" : "people"}
