@@ -104,13 +104,6 @@ function titleCase(s: string) {
     .join(" ");
 }
 
-export default function WealthMapHeroTile({ accounts, netWorth }: Props) {
-  const navigate = useNavigate();
-
-  const positiveAccounts = useMemo(
-    () => accounts.filter((a) => Number(a.current_value) > 0),
-    [accounts],
-  );
 
 export default function WealthMapHeroTile({ accounts, netWorth }: Props) {
   const navigate = useNavigate();
