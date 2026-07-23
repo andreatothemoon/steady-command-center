@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable";
+import { signInWithManagedOAuth } from "@/lib/lovableOAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -33,6 +33,35 @@ export default function AuthPage() {
     if (user) setGoogleLoading(false);
   }, [user]);
 
+  useEffect(() => {
+    const completeIfAuthenticated = async () => {
+      const ok = await waitForAuthenticatedUser(3000);
+      if (!ok) return;
+
+      setGoogleLoading(false);
+      navigate("/", { replace: true });
+    };
+
+    const handleOAuthMessage = (event: MessageEvent) => {
+      if (event.origin !== window.location.origin) return;
+      if (event.data?.type !== "wealthos_oauth_complete") return;
+      void completeIfAuthenticated();
+    };
+
+    const handleStorage = (event: StorageEvent) => {
+      if (event.key !== "wealthos_oauth_complete") return;
+      void completeIfAuthenticated();
+    };
+
+    window.addEventListener("message", handleOAuthMessage);
+    window.addEventListener("storage", handleStorage);
+
+    return () => {
+      window.removeEventListener("message", handleOAuthMessage);
+      window.removeEventListener("storage", handleStorage);
+    };
+  }, [navigate]);
+
   // Persist invite token across the auth round-trip
   useEffect(() => {
     if (inviteToken) sessionStorage.setItem("pending_invitation_token", inviteToken);
@@ -58,38 +87,82 @@ export default function AuthPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
-  const waitForSession = async (timeoutMs = 15000): Promise<boolean> => {
+  const waitForAuthenticatedUser = async (timeoutMs = 45000): Promise<boolean> => {
     const started = Date.now();
     while (Date.now() - started < timeoutMs) {
       const { data } = await supabase.auth.getSession();
-      if (data.session?.user) return true;
-      await new Promise((r) => setTimeout(r, 500));
+      if (data.session?.user) {
+        const { data: userData, error } = await supabase.auth.getUser();
+        if (!error && userData.user) return true;
+      }
+      await new Promise((r) => setTimeout(r, 350));
     }
     return false;
+  };
+
+  const finishGoogleSignIn = async () => {
+    const ok = await waitForAuthenticatedUser(5000);
+    if (!ok) return false;
+
+    setGoogleLoading(false);
+    navigate("/", { replace: true });
+    return true;
   };
 
   const handleGoogleSignIn = async () => {
     setGoogleLoading(true);
 
     try {
-      const result = await lovable.auth.signInWithOAuth("google", {
-        redirect_uri: window.location.origin,
-      });
+      const oauthPromise = signInWithManagedOAuth("google", {
+          redirect_uri: `${window.location.origin}/auth/callback`,
+        })
+        .then((result) => ({ type: "oauth" as const, result }))
+        .catch((error) => ({ type: "error" as const, error }));
+
+      const sessionPromise = waitForAuthenticatedUser().then((ok) =>
+        ok ? ({ type: "session" as const }) : ({ type: "timeout" as const }),
+      );
+
+      const outcome = await Promise.race([oauthPromise, sessionPromise]);
+
+      if (outcome.type === "session") {
+        setGoogleLoading(false);
+        navigate("/", { replace: true });
+        return;
+      }
+
+      if (outcome.type === "timeout") {
+        toast({
+          title: "Google sign-in timed out",
+          description: "The Google window did not complete the sign-in handoff. Please close it and try again.",
+          variant: "destructive",
+        });
+        setGoogleLoading(false);
+        return;
+      }
+
+      if (outcome.type === "error") {
+        const completed = await finishGoogleSignIn();
+        if (completed) return;
+
+        throw outcome.error;
+      }
+
+      const { result } = outcome;
 
       if (result?.redirected) return;
 
       if (result?.tokens) {
+        const completed = await finishGoogleSignIn();
+        if (completed) return;
+
         setGoogleLoading(false);
         navigate("/", { replace: true });
         return;
       }
 
-      const ok = await waitForSession();
-      if (ok) {
-        setGoogleLoading(false);
-        navigate("/", { replace: true });
-        return;
-      }
+      const completed = await finishGoogleSignIn();
+      if (completed) return;
 
       const err: any = result?.error;
       toast({
@@ -100,7 +173,7 @@ export default function AuthPage() {
       });
       setGoogleLoading(false);
     } catch (error: any) {
-      const ok = await waitForSession(3000);
+      const ok = await waitForAuthenticatedUser(3000);
       if (ok) {
         setGoogleLoading(false);
         navigate("/", { replace: true });
