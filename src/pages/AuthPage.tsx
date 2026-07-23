@@ -58,6 +58,16 @@ export default function AuthPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
+  const waitForSession = async (timeoutMs = 15000): Promise<boolean> => {
+    const started = Date.now();
+    while (Date.now() - started < timeoutMs) {
+      const { data } = await supabase.auth.getSession();
+      if (data.session?.user) return true;
+      await new Promise((r) => setTimeout(r, 500));
+    }
+    return false;
+  };
+
   const handleGoogleSignIn = async () => {
     setGoogleLoading(true);
 
@@ -65,14 +75,6 @@ export default function AuthPage() {
       const result = await lovable.auth.signInWithOAuth("google", {
         redirect_uri: window.location.origin,
       });
-
-      if (result?.error) {
-        const err: any = result.error;
-        const msg = err?.message || err?.error_description || err?.error || JSON.stringify(err);
-        toast({ title: "Google sign-in failed", description: msg, variant: "destructive" });
-        setGoogleLoading(false);
-        return;
-      }
 
       if (result?.redirected) {
         // Full-page OAuth will unload this route.
@@ -85,13 +87,37 @@ export default function AuthPage() {
         return;
       }
 
-      toast({
-        title: "Google sign-in failed",
-        description: "Google sign-in completed, but no session was found. Please try again.",
-        variant: "destructive",
-      });
+      // Preview-iframe fallback: the popup may have completed sign-in and
+      // written the session to localStorage even though the postMessage
+      // handoff was blocked. Poll for a session before giving up.
+      const ok = await waitForSession();
+      if (ok) {
+        setGoogleLoading(false);
+        navigate("/", { replace: true });
+        return;
+      }
+
+      if (result?.error) {
+        const err: any = result.error;
+        const msg = err?.message || err?.error_description || err?.error || JSON.stringify(err);
+        toast({ title: "Google sign-in failed", description: msg, variant: "destructive" });
+      } else {
+        toast({
+          title: "Google sign-in failed",
+          description:
+            "Preview blocked the OAuth handoff. Open the app in a new tab and try again.",
+          variant: "destructive",
+        });
+      }
       setGoogleLoading(false);
     } catch (error: any) {
+      // Even on throw, session may have been set — check once before failing.
+      const ok = await waitForSession(3000);
+      if (ok) {
+        setGoogleLoading(false);
+        navigate("/", { replace: true });
+        return;
+      }
       toast({
         title: "Google sign-in failed",
         description: error?.message || String(error),
