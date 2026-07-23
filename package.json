@@ -17,6 +17,7 @@
     "regression:journeys": "PLAYWRIGHT_BROWSERS_PATH=${PLAYWRIGHT_BROWSERS_PATH:-} playwright test --config=tests/regression/playwright.config.ts --project=journeys"
   },
   "dependencies": {
+    "@dagrejs/dagre": "^1.1.4",
     "@hookform/resolvers": "^3.10.0",
     "@lovable.dev/cloud-auth-js": "^1.1.2",
     "@radix-ui/react-accordion": "^1.2.11",
@@ -48,12 +49,10 @@
     "@radix-ui/react-tooltip": "^1.2.7",
     "@supabase/supabase-js": "^2.101.1",
     "@tanstack/react-query": "^5.83.0",
-    "@types/dagre": "^0.7.54",
     "@xyflow/react": "^12.11.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
-    "dagre": "^0.8.5",
     "date-fns": "^3.6.0",
     "embla-carousel-react": "^8.6.0",
     "framer-motion": "^11.0.0",
