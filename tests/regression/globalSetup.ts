@@ -37,10 +37,21 @@ export default async function globalSetup(_config: FullConfig) {
   }
 
   // 0. Ensure the test user is provisioned (idempotent, admin-API-backed).
+  const seedToken = process.env.SEED_ADMIN_TOKEN;
+  if (!seedToken) {
+    throw new Error("Missing SEED_ADMIN_TOKEN env var required to provision the regression user.");
+  }
   const provisionCtx = await request.newContext();
   const provisionRes = await provisionCtx.post(
     `${supabaseUrl}/functions/v1/provision-regression-user`,
-    { headers: { apikey: anonKey, Authorization: `Bearer ${anonKey}` }, data: {} },
+    {
+      headers: {
+        apikey: anonKey,
+        Authorization: `Bearer ${anonKey}`,
+        "x-seed-admin-token": seedToken,
+      },
+      data: {},
+    },
   );
   if (!provisionRes.ok()) {
     throw new Error(`Provisioning regression user failed: ${provisionRes.status()} ${await provisionRes.text()}`);
