@@ -352,6 +352,6 @@ export default function WealthMapHeroTile({ accounts, netWorth }: Props) {
           </>
         )}
       </div>
-    </motion.button>
+    </motion.div>
   );
 }
