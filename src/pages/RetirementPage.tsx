@@ -213,10 +213,10 @@ export default function RetirementPage() {
     mutationFn: async ({ id, values }: { id: string | null; values: Record<string, unknown>; clearLocalEdits?: Partial<RetirementScenario> }) => {
       if (!householdId) throw new Error("No household");
       if (id) {
-        const { error } = await supabase.from("retirement_scenarios").update(values).eq("id", id);
+        const { error } = await supabase.from("retirement_scenarios").update(values as any).eq("id", id);
         if (error) throw error;
       } else {
-        const { error } = await supabase.from("retirement_scenarios").insert({ ...values, household_id: householdId });
+        const { error } = await supabase.from("retirement_scenarios").insert({ ...values, household_id: householdId } as any);
         if (error) throw error;
       }
     },
