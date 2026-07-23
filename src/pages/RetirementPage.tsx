@@ -7,6 +7,7 @@ import { motion } from "framer-motion";
 import { formatCurrency } from "@/lib/format";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import type { TablesInsert, TablesUpdate } from "@/integrations/supabase/types";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { useDBPensions } from "@/hooks/useDBPensions";
@@ -43,6 +44,15 @@ import ScenarioComparison from "@/components/retirement/ScenarioComparison";
 
 
 import { stagger } from "@/lib/animation";
+
+type RetirementScenarioInsert = TablesInsert<"retirement_scenarios">;
+type RetirementScenarioUpdate = TablesUpdate<"retirement_scenarios">;
+
+type RetirementScenarioMutation = {
+  id: string | null;
+  values: RetirementScenarioUpdate;
+  clearLocalEdits?: Partial<RetirementScenario>;
+};
 
 function buildOtherIncomeSources(values: {
   retireAge: number;
@@ -210,13 +220,14 @@ export default function RetirementPage() {
   }, [setSelectedScenario]);
 
   const upsert = useMutation({
-    mutationFn: async ({ id, values }: { id: string | null; values: Record<string, unknown>; clearLocalEdits?: Partial<RetirementScenario> }) => {
+    mutationFn: async ({ id, values }: RetirementScenarioMutation) => {
       if (!householdId) throw new Error("No household");
       if (id) {
-        const { error } = await supabase.from("retirement_scenarios").update(values as any).eq("id", id);
+        const { error } = await supabase.from("retirement_scenarios").update(values).eq("id", id);
         if (error) throw error;
       } else {
-        const { error } = await supabase.from("retirement_scenarios").insert({ ...values, household_id: householdId } as any);
+        const insertValues: RetirementScenarioInsert = { ...values, household_id: householdId };
+        const { error } = await supabase.from("retirement_scenarios").insert(insertValues);
         if (error) throw error;
       }
     },
@@ -252,20 +263,6 @@ export default function RetirementPage() {
           expected_return: valuesToSave.expectedReturn,
           inflation_rate: valuesToSave.inflation,
           target_income: valuesToSave.targetIncome,
-          ...(canPersistTaxFreeCash ? { tax_free_cash_pct: valuesToSave.taxFreeCashPct } : {}),
-          ...(canPersistTaxFreeCashOptions
-            ? {
-                tax_free_cash_enabled: valuesToSave.taxFreeCashEnabled,
-                tax_free_cash_age: valuesToSave.taxFreeCashAge,
-              }
-            : {}),
-          ...(canPersistOtherIncome
-            ? {
-                isa_bridge_income_annual: valuesToSave.isaBridgeIncome,
-                property_income_annual: valuesToSave.propertyIncome,
-                part_time_income_annual: valuesToSave.partTimeIncome,
-              }
-            : {}),
         },
       });
     }, 800);
@@ -288,17 +285,6 @@ export default function RetirementPage() {
           employer_contribution: 500,
           expected_return: 5,
           inflation_rate: 2.5,
-          ...(canPersistTaxFreeCash ? { tax_free_cash_pct: DEFAULT_TAX_FREE_CASH_PCT } : {}),
-          ...(canPersistTaxFreeCashOptions
-            ? { tax_free_cash_enabled: true, tax_free_cash_age: 57 }
-            : {}),
-          ...(canPersistOtherIncome
-            ? {
-                isa_bridge_income_annual: 0,
-                property_income_annual: 0,
-                part_time_income_annual: 0,
-              }
-            : {}),
           target_income: 30000,
         },
       });
@@ -321,20 +307,6 @@ export default function RetirementPage() {
         current_pot: values.currentPot, monthly_contribution: values.monthlyContrib,
         employer_contribution: values.employerContrib, expected_return: values.expectedReturn,
         inflation_rate: values.inflation,
-        ...(canPersistTaxFreeCash ? { tax_free_cash_pct: values.taxFreeCashPct } : {}),
-        ...(canPersistTaxFreeCashOptions
-          ? {
-              tax_free_cash_enabled: values.taxFreeCashEnabled,
-              tax_free_cash_age: values.taxFreeCashAge,
-            }
-          : {}),
-        ...(canPersistOtherIncome
-          ? {
-              isa_bridge_income_annual: values.isaBridgeIncome,
-              property_income_annual: values.propertyIncome,
-              part_time_income_annual: values.partTimeIncome,
-            }
-          : {}),
         target_income: values.targetIncome,
       },
     });
