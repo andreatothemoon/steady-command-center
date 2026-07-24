@@ -25,7 +25,7 @@ import HouseholdWealthTile from "@/components/home/pillars/HouseholdWealthTile";
 import RetirementTile from "@/components/home/pillars/RetirementTile";
 import TaxTile from "@/components/home/pillars/TaxTile";
 import type { MemberANI } from "@/types/tax";
-import { formatCurrency } from "@/lib/format";
+
 
 import { CURRENT_TAX_YEAR } from "@/lib/constants";
 import { heroStagger as stagger } from "@/lib/animation";
