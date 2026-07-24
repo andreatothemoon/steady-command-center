@@ -58,6 +58,7 @@ export default function HomePage() {
   const { data: dbPensions = [] } = useDBPensions();
 
   const adults = profiles.filter((p) => p.role === "adult");
+  const children = profiles.filter((p) => p.role === "child");
 
   const memberANIs: MemberANI[] = adults.map((p) => {
     const summary = taxSummaries.find((s) => s.member_profile_id === p.id);
@@ -138,6 +139,7 @@ export default function HomePage() {
         <p className="text-sm text-muted-foreground">
           {accounts.length} account{accounts.length === 1 ? "" : "s"} tracked
           {adults.length > 0 && ` · ${adults.length} adult${adults.length === 1 ? "" : "s"}`}
+          {children.length > 0 && ` · ${children.length} ${children.length === 1 ? "child" : "children"}`}
         </p>
       </motion.section>
 

@@ -2,6 +2,13 @@ import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowUpRight, Map as MapIcon } from "lucide-react";
+import {
+  PieChart,
+  Pie,
+  Cell,
+  ResponsiveContainer,
+  Tooltip as RechartsTooltip,
+} from "recharts";
 import { formatCurrency } from "@/lib/format";
 import { splitOwnerNames } from "@/lib/accountOwners";
 import { accountRegion, REGION_META, type Region } from "@/lib/geography";
@@ -33,69 +40,6 @@ type OwnerCell = {
   color: string;
   regions: { region: Region; value: number }[];
 };
-
-/** Squarified-ish treemap layout in a normalized 100x100 box. */
-function layoutTreemap<T extends { value: number }>(items: T[]) {
-  const total = items.reduce((s, c) => s + c.value, 0);
-  const W = 100;
-  const H = 100;
-  if (total <= 0) return [] as (T & { x: number; y: number; w: number; h: number })[];
-  const scaled = items.map((c) => ({ ...c, area: (c.value / total) * W * H }));
-  const results: (T & { x: number; y: number; w: number; h: number })[] = [];
-
-  let x = 0,
-    y = 0,
-    remW = W,
-    remH = H,
-    i = 0;
-
-  const worst = (r: typeof scaled, side: number) => {
-    const sum = r.reduce((s, c) => s + c.area, 0);
-    const rMax = Math.max(...r.map((c) => c.area));
-    const rMin = Math.min(...r.map((c) => c.area));
-    const s2 = side * side;
-    const sum2 = sum * sum;
-    return Math.max((s2 * rMax) / sum2, sum2 / (s2 * rMin));
-  };
-
-  while (i < scaled.length) {
-    const shorter = Math.min(remW, remH);
-    const row: typeof scaled = [];
-    let rowSum = 0;
-    while (i < scaled.length) {
-      const next = [...row, scaled[i]];
-      const nextSum = rowSum + scaled[i].area;
-      if (row.length === 0 || worst(next, shorter) <= worst(row, shorter)) {
-        row.push(scaled[i]);
-        rowSum = nextSum;
-        i++;
-      } else break;
-    }
-    const horizontal = remW >= remH;
-    if (horizontal) {
-      const rowH = rowSum / remW;
-      let cx = x;
-      for (const c of row) {
-        const cw = c.area / rowH;
-        results.push({ ...c, x: cx, y, w: cw, h: rowH });
-        cx += cw;
-      }
-      y += rowH;
-      remH -= rowH;
-    } else {
-      const rowW = rowSum / remH;
-      let cy = y;
-      for (const c of row) {
-        const ch = c.area / rowW;
-        results.push({ ...c, x, y: cy, w: rowW, h: ch });
-        cy += ch;
-      }
-      x += rowW;
-      remW -= rowW;
-    }
-  }
-  return results;
-}
 
 function titleCase(s: string) {
   return s
@@ -140,8 +84,6 @@ export default function WealthMapHeroTile({ accounts, netWorth }: Props) {
       }))
       .sort((a, b) => b.value - a.value);
   }, [accounts, focus]);
-
-  const treemap = useMemo(() => layoutTreemap(ownerCells), [ownerCells]);
 
   /* Region totals across household — net of liabilities */
   const regionTotals = useMemo(() => {
@@ -260,7 +202,7 @@ export default function WealthMapHeroTile({ accounts, netWorth }: Props) {
         )}
       </div>
 
-      {/* Owner treemap */}
+      {/* Owner pie chart */}
       <div className="mt-6 flex-1">
         <div className="mb-2 flex items-baseline justify-between">
           <p className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
@@ -271,46 +213,63 @@ export default function WealthMapHeroTile({ accounts, netWorth }: Props) {
           </p>
         </div>
         <div className="relative h-[220px] w-full overflow-hidden rounded-2xl bg-secondary/40 ring-1 ring-border/50">
-          {treemap.length === 0 ? (
+          {ownerCells.length === 0 ? (
             <div className="flex h-full items-center justify-center p-6 text-center text-sm text-muted-foreground">
               Add accounts to populate your wealth map.
             </div>
           ) : (
-            treemap.map((c) => {
-              const dense = c.w < 22 || c.h < 22;
-              return (
-                <div
-                  key={c.key}
-                  className="absolute flex flex-col justify-between overflow-hidden p-3 text-white transition-transform duration-300 group-hover:scale-[0.995]"
-                  style={{
-                    left: `${c.x}%`,
-                    top: `${c.y}%`,
-                    width: `${c.w}%`,
-                    height: `${c.h}%`,
-                    backgroundColor: c.color,
-                  }}
-                >
-                  <div className="flex items-start justify-between gap-2">
-                    <span className="truncate text-[12px] font-semibold uppercase tracking-[0.1em] opacity-95">
-                      {c.label}
-                    </span>
-                    <span className="shrink-0 text-[11px] tabular-nums opacity-85">
+            <div className="flex h-full flex-col gap-3 p-4 md:flex-row md:gap-4 md:p-5">
+              <div className="h-[140px] flex-1 md:h-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={ownerCells}
+                      dataKey="value"
+                      nameKey="label"
+                      cx="50%"
+                      cy="50%"
+                      innerRadius="55%"
+                      outerRadius="90%"
+                      paddingAngle={2}
+                      stroke="none"
+                      isAnimationActive={false}
+                    >
+                      {ownerCells.map((entry) => (
+                        <Cell key={entry.key} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <RechartsTooltip
+                      formatter={(value: number, _name: string, props: any) => [
+                        `${formatCurrency(value, true)} (${Math.round(props?.payload?.pct ?? 0)}%)`,
+                        props?.payload?.label,
+                      ]}
+                      contentStyle={{
+                        backgroundColor: "hsl(var(--card))",
+                        border: "1px solid hsl(var(--border))",
+                        borderRadius: "0.75rem",
+                        fontSize: "12px",
+                        color: "hsl(var(--foreground))",
+                      }}
+                      itemStyle={{ color: "hsl(var(--foreground))" }}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+              <ul className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 md:flex-col md:items-start md:justify-center md:gap-x-0 md:gap-y-2">
+                {ownerCells.map((c) => (
+                  <li key={c.key} className="flex items-center gap-2 text-[12px]">
+                    <span
+                      className="h-2.5 w-2.5 rounded-full"
+                      style={{ backgroundColor: c.color }}
+                    />
+                    <span className="text-foreground">{c.label}</span>
+                    <span className="text-muted-foreground tabular-nums">
                       {Math.round(c.pct)}%
                     </span>
-                  </div>
-                  {!dense && (
-                    <div className="flex items-end justify-between gap-2">
-                      <span className="text-[15px] font-semibold tabular-nums leading-tight md:text-[17px]">
-                        {formatCurrency(c.value, true)}
-                      </span>
-                      <span className="text-[13px] leading-none tracking-wide opacity-90">
-                        {c.regions.slice(0, 3).map((r) => REGION_META[r.region].flag).join(" ")}
-                      </span>
-                    </div>
-                  )}
-                </div>
-              );
-            })
+                  </li>
+                ))}
+              </ul>
+            </div>
           )}
         </div>
       </div>
