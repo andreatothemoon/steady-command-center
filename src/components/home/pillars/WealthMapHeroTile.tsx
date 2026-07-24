@@ -2,6 +2,13 @@ import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowUpRight, Map as MapIcon } from "lucide-react";
+import {
+  PieChart,
+  Pie,
+  Cell,
+  ResponsiveContainer,
+  Tooltip as RechartsTooltip,
+} from "recharts";
 import { formatCurrency } from "@/lib/format";
 import { splitOwnerNames } from "@/lib/accountOwners";
 import { accountRegion, REGION_META, type Region } from "@/lib/geography";
