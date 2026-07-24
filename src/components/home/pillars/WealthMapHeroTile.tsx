@@ -41,69 +41,6 @@ type OwnerCell = {
   regions: { region: Region; value: number }[];
 };
 
-/** Squarified-ish treemap layout in a normalized 100x100 box. */
-function layoutTreemap<T extends { value: number }>(items: T[]) {
-  const total = items.reduce((s, c) => s + c.value, 0);
-  const W = 100;
-  const H = 100;
-  if (total <= 0) return [] as (T & { x: number; y: number; w: number; h: number })[];
-  const scaled = items.map((c) => ({ ...c, area: (c.value / total) * W * H }));
-  const results: (T & { x: number; y: number; w: number; h: number })[] = [];
-
-  let x = 0,
-    y = 0,
-    remW = W,
-    remH = H,
-    i = 0;
-
-  const worst = (r: typeof scaled, side: number) => {
-    const sum = r.reduce((s, c) => s + c.area, 0);
-    const rMax = Math.max(...r.map((c) => c.area));
-    const rMin = Math.min(...r.map((c) => c.area));
-    const s2 = side * side;
-    const sum2 = sum * sum;
-    return Math.max((s2 * rMax) / sum2, sum2 / (s2 * rMin));
-  };
-
-  while (i < scaled.length) {
-    const shorter = Math.min(remW, remH);
-    const row: typeof scaled = [];
-    let rowSum = 0;
-    while (i < scaled.length) {
-      const next = [...row, scaled[i]];
-      const nextSum = rowSum + scaled[i].area;
-      if (row.length === 0 || worst(next, shorter) <= worst(row, shorter)) {
-        row.push(scaled[i]);
-        rowSum = nextSum;
-        i++;
-      } else break;
-    }
-    const horizontal = remW >= remH;
-    if (horizontal) {
-      const rowH = rowSum / remW;
-      let cx = x;
-      for (const c of row) {
-        const cw = c.area / rowH;
-        results.push({ ...c, x: cx, y, w: cw, h: rowH });
-        cx += cw;
-      }
-      y += rowH;
-      remH -= rowH;
-    } else {
-      const rowW = rowSum / remH;
-      let cy = y;
-      for (const c of row) {
-        const ch = c.area / rowW;
-        results.push({ ...c, x, y: cy, w: rowW, h: ch });
-        cy += ch;
-      }
-      x += rowW;
-      remW -= rowW;
-    }
-  }
-  return results;
-}
-
 function titleCase(s: string) {
   return s
     .split(/\s+/)
