@@ -63,7 +63,7 @@ function SidebarContent({ collapsed, toggle, onNavigate }: { collapsed: boolean;
 
       <nav className={cn("flex-1", collapsed ? "px-2 space-y-3" : "px-3 space-y-2")}>
         {navItems.map(({ to, label, icon: Icon }) => {
-          const isActive = to === "/" ? location.pathname === "/" : location.pathname.startsWith(to);
+          const isActive = to === "/" ? location.pathname === "/" : location.pathname === to || location.pathname.startsWith(`${to}/`);
           return (
             <NavLink
               key={to}
