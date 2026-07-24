@@ -85,8 +85,6 @@ export default function WealthMapHeroTile({ accounts, netWorth }: Props) {
       .sort((a, b) => b.value - a.value);
   }, [accounts, focus]);
 
-  const treemap = useMemo(() => layoutTreemap(ownerCells), [ownerCells]);
-
   /* Region totals across household — net of liabilities */
   const regionTotals = useMemo(() => {
     const map = new Map<Region, number>();
