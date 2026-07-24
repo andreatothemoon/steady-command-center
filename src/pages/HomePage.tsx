@@ -58,6 +58,7 @@ export default function HomePage() {
   const { data: dbPensions = [] } = useDBPensions();
 
   const adults = profiles.filter((p) => p.role === "adult");
+  const children = profiles.filter((p) => p.role === "child");
 
   const memberANIs: MemberANI[] = adults.map((p) => {
     const summary = taxSummaries.find((s) => s.member_profile_id === p.id);
