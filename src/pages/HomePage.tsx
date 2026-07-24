@@ -15,7 +15,7 @@ import {
   type RetirementInputs,
 } from "@/lib/retirementEngine";
 import type { DBPensionParams } from "@/lib/dbPensionEngine";
-import QuickActionsRow from "@/components/home/QuickActionsRow";
+
 import WealthMapHeroTile from "@/components/home/pillars/WealthMapHeroTile";
 import WealthChangeTile from "@/components/home/pillars/WealthChangeTile";
 import PlanTrackTile from "@/components/home/pillars/PlanTrackTile";
@@ -25,7 +25,7 @@ import HouseholdWealthTile from "@/components/home/pillars/HouseholdWealthTile";
 import RetirementTile from "@/components/home/pillars/RetirementTile";
 import TaxTile from "@/components/home/pillars/TaxTile";
 import type { MemberANI } from "@/types/tax";
-import { formatCurrency } from "@/lib/format";
+
 
 import { CURRENT_TAX_YEAR } from "@/lib/constants";
 import { heroStagger as stagger } from "@/lib/animation";
@@ -119,20 +119,26 @@ export default function HomePage() {
   const retireAge = scenario?.retirement_age ?? 57;
   const targetIncome = scenario ? Number(scenario.target_income) : 30000;
 
+  const householdName = adults.map((a) => a.name).join(" & ") || "your household";
+  const greeting = (() => {
+    const h = new Date().getHours();
+    if (h < 12) return "Good morning";
+    if (h < 18) return "Good afternoon";
+    return "Good evening";
+  })();
+
   return (
     <motion.div className="flex flex-col gap-10" variants={stagger.container} initial="initial" animate="animate">
-      {/* HERO — total assets summary */}
-      <motion.section variants={stagger.item} className="flex flex-col gap-6">
-        <div>
-          <p className="text-sm text-muted-foreground">Total assets</p>
-          <h1 className="mt-1 text-[2.5rem] font-semibold tracking-tight text-foreground sm:text-[2.75rem]">
-            {formatCurrency(netWorth)}
-          </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Across {accounts.length} account{accounts.length === 1 ? "" : "s"} · {adults.map((a) => a.name).join(" & ") || "your household"}
-          </p>
-        </div>
-        <QuickActionsRow />
+      {/* HERO — household greeting */}
+      <motion.section variants={stagger.item} className="flex flex-col gap-2">
+        <p className="text-sm text-muted-foreground">{greeting}</p>
+        <h1 className="text-[2.5rem] font-semibold tracking-tight text-foreground sm:text-[2.75rem]">
+          {householdName}
+        </h1>
+        <p className="text-sm text-muted-foreground">
+          {accounts.length} account{accounts.length === 1 ? "" : "s"} tracked
+          {adults.length > 0 && ` · ${adults.length} adult${adults.length === 1 ? "" : "s"}`}
+        </p>
       </motion.section>
 
       {/* LEVEL 1 — Wealth map hero + three side tiles */}
