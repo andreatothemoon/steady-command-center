@@ -17,6 +17,7 @@ import {
 import type { DBPensionParams } from "@/lib/dbPensionEngine";
 
 import WealthMapHeroTile from "@/components/home/pillars/WealthMapHeroTile";
+import WealthProjectionTile from "@/components/home/pillars/WealthProjectionTile";
 import WealthChangeTile from "@/components/home/pillars/WealthChangeTile";
 import PlanTrackTile from "@/components/home/pillars/PlanTrackTile";
 import NextLifeEventTile from "@/components/home/pillars/NextLifeEventTile";
