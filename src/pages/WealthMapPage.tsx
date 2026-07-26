@@ -664,19 +664,20 @@ export default function WealthMapPage() {
         >
           <Background color="hsl(var(--border))" gap={28} size={1} />
 
-          {/* Legend — top-left, subtle */}
-          <Panel position="top-left" className="!m-4">
-            <div className="flex flex-wrap items-center gap-1.5 rounded-full border border-border/60 bg-card/95 px-2 py-1.5 shadow-sm backdrop-blur">
+          {/* Legend — top-left, subtle. Compact (dots only) on mobile */}
+          <Panel position="top-left" className="!m-3 sm:!m-4">
+            <div className="flex flex-wrap items-center gap-1 rounded-full border border-border/60 bg-card/95 px-2 py-1.5 shadow-sm backdrop-blur sm:gap-1.5">
               {BUCKETS.map((b) => (
                 <span
                   key={b.key}
-                  className="flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[11px] text-foreground/80"
+                  className="flex items-center gap-1.5 rounded-full px-1.5 py-0.5 text-[11px] text-foreground/80 sm:px-2"
+                  title={b.label}
                 >
                   <span
                     className="h-2 w-2 rounded-full"
                     style={{ backgroundColor: BUCKET_COLOR[b.key] }}
                   />
-                  {b.label}
+                  <span className="hidden sm:inline">{b.label}</span>
                 </span>
               ))}
             </div>
