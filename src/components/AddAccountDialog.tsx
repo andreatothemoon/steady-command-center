@@ -131,10 +131,21 @@ export default function AddAccountDialog({ open, onOpenChange }: Props) {
               <Label>Account Type</Label>
               <Select onValueChange={handleTypeChange} value={form.watch("account_type")}>
                 <SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
-                <SelectContent>
-                  {Object.entries(accountTypeLabels).filter(([key]) => !hiddenAddAccountTypes.has(key as AccountType)).sort(([, a], [, b]) => a.localeCompare(b)).map(([key, label]) => (
-                    <SelectItem key={key} value={key}>{label}</SelectItem>
-                  ))}
+                <SelectContent className="max-h-[60vh]">
+                  {accountTypeGroups.map((group) => {
+                    const items = group.types.filter((t) => !hiddenAddAccountTypes.has(t));
+                    if (items.length === 0) return null;
+                    return (
+                      <SelectGroup key={group.label}>
+                        <SelectLabel className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                          {group.label}
+                        </SelectLabel>
+                        {items.map((key) => (
+                          <SelectItem key={key} value={key}>{accountTypeLabels[key]}</SelectItem>
+                        ))}
+                      </SelectGroup>
+                    );
+                  })}
                 </SelectContent>
               </Select>
               {form.formState.errors.account_type && (
