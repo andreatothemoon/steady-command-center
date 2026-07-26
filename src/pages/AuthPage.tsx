@@ -24,10 +24,39 @@ export default function AuthPage() {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [magicLoading, setMagicLoading] = useState(false);
+  const [cooldownRemaining, setCooldownRemaining] = useState(0);
+
+  const MAGIC_LINK_COOLDOWN_SECONDS = 60;
+  const cooldownKey = (addr: string) => `magic_link_last_sent:${addr.trim().toLowerCase()}`;
+
+  const computeRemaining = (addr: string) => {
+    if (!addr) return 0;
+    const raw = sessionStorage.getItem(cooldownKey(addr));
+    if (!raw) return 0;
+    const last = Number(raw);
+    if (!Number.isFinite(last)) return 0;
+    const elapsed = Math.floor((Date.now() - last) / 1000);
+    return Math.max(0, MAGIC_LINK_COOLDOWN_SECONDS - elapsed);
+  };
+
+  useEffect(() => {
+    setCooldownRemaining(computeRemaining(email));
+    const t = setInterval(() => setCooldownRemaining(computeRemaining(email)), 1000);
+    return () => clearInterval(t);
+  }, [email]);
 
   const handleMagicLink = async () => {
     if (!email) {
       toast({ title: "Email required", description: "Enter your email to receive a magic link.", variant: "destructive" });
+      return;
+    }
+    const remaining = computeRemaining(email);
+    if (remaining > 0) {
+      toast({
+        title: "Please wait",
+        description: `You can request another magic link in ${remaining}s.`,
+        variant: "destructive",
+      });
       return;
     }
     setMagicLoading(true);
@@ -40,7 +69,9 @@ export default function AuthPage() {
         },
       });
       if (error) throw error;
-      toast({ title: "Check your email", description: `We sent a magic link to ${email}.` });
+      sessionStorage.setItem(cooldownKey(email), String(Date.now()));
+      setCooldownRemaining(MAGIC_LINK_COOLDOWN_SECONDS);
+      toast({ title: "Check your email", description: `We sent a magic link to ${email}. It expires in 10 minutes and can only be used once.` });
     } catch (error: any) {
       toast({ title: "Magic link failed", description: error.message, variant: "destructive" });
     } finally {
@@ -334,9 +365,13 @@ export default function AuthPage() {
           variant="ghost"
           className="w-full"
           onClick={handleMagicLink}
-          disabled={magicLoading || !email}
+          disabled={magicLoading || !email || cooldownRemaining > 0}
         >
-          {magicLoading ? "Sending link..." : "Email me a magic link"}
+          {magicLoading
+            ? "Sending link..."
+            : cooldownRemaining > 0
+              ? `Resend available in ${cooldownRemaining}s`
+              : "Email me a magic link"}
         </Button>
 
         <p className="text-center text-sm text-muted-foreground">

@@ -5,6 +5,10 @@ import { OAUTH_STATE_STORAGE_KEY } from "@/lib/lovableOAuth";
 
 const OAUTH_COMPLETE_MESSAGE = "wealthos_oauth_complete";
 
+// Module-level guard: prevents the same token from being exchanged twice
+// (e.g. React StrictMode double-invoke, or a stale back/forward navigation).
+const processedTokens = new Set<string>();
+
 const getOAuthParams = () => {
   const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ""));
   const queryParams = new URLSearchParams(window.location.search);
@@ -61,6 +65,13 @@ export default function AuthCallbackPage() {
 
       if (error) throw new Error(error);
 
+      // Dedupe: exchange each token exactly once per page load.
+      const tokenKey = code ?? accessToken ?? null;
+      if (tokenKey) {
+        if (processedTokens.has(tokenKey)) return;
+        processedTokens.add(tokenKey);
+      }
+
       if (accessToken && refreshToken) {
         tokens = { access_token: accessToken, refresh_token: refreshToken };
         const { error: sessionError } = await supabase.auth.setSession({
@@ -77,6 +88,13 @@ export default function AuthCallbackPage() {
             refresh_token: data.session.refresh_token,
           };
         }
+      }
+
+      // Strip tokens/code from the URL so a refresh or history sync
+      // cannot replay them (Supabase already single-uses them server-side,
+      // but this avoids confusing "invalid grant" errors).
+      if (tokenKey) {
+        window.history.replaceState({}, "", window.location.pathname);
       }
 
       const { data, error: userError } = await supabase.auth.getUser();

@@ -1,52 +1,33 @@
 ## Goal
+Harden the magic link sign-in flow against abuse: short-lived tokens, throttled requests, and guaranteed single-use.
 
-Persist life events in the database. Today the Plan page keeps them in memory only (`src/planning/store/PlanContext.tsx` + seed), so nothing survives a reload or syncs across household members. User data is already covered by `household_profiles`, and assets by `accounts` — the missing piece is **life events**.
+## Changes
 
-## Current state (verified)
+### 1. Short token expiry (server)
+Supabase magic link OTPs default to a 1-hour lifetime. Reduce to **10 minutes** so a leaked or intercepted link becomes useless quickly.
+- Set the auth OTP expiry (`mailer_otp_exp`) to `600` seconds via `supabase--configure_auth`.
 
-- `households`, `household_members`, `household_profiles` — user/household data ✅
-- `accounts`, `cash_flows`, `db_pensions`, `holdings` — assets & flows ✅
-- Retirement scenarios persisted in `retirement_scenarios` ✅
-- Life events: **only in-memory** in `src/planning/store/PlanContext.tsx`, seeded from `src/planning/store/seed.ts`. No table exists.
+### 2. Project-wide email rate limit (server)
+Cap the number of auth emails (magic link + reset + confirmation) the project can send per hour to prevent an attacker enumerating or spamming an inbox.
+- Set `rate_limit_email_sent` to `30` per hour via `supabase--configure_auth` (raise later if legitimate volume grows).
 
-The in-memory model (`PlanEvent` in `src/planning/types.ts`) has: title, type, date, probability, status, notes, scenarioId, optional decisionId, and a list of `FinancialEffect` rows (kind, amount, frequency, start/end year, label).
+### 3. Per-email client throttle (frontend)
+Prevent a single browser from firing the magic link button repeatedly for the same address.
+- In `src/pages/AuthPage.tsx`:
+  - Track last-send timestamp per email in `sessionStorage` under `magic_link_last_sent:<email>`.
+  - Enforce a **60-second cooldown**; show remaining seconds in the button label and disable it while cooling down.
+  - Use a `useEffect` interval to tick the countdown live.
 
-## Proposed schema
+### 4. Guarantee single-use / prevent replay (frontend)
+Supabase already invalidates OTPs on first successful verification, but the current callback leaves the token in `window.location.hash` — a browser back/refresh or history sync (e.g. cross-window bridge) can resend the same URL and produce confusing "invalid grant" toasts, or worse expose the fragment.
+- In `src/pages/AuthCallbackPage.tsx`:
+  - After a successful `setSession` / `exchangeCodeForSession`, immediately `window.history.replaceState({}, "", "/auth/callback")` to strip `code`/`access_token`/`refresh_token` from the URL.
+  - Guard against double-invocation of `complete()` in React StrictMode with a module-level `hasProcessed` ref keyed on the raw hash/query, so a token cannot be exchanged twice within one page load.
 
-Two new tables in `public`, scoped by household with RLS via existing `is_household_member` helper.
+## Out of scope
+- Server-side per-IP rate limiting (no primitive available; the hourly email cap + client cooldown is the practical mitigation).
+- Custom token storage or a bespoke OTP table — Supabase Auth already enforces single-use and hashed storage.
 
-### 1. `life_events`
-- `household_id` → `households(id)` on delete cascade
-- `scenario_id` uuid (nullable — nullable because current Plan scenarios live client-side; ties in later if we persist scenarios)
-- `profile_id` → `household_profiles(id)` nullable (optional: whose event)
-- `title` text
-- `event_type` text (enum-like: matches `EventType` union — home_purchase, child, retirement, etc.)
-- `event_date` date
-- `probability` numeric default 1.0 (0–1)
-- `status` text default 'planned' ('planned' | 'confirmed' | 'cancelled')
-- `notes` text nullable
-- `decision_id` uuid nullable (future link)
-- standard `created_at` / `updated_at` with trigger
-
-### 2. `life_event_effects`
-- `event_id` → `life_events(id)` on delete cascade
-- `kind` text ('cash_delta' | 'recurring_income' | 'recurring_expense' | 'asset_delta' | 'liability_delta' | 'salary_delta' | 'pension_contribution_delta')
-- `amount` numeric (GBP, signed)
-- `frequency` text nullable ('monthly' | 'annual' | 'one_off')
-- `start_year` int
-- `end_year` int nullable
-- `label` text
-- timestamps
-
-### RLS
-Household members can select/insert/update/delete their own household's events and effects (via `is_household_member(auth.uid(), household_id)` — effects check through parent event). Standard grants to `authenticated` + `service_role`. No anon.
-
-## Not in this plan
-
-- Frontend wiring (hook `useLifeEvents`, replacing `PlanContext` seed with DB fetch, mutations from `TimelineEventEditor`) — I'll do that in a follow-up once you confirm the shape.
-- Migrating existing seed events into real rows.
-- Linking to `retirement_scenarios` (kept as free-text uuid for now to avoid coupling with the client-side Plan scenario store).
-
-## Deliverable
-
-One migration creating both tables with grants, RLS, policies, and `updated_at` triggers. After you approve, I'll switch to build mode and run it.
+## Technical notes
+- `supabase--configure_auth` requires the four booleans; we'll pass current values unchanged and add `rate_limit_email_sent`. OTP expiry is set through the same call if the tool accepts it; otherwise the plan falls back to documenting it and we'll surface a follow-up if the parameter is rejected.
+- The client cooldown is defense-in-depth only — the server rate limit is the real ceiling.
