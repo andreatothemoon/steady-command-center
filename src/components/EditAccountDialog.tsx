@@ -25,13 +25,15 @@ import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
+  SelectGroup,
+  SelectLabel,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
 import { useUpdateAccount, useDeleteAccount, useAccounts, type Account } from "@/hooks/useAccounts";
 import { useHouseholdProfiles } from "@/hooks/useHouseholdProfiles";
-import { accountTypeLabels, wrapperLabels } from "@/data/types";
+import { accountTypeLabels, wrapperLabels, accountTypeGroups } from "@/data/types";
 import type { AccountType, WrapperType } from "@/data/types";
 import { toast } from "sonner";
 import { Trash2, Link2 } from "lucide-react";
