@@ -766,7 +766,7 @@ export default function WealthMapPage() {
               animate={{ x: 0, opacity: 1 }}
               exit={{ x: 24, opacity: 0 }}
               transition={{ duration: 0.18, ease: "easeOut" }}
-              className="absolute right-4 top-4 z-20 w-[280px] overflow-hidden rounded-2xl border border-border/60 bg-card/95 shadow-xl backdrop-blur"
+              className="absolute inset-x-3 top-3 z-20 max-h-[calc(100%-1.5rem)] overflow-y-auto rounded-2xl border border-border/60 bg-card/95 shadow-xl backdrop-blur sm:inset-x-auto sm:right-4 sm:top-4 sm:w-[280px]"
             >
               <div className="flex items-start justify-between gap-2 px-4 pt-4">
                 <div className="flex items-center gap-3">
