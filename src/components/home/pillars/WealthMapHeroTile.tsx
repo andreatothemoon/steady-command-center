@@ -29,7 +29,6 @@ interface Props {
   netWorth: number;
 }
 
-/** Palette for owner blocks — semantic-ish, cycles for >4 owners. */
 const OWNER_PALETTE = ["#091540", "#4F8CFF", "#895b1e", "#efcb68", "#22C55E", "#6b7280"];
 
 type OwnerCell = {
@@ -38,7 +37,6 @@ type OwnerCell = {
   value: number;
   pct: number;
   color: string;
-  regions: { region: Region; value: number }[];
 };
 
 function titleCase(s: string) {
@@ -48,44 +46,33 @@ function titleCase(s: string) {
     .join(" ");
 }
 
-
 export default function WealthMapHeroTile({ accounts, netWorth }: Props) {
   const navigate = useNavigate();
   const [focus, setFocus] = useState<RegionFocus>("all");
 
-  /* Owner cells — split joint accounts equally, net of liabilities, filtered by region focus */
   const ownerCells = useMemo<OwnerCell[]>(() => {
-    const byOwner = new Map<string, { total: number; byRegion: Map<Region, number> }>();
+    const byOwner = new Map<string, number>();
     accounts.forEach((a) => {
       const region = accountRegion(a);
       if (!inFocus(region, focus)) return;
       const owners = splitOwnerNames(a.owner_name);
       const share = Number(a.current_value) / Math.max(owners.length, 1);
       const list = owners.length > 0 ? owners : ["unassigned"];
-      list.forEach((o) => {
-        const entry = byOwner.get(o) ?? { total: 0, byRegion: new Map() };
-        entry.total += share;
-        entry.byRegion.set(region, (entry.byRegion.get(region) ?? 0) + share);
-        byOwner.set(o, entry);
-      });
+      list.forEach((o) => byOwner.set(o, (byOwner.get(o) ?? 0) + share));
     });
-    const total = Array.from(byOwner.values()).reduce((s, v) => s + Math.max(v.total, 0), 0);
+    const total = Array.from(byOwner.values()).reduce((s, v) => s + Math.max(v, 0), 0);
     return Array.from(byOwner.entries())
-      .filter(([, v]) => v.total > 0)
+      .filter(([, v]) => v > 0)
       .map(([name, v], idx) => ({
         key: name,
         label: titleCase(name),
-        value: v.total,
-        pct: total > 0 ? (v.total / total) * 100 : 0,
+        value: v,
+        pct: total > 0 ? (v / total) * 100 : 0,
         color: OWNER_PALETTE[idx % OWNER_PALETTE.length],
-        regions: Array.from(v.byRegion.entries())
-          .map(([region, value]) => ({ region, value }))
-          .sort((a, b) => b.value - a.value),
       }))
       .sort((a, b) => b.value - a.value);
   }, [accounts, focus]);
 
-  /* Region totals across household — net of liabilities */
   const regionTotals = useMemo(() => {
     const map = new Map<Region, number>();
     accounts.forEach((a) => {
@@ -104,10 +91,7 @@ export default function WealthMapHeroTile({ accounts, netWorth }: Props) {
       .sort((a, b) => b.value - a.value);
   }, [accounts]);
 
-  const focusedTotal = useMemo(
-    () => ownerCells.reduce((s, c) => s + c.value, 0),
-    [ownerCells],
-  );
+  const focusedTotal = ownerCells.reduce((s, c) => s + c.value, 0);
   const focusedPct = netWorth > 0 ? (focusedTotal / netWorth) * 100 : 0;
   const displayedTotal = focus === "all" ? netWorth : focusedTotal;
 
@@ -125,10 +109,10 @@ export default function WealthMapHeroTile({ accounts, netWorth }: Props) {
       whileHover="hover"
       initial="rest"
       animate="rest"
-      className="card-surface group relative flex h-full min-h-[440px] w-full cursor-pointer flex-col overflow-hidden p-6 text-left transition-shadow hover:shadow-md md:p-8"
+      className="card-surface group relative w-full cursor-pointer overflow-hidden p-6 text-left transition-shadow hover:shadow-md md:p-8"
     >
-      {/* Header */}
-      <div className="flex items-start justify-between gap-3">
+      {/* Header row */}
+      <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="flex items-center gap-3">
           <span className="flex h-9 w-9 items-center justify-center rounded-full bg-secondary text-primary">
             <MapIcon className="h-[16px] w-[16px]" strokeWidth={2} />
@@ -142,84 +126,90 @@ export default function WealthMapHeroTile({ accounts, netWorth }: Props) {
             </p>
           </div>
         </div>
-        <motion.span
-          variants={{ rest: { x: 0, y: 0 }, hover: { x: 2, y: -2 } }}
-          transition={{ type: "spring", stiffness: 300, damping: 22 }}
-          className="flex h-7 w-7 items-center justify-center rounded-full text-muted-foreground/60 group-hover:text-foreground"
-        >
-          <ArrowUpRight className="h-4 w-4" strokeWidth={2.25} />
-        </motion.span>
+
+        <div className="flex items-center gap-3">
+          <div
+            role="tablist"
+            aria-label="Region focus"
+            onClick={(e) => e.stopPropagation()}
+            className="inline-flex w-fit items-center gap-1 rounded-full border border-border/60 bg-secondary/50 p-1"
+          >
+            {FOCUS_OPTIONS.map((opt) => {
+              const active = focus === opt.key;
+              return (
+                <button
+                  key={opt.key}
+                  type="button"
+                  role="tab"
+                  aria-selected={active}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setFocus(opt.key);
+                  }}
+                  className={cn(
+                    "rounded-full px-3 py-1 text-[11px] font-medium uppercase tracking-[0.1em] transition-colors",
+                    active
+                      ? "bg-background text-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-foreground",
+                  )}
+                >
+                  {opt.label}
+                </button>
+              );
+            })}
+          </div>
+          <motion.span
+            variants={{ rest: { x: 0, y: 0 }, hover: { x: 2, y: -2 } }}
+            transition={{ type: "spring", stiffness: 300, damping: 22 }}
+            className="flex h-7 w-7 items-center justify-center rounded-full text-muted-foreground/60 group-hover:text-foreground"
+          >
+            <ArrowUpRight className="h-4 w-4" strokeWidth={2.25} />
+          </motion.span>
+        </div>
       </div>
 
-      {/* Region focus control */}
-      <div
-        role="tablist"
-        aria-label="Region focus"
-        onClick={(e) => e.stopPropagation()}
-        className="mt-5 inline-flex w-fit items-center gap-1 rounded-full border border-border/60 bg-secondary/50 p-1"
-      >
-        {FOCUS_OPTIONS.map((opt) => {
-          const active = focus === opt.key;
-          return (
-            <button
-              key={opt.key}
-              type="button"
-              role="tab"
-              aria-selected={active}
-              onClick={(e) => {
-                e.stopPropagation();
-                setFocus(opt.key);
-              }}
-              className={cn(
-                "rounded-full px-3 py-1 text-[11px] font-medium uppercase tracking-[0.1em] transition-colors",
-                active
-                  ? "bg-background text-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground",
-              )}
-            >
-              {opt.label}
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Hero number */}
-      <div className="mt-5">
-        <p className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
-          {focus === "all"
-            ? "Total net worth"
-            : focus === "uk"
-              ? "UK-based wealth"
-              : "International wealth"}
-        </p>
-        <p className="mt-2 text-[2.75rem] font-semibold leading-none tracking-tight text-foreground tabular-nums md:text-[3rem]">
-          {formatCurrency(displayedTotal)}
-        </p>
-        {focus !== "all" && (
-          <p className="mt-1.5 text-[12px] text-muted-foreground tabular-nums">
-            {Math.round(focusedPct)}% of {formatCurrency(netWorth, true)} total
-          </p>
-        )}
-      </div>
-
-      {/* Owner pie chart */}
-      <div className="mt-6 flex-1">
-        <div className="mb-2 flex items-baseline justify-between">
+      {/* 3-column wide layout */}
+      <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-12 lg:gap-8">
+        {/* Left: Hero number */}
+        <div className="lg:col-span-3 lg:border-r lg:border-border/60 lg:pr-6">
           <p className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
-            By owner{focus !== "all" ? ` · ${focus === "uk" ? "UK" : "International"}` : ""}
+            {focus === "all"
+              ? "Total net worth"
+              : focus === "uk"
+                ? "UK-based wealth"
+                : "International wealth"}
           </p>
-          <p className="text-[11px] text-muted-foreground">
-            {ownerCells.length} {ownerCells.length === 1 ? "person" : "people"}
+          <p className="mt-2 text-[2.5rem] font-semibold leading-none tracking-tight text-foreground tabular-nums md:text-[2.75rem]">
+            {formatCurrency(displayedTotal)}
+          </p>
+          {focus !== "all" && (
+            <p className="mt-2 text-[12px] text-muted-foreground tabular-nums">
+              {Math.round(focusedPct)}% of {formatCurrency(netWorth, true)} total
+            </p>
+          )}
+          <p className="mt-4 text-[13px] text-muted-foreground">
+            {accounts.length} {accounts.length === 1 ? "account" : "accounts"} across{" "}
+            {regionTotals.length} {regionTotals.length === 1 ? "region" : "regions"}
           </p>
         </div>
-        <div className="relative h-[220px] w-full overflow-hidden rounded-2xl bg-secondary/40 ring-1 ring-border/50">
+
+        {/* Middle: Owner pie + legend */}
+        <div className="lg:col-span-5 lg:border-r lg:border-border/60 lg:pr-6">
+          <div className="mb-3 flex items-baseline justify-between">
+            <p className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+              By owner
+            </p>
+            <p className="text-[11px] text-muted-foreground">
+              {ownerCells.length} {ownerCells.length === 1 ? "person" : "people"}
+            </p>
+          </div>
           {ownerCells.length === 0 ? (
-            <div className="flex h-full items-center justify-center p-6 text-center text-sm text-muted-foreground">
+            <div className="flex h-[200px] items-center justify-center rounded-2xl bg-secondary/40 p-6 text-center text-sm text-muted-foreground ring-1 ring-border/50">
               Add accounts to populate your wealth map.
             </div>
           ) : (
-            <div className="flex h-full flex-col gap-3 p-4 md:flex-row md:gap-4 md:p-5">
-              <div className="h-[140px] flex-1 md:h-full">
+            <div className="flex items-center gap-5">
+              <div className="h-[200px] w-[200px] flex-shrink-0">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
@@ -255,61 +245,72 @@ export default function WealthMapHeroTile({ accounts, netWorth }: Props) {
                   </PieChart>
                 </ResponsiveContainer>
               </div>
-              <ul className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 md:flex-col md:items-start md:justify-center md:gap-x-0 md:gap-y-2">
+              <ul className="flex flex-1 flex-col gap-2">
                 {ownerCells.map((c) => (
-                  <li key={c.key} className="flex items-center gap-2 text-[12px]">
-                    <span
-                      className="h-2.5 w-2.5 rounded-full"
-                      style={{ backgroundColor: c.color }}
-                    />
-                    <span className="text-foreground">{c.label}</span>
-                    <span className="text-muted-foreground tabular-nums">
-                      {Math.round(c.pct)}%
-                    </span>
+                  <li key={c.key} className="flex items-center justify-between gap-3 text-[13px]">
+                    <div className="flex items-center gap-2">
+                      <span
+                        className="h-2.5 w-2.5 rounded-full"
+                        style={{ backgroundColor: c.color }}
+                      />
+                      <span className="text-foreground">{c.label}</span>
+                    </div>
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-foreground tabular-nums">
+                        {formatCurrency(c.value, true)}
+                      </span>
+                      <span className="text-[11px] text-muted-foreground tabular-nums">
+                        {Math.round(c.pct)}%
+                      </span>
+                    </div>
                   </li>
                 ))}
               </ul>
             </div>
           )}
         </div>
-      </div>
 
-      {/* Geography strip */}
-      <div className="mt-5 border-t border-border/60 pt-4">
-        <div className="mb-2 flex items-baseline justify-between">
-          <p className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
-            By geography
-          </p>
-          <p className="text-[11px] text-muted-foreground">
-            {regionTotals.length} {regionTotals.length === 1 ? "region" : "regions"}
-          </p>
-        </div>
-        {regionTotals.length === 0 ? (
-          <p className="text-[13px] text-muted-foreground">—</p>
-        ) : (
-          <>
-            <div className="flex h-2 w-full overflow-hidden rounded-full bg-secondary">
+        {/* Right: Geography */}
+        <div className="lg:col-span-4">
+          <div className="mb-3 flex items-baseline justify-between">
+            <p className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+              By geography
+            </p>
+            <p className="text-[11px] text-muted-foreground">
+              {regionTotals.length} {regionTotals.length === 1 ? "region" : "regions"}
+            </p>
+          </div>
+          {regionTotals.length === 0 ? (
+            <p className="text-[13px] text-muted-foreground">—</p>
+          ) : (
+            <ul className="flex flex-col gap-3">
               {regionTotals.map((r) => (
-                <div
-                  key={r.region}
-                  style={{ width: `${r.pct}%`, backgroundColor: r.meta.color }}
-                  className="h-full first:rounded-l-full last:rounded-r-full"
-                />
-              ))}
-            </div>
-            <ul className="mt-3 flex flex-wrap gap-x-5 gap-y-1.5">
-              {regionTotals.map((r) => (
-                <li key={r.region} className="flex items-center gap-2 text-[13px]">
-                  <span className="text-base leading-none">{r.meta.flag}</span>
-                  <span className="text-foreground">{r.meta.label}</span>
-                  <span className="text-muted-foreground tabular-nums">
-                    {Math.round(r.pct)}%
-                  </span>
+                <li key={r.region} className="flex flex-col gap-1.5">
+                  <div className="flex items-center justify-between text-[13px]">
+                    <div className="flex items-center gap-2">
+                      <span className="text-base leading-none">{r.meta.flag}</span>
+                      <span className="text-foreground">{r.meta.label}</span>
+                    </div>
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-foreground tabular-nums">
+                        {formatCurrency(r.value, true)}
+                      </span>
+                      <span className="text-[11px] text-muted-foreground tabular-nums">
+                        {Math.round(r.pct)}%
+                      </span>
+                    </div>
+                  </div>
+                  <div className="h-1.5 w-full overflow-hidden rounded-full bg-secondary">
+                    <div
+                      className="h-full rounded-full"
+                      style={{ width: `${r.pct}%`, backgroundColor: r.meta.color }}
+                    />
+                  </div>
                 </li>
               ))}
             </ul>
-          </>
-        )}
+          )}
+        </div>
       </div>
     </motion.div>
   );
