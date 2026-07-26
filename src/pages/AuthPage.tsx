@@ -23,6 +23,30 @@ export default function AuthPage() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+  const [magicLoading, setMagicLoading] = useState(false);
+
+  const handleMagicLink = async () => {
+    if (!email) {
+      toast({ title: "Email required", description: "Enter your email to receive a magic link.", variant: "destructive" });
+      return;
+    }
+    setMagicLoading(true);
+    try {
+      const { error } = await supabase.auth.signInWithOtp({
+        email,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
+          shouldCreateUser: false,
+        },
+      });
+      if (error) throw error;
+      toast({ title: "Check your email", description: `We sent a magic link to ${email}.` });
+    } catch (error: any) {
+      toast({ title: "Magic link failed", description: error.message, variant: "destructive" });
+    } finally {
+      setMagicLoading(false);
+    }
+  };
   const { toast } = useToast();
 
   const { data: invite } = useInvitationByToken(inviteToken);
