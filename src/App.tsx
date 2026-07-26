@@ -56,6 +56,7 @@ function ProtectedRoutes() {
             <Route path="/retirement" element={<RetirementPage />} />
             <Route path="/wealth" element={<WealthPage />} />
             <Route path="/wealth-map" element={<WealthMapPage />} />
+            <Route path="/life-events" element={<LifeEventsPage />} />
             <Route path="/actions" element={<ActionsPage />} />
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/tax" element={<TaxPage />} />
