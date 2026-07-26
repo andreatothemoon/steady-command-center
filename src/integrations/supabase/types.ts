@@ -1104,6 +1104,33 @@ export type Database = {
         | "property"
         | "loan"
         | "credit_card"
+        | "foundation"
+        | "pp_life"
+        | "capital_participation"
+        | "trust"
+        | "private_fund"
+        | "venture_capital_direct"
+        | "real_estate_open_end"
+        | "hedge_fund_closed_end"
+        | "private_equity_fund"
+        | "real_estate_fund"
+        | "venture_capital_fund_closed_end"
+        | "antique"
+        | "book"
+        | "horse"
+        | "jewelry"
+        | "other_collectible"
+        | "painting"
+        | "photography"
+        | "sculpture"
+        | "watch"
+        | "wine_cellar"
+        | "airplane"
+        | "automobile"
+        | "helicopter"
+        | "motorcycle"
+        | "watercraft"
+        | "yacht"
       app_role: "admin" | "user"
       approval_status: "pending" | "approved" | "rejected"
       confidence_level: "high" | "medium" | "low"
@@ -1270,6 +1297,33 @@ export const Constants = {
         "property",
         "loan",
         "credit_card",
+        "foundation",
+        "pp_life",
+        "capital_participation",
+        "trust",
+        "private_fund",
+        "venture_capital_direct",
+        "real_estate_open_end",
+        "hedge_fund_closed_end",
+        "private_equity_fund",
+        "real_estate_fund",
+        "venture_capital_fund_closed_end",
+        "antique",
+        "book",
+        "horse",
+        "jewelry",
+        "other_collectible",
+        "painting",
+        "photography",
+        "sculpture",
+        "watch",
+        "wine_cellar",
+        "airplane",
+        "automobile",
+        "helicopter",
+        "motorcycle",
+        "watercraft",
+        "yacht",
       ],
       app_role: ["admin", "user"],
       approval_status: ["pending", "approved", "rejected"],
