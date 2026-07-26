@@ -168,9 +168,16 @@ export default function EditAccountDialog({ account, open, onOpenChange }: Props
               <Label>Account Type</Label>
               <Select onValueChange={handleTypeChange} value={form.watch("account_type")}>
                 <SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
-                <SelectContent>
-                  {Object.entries(accountTypeLabels).sort(([, a], [, b]) => a.localeCompare(b)).map(([key, label]) => (
-                    <SelectItem key={key} value={key}>{label}</SelectItem>
+                <SelectContent className="max-h-[60vh]">
+                  {accountTypeGroups.map((group) => (
+                    <SelectGroup key={group.label}>
+                      <SelectLabel className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                        {group.label}
+                      </SelectLabel>
+                      {group.types.map((key) => (
+                        <SelectItem key={key} value={key}>{accountTypeLabels[key]}</SelectItem>
+                      ))}
+                    </SelectGroup>
                   ))}
                 </SelectContent>
               </Select>
