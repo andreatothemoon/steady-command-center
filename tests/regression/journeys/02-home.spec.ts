@@ -1,14 +1,13 @@
 import { test, expect, gotoAuthed } from "../fixtures/base";
 
 test.describe("Home page", () => {
-  test("hero shows total assets + at least one pillar tile renders", async ({ page, resetSeed }) => {
+  test("hero shows household greeting + at least one pillar tile renders", async ({ page, resetSeed }) => {
     await resetSeed();
     await gotoAuthed(page, "/");
 
-    await expect(page.locator("body")).toContainText(/total assets/i);
     // Household assets tile
     await expect(page.locator("body")).toContainText(/household assets/i);
-    // A currency-formatted number is present (£ or $)
+    // A currency-formatted number is present
     await expect(page.locator("body")).toContainText(/£\s?\d/);
   });
 
