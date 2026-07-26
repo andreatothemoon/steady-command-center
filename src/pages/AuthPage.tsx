@@ -330,6 +330,15 @@ export default function AuthPage() {
           {googleLoading ? "Connecting..." : "Continue with Google"}
         </Button>
 
+        <Button
+          variant="ghost"
+          className="w-full"
+          onClick={handleMagicLink}
+          disabled={magicLoading || !email}
+        >
+          {magicLoading ? "Sending link..." : "Email me a magic link"}
+        </Button>
+
         <p className="text-center text-sm text-muted-foreground">
           {isSignUp ? "Already have an account?" : "Don't have an account?"}{" "}
           <button
