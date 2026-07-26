@@ -190,13 +190,13 @@ export default function WealthProjectionTile({
       {/* Chart */}
       <div className="mt-5 flex-1">
         <div className="relative h-[240px] w-full">
-          <div className="absolute inset-x-0 bottom-6 top-0 flex items-end gap-1.5 sm:gap-2">
+          <div className="absolute inset-x-0 bottom-6 top-0 flex items-stretch gap-1.5 sm:gap-2">
             {allBars.map((bar, idx) => {
               const heightPct = (bar.total / maxTotal) * 100;
               return (
                 <div key={idx} className="flex flex-1 flex-col items-center justify-end">
                   <div
-                    className="group/bar relative flex w-full max-w-[46px] flex-col-reverse overflow-hidden rounded-t-md"
+                    className="relative flex w-full max-w-[46px] flex-col-reverse overflow-hidden rounded-t-md"
                     style={{ height: `${heightPct}%` }}
                     title={`${bar.label}: ${formatCurrency(bar.total, true)}`}
                   >
@@ -208,7 +208,7 @@ export default function WealthProjectionTile({
                           key={s.key + i}
                           style={{ height: `${segPct}%`, backgroundColor: s.color }}
                           className={cn(
-                            "w-full transition-opacity",
+                            "w-full",
                             bar.isPresent && "opacity-90",
                           )}
                         />
