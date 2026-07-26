@@ -753,6 +753,116 @@ export type Database = {
           },
         ]
       }
+      life_event_effects: {
+        Row: {
+          amount: number
+          created_at: string
+          end_year: number | null
+          event_id: string
+          frequency: string | null
+          id: string
+          kind: string
+          label: string
+          start_year: number
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          end_year?: number | null
+          event_id: string
+          frequency?: string | null
+          id?: string
+          kind: string
+          label: string
+          start_year: number
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          end_year?: number | null
+          event_id?: string
+          frequency?: string | null
+          id?: string
+          kind?: string
+          label?: string
+          start_year?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "life_event_effects_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "life_events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      life_events: {
+        Row: {
+          created_at: string
+          decision_id: string | null
+          event_date: string
+          event_type: string
+          household_id: string
+          id: string
+          notes: string | null
+          probability: number
+          profile_id: string | null
+          scenario_id: string | null
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          decision_id?: string | null
+          event_date: string
+          event_type: string
+          household_id: string
+          id?: string
+          notes?: string | null
+          probability?: number
+          profile_id?: string | null
+          scenario_id?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          decision_id?: string | null
+          event_date?: string
+          event_type?: string
+          household_id?: string
+          id?: string
+          notes?: string | null
+          probability?: number
+          profile_id?: string | null
+          scenario_id?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "life_events_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "life_events_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "household_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       retirement_results: {
         Row: {
           created_at: string
