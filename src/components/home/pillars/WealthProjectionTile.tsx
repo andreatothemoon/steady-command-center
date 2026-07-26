@@ -124,6 +124,21 @@ export default function WealthProjectionTile({
   const endValue = projection[projection.length - 1]?.total ?? netWorth;
   const growthMultiple = netWorth > 0 ? endValue / netWorth : 0;
 
+  // Most recent account update — used as the "last updated" for the present bar
+  const lastUpdatedLabel = useMemo(() => {
+    const times = accounts
+      .map((a) => (a.last_updated ? new Date(a.last_updated).getTime() : 0))
+      .filter((t) => t > 0);
+    if (times.length === 0) return null;
+    return new Date(Math.max(...times)).toLocaleDateString("en-GB", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    });
+  }, [accounts]);
+
+  const [hover, setHover] = useState<{ idx: number; x: number; y: number } | null>(null);
+
   return (
     <motion.div
       whileHover={{ y: -2 }}
@@ -224,12 +239,24 @@ export default function WealthProjectionTile({
               >
                 {allBars.map((bar, idx) => {
                   const heightPct = (bar.total / maxTotal) * 100;
+                  const isHistoric = idx < historic.length;
+                  const isProjection = idx > historic.length;
                   return (
                     <div key={idx} className="flex flex-1 flex-col items-center justify-end">
                       <div
-                        className="relative flex w-full flex-col-reverse overflow-hidden rounded-t-md"
+                        className="relative flex w-full cursor-pointer flex-col-reverse overflow-hidden rounded-t-md transition-opacity hover:opacity-90"
                         style={{ height: `${heightPct}%` }}
-                        title={`${bar.label}: ${formatCurrency(bar.total, true)}`}
+                        onMouseEnter={(e) => {
+                          const parent = (e.currentTarget.closest(".relative.h-full") as HTMLElement) ?? null;
+                          const pRect = parent?.getBoundingClientRect();
+                          const r = e.currentTarget.getBoundingClientRect();
+                          setHover({
+                            idx,
+                            x: r.left + r.width / 2 - (pRect?.left ?? 0),
+                            y: r.top - (pRect?.top ?? 0),
+                          });
+                        }}
+                        onMouseLeave={() => setHover((h) => (h?.idx === idx ? null : h))}
                       >
                         {bar.stacks.map((s, i) => {
                           const segPct = bar.total > 0 ? (s.value / bar.total) * 100 : 0;
@@ -255,6 +282,35 @@ export default function WealthProjectionTile({
                   );
                 })}
               </div>
+
+              {/* Hover tooltip */}
+              {hover && allBars[hover.idx] && (() => {
+                const bar = allBars[hover.idx];
+                const isHistoric = hover.idx < historic.length;
+                const isProjection = hover.idx > historic.length;
+                const updated = isProjection
+                  ? "Projected value"
+                  : isHistoric
+                    ? `Snapshot · ${bar.label}`
+                    : lastUpdatedLabel
+                      ? `Last updated ${lastUpdatedLabel}`
+                      : "Current value";
+                return (
+                  <div
+                    role="tooltip"
+                    className="pointer-events-none absolute z-10 -translate-x-1/2 -translate-y-full rounded-lg border border-border/70 bg-popover px-3 py-2 shadow-lg"
+                    style={{ left: hover.x, top: hover.y - 8 }}
+                  >
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                      {bar.label}
+                    </p>
+                    <p className="mt-0.5 text-[14px] font-semibold tabular-nums text-foreground">
+                      {formatCurrency(bar.total, true)}
+                    </p>
+                    <p className="mt-0.5 text-[11px] text-muted-foreground">{updated}</p>
+                  </div>
+                );
+              })()}
 
               {/* X-axis labels */}
               <div
