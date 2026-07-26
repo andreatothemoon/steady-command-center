@@ -37,6 +37,8 @@ import {
   CreditCard,
   Building2,
   Bitcoin,
+  Gem,
+  Car,
   Plus,
   Minus,
   Maximize2,
