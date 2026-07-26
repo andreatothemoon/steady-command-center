@@ -17,6 +17,7 @@ import {
 import type { DBPensionParams } from "@/lib/dbPensionEngine";
 
 import WealthMapHeroTile from "@/components/home/pillars/WealthMapHeroTile";
+import WealthProjectionTile from "@/components/home/pillars/WealthProjectionTile";
 import WealthChangeTile from "@/components/home/pillars/WealthChangeTile";
 import PlanTrackTile from "@/components/home/pillars/PlanTrackTile";
 import NextLifeEventTile from "@/components/home/pillars/NextLifeEventTile";
@@ -143,13 +144,18 @@ export default function HomePage() {
         </p>
       </motion.section>
 
-      {/* LEVEL 1 — Wealth map hero + three side tiles */}
+      {/* LEVEL 1 — Wealth projection hero + three side tiles */}
       <motion.section
         variants={stagger.item}
         className="grid grid-cols-1 gap-5 lg:grid-cols-4"
       >
         <div className="lg:col-span-3">
-          <WealthMapHeroTile accounts={accounts} netWorth={netWorth} />
+          <WealthProjectionTile
+            accounts={accounts}
+            netWorth={netWorth}
+            expectedReturn={scenario ? Number(scenario.expected_return) / 100 : 0.06}
+            inflation={scenario ? Number(scenario.inflation_rate) / 100 : 0.025}
+          />
         </div>
         <div className="flex flex-col gap-5 lg:col-span-1">
           <WealthChangeTile />
@@ -161,6 +167,11 @@ export default function HomePage() {
       {/* LEVEL 2 — Assets breakdown */}
       <motion.section variants={stagger.item}>
         <AssetsBreakdownRow accounts={accounts} />
+      </motion.section>
+
+      {/* LEVEL 2b — Wealth map (full width) */}
+      <motion.section variants={stagger.item}>
+        <WealthMapHeroTile accounts={accounts} netWorth={netWorth} />
       </motion.section>
 
       {/* LEVEL 3 — Tax · Retirement · Household */}
