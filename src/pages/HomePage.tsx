@@ -153,8 +153,8 @@ export default function HomePage() {
           <WealthProjectionTile
             accounts={accounts}
             netWorth={netWorth}
-            expectedReturn={scenario ? Number(scenario.expected_return) : 0.06}
-            inflation={scenario ? Number(scenario.inflation_rate) : 0.025}
+            expectedReturn={scenario ? Number(scenario.expected_return) / 100 : 0.06}
+            inflation={scenario ? Number(scenario.inflation_rate) / 100 : 0.025}
           />
         </div>
         <div className="flex flex-col gap-5 lg:col-span-1">
