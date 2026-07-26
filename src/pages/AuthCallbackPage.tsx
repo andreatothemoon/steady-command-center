@@ -5,6 +5,10 @@ import { OAUTH_STATE_STORAGE_KEY } from "@/lib/lovableOAuth";
 
 const OAUTH_COMPLETE_MESSAGE = "wealthos_oauth_complete";
 
+// Module-level guard: prevents the same token from being exchanged twice
+// (e.g. React StrictMode double-invoke, or a stale back/forward navigation).
+const processedTokens = new Set<string>();
+
 const getOAuthParams = () => {
   const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ""));
   const queryParams = new URLSearchParams(window.location.search);
