@@ -16,6 +16,7 @@ import ActionsPage from "@/pages/ActionsPage";
 import ProfilePage from "@/pages/ProfilePage";
 import TaxPage from "@/pages/TaxPage";
 import WealthMapPage from "@/pages/WealthMapPage";
+import LifeEventsPage from "@/pages/LifeEventsPage";
 import AuthPage from "@/pages/AuthPage";
 import AuthCallbackPage from "@/pages/AuthCallbackPage";
 import AcceptInvitePage from "@/pages/AcceptInvitePage";
