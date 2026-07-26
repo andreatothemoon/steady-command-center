@@ -4,114 +4,114 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+  Palette
+  --------
+  Onyx      #0A0A0A → 0 0% 4%
+  Gold      #C69B3C → 40 55% 51%
+  Silver    #BFC1C2 → 200 2% 76%
+  Charcoal  #36454F → 204 20% 26%
+  Alabaster #F4F4F4 → 0 0% 96%
+  White     #FFFFFF → 0 0% 100%
+*/
+
 @layer base {
   :root {
-    --background: 75 13% 94%;
-    --foreground: 226 100% 3%;
-    --card: 0 0% 100%;
-    --card-foreground: 226 100% 3%;
+    --background: 0 0% 96%;              /* Alabaster */
+    --foreground: 0 0% 4%;                /* Onyx */
+    --card: 0 0% 100%;                    /* White */
+    --card-foreground: 0 0% 4%;
     --popover: 0 0% 100%;
-    --popover-foreground: 226 100% 3%;
-    --primary: 227 75% 14%;
+    --popover-foreground: 0 0% 4%;
+    --primary: 0 0% 4%;                   /* Onyx */
     --primary-foreground: 0 0% 100%;
-    --secondary: 141 30% 91%;
-    --secondary-foreground: 227 75% 14%;
-    --muted: 75 13% 94%;
-    --muted-foreground: 153 6% 38%;
-    --accent: 44 81% 67%;
-    --accent-foreground: 226 100% 3%;
+    --secondary: 200 2% 92%;              /* Silver tint */
+    --secondary-foreground: 0 0% 4%;
+    --muted: 0 0% 96%;                    /* Alabaster */
+    --muted-foreground: 204 12% 38%;      /* Charcoal, lighter */
+    --accent: 40 55% 51%;                 /* Gold */
+    --accent-foreground: 0 0% 4%;
     --destructive: 4 77% 57%;
     --destructive-foreground: 0 0% 100%;
-    --border: 153 6% 70%;
-    --input: 75 13% 96%;
-    --ring: 227 75% 14%;
+    --border: 200 2% 82%;                 /* Silver */
+    --input: 0 0% 96%;
+    --ring: 40 55% 51%;                   /* Gold */
     --radius: 1rem;
 
     --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 153 6% 42%;
-    --sidebar-primary: 227 75% 14%;
+    --sidebar-foreground: 204 15% 34%;    /* Charcoal-ish */
+    --sidebar-primary: 0 0% 4%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 141 30% 91%;
-    --sidebar-accent-foreground: 226 100% 3%;
-    --sidebar-border: 153 6% 70%;
-    --sidebar-ring: 227 75% 14%;
+    --sidebar-accent: 0 0% 96%;           /* Alabaster hover */
+    --sidebar-accent-foreground: 0 0% 4%;
+    --sidebar-border: 200 2% 82%;
+    --sidebar-ring: 40 55% 51%;
 
-    --success: 34 64% 33%;
-    --success-foreground: 75 13% 94%;
-    --warning: 44 81% 67%;
-    --warning-foreground: 226 100% 3%;
-    --info: 227 75% 14%;
-    --info-foreground: 0 0% 100%;
+    --success: 40 55% 42%;                /* Gold, deeper */
+    --success-foreground: 0 0% 100%;
+    --warning: 40 55% 51%;                /* Gold */
+    --warning-foreground: 0 0% 4%;
+    --info: 204 20% 26%;                  /* Charcoal */
+    --info-foreground: 0 0% 96%;
 
-    --chart-1: 227 75% 14%;
-    --chart-2: 44 81% 67%;
-    --chart-3: 141 30% 91%;
-    --chart-4: 153 6% 70%;
-    --chart-5: 34 64% 33%;
+    --chart-1: 0 0% 4%;                   /* Onyx */
+    --chart-2: 40 55% 51%;                /* Gold */
+    --chart-3: 204 20% 26%;               /* Charcoal */
+    --chart-4: 200 2% 76%;                /* Silver */
+    --chart-5: 40 55% 70%;                /* Gold light */
   }
 
   .dark {
-    /* Level 1 — Base background */
-    --background: 226 100% 3%;
-    --foreground: 75 13% 94%;
+    --background: 0 0% 4%;                /* Onyx */
+    --foreground: 0 0% 96%;               /* Alabaster */
 
-    /* Level 2 — Card / secondary surfaces */
-    --card: 227 75% 8%;
-    --card-foreground: 75 13% 94%;
-    --popover: 227 75% 8%;
-    --popover-foreground: 75 13% 94%;
+    --card: 0 0% 8%;
+    --card-foreground: 0 0% 96%;
+    --popover: 0 0% 8%;
+    --popover-foreground: 0 0% 96%;
 
-    /* Primary accent */
-    --primary: 44 81% 67%;
-    --primary-foreground: 226 100% 3%;
+    --primary: 40 55% 51%;                /* Gold */
+    --primary-foreground: 0 0% 4%;
 
-    /* Secondary / muted */
-    --secondary: 227 45% 12%;
-    --secondary-foreground: 141 30% 91%;
-    --muted: 227 45% 12%;
-    --muted-foreground: 153 6% 70%;
+    --secondary: 204 20% 14%;             /* Deep charcoal */
+    --secondary-foreground: 0 0% 96%;
+    --muted: 0 0% 10%;
+    --muted-foreground: 200 2% 70%;       /* Silver */
 
-    /* Accent */
-    --accent: 34 64% 33%;
-    --accent-foreground: 75 13% 94%;
+    --accent: 40 55% 51%;
+    --accent-foreground: 0 0% 4%;
 
-    /* Destructive — critical only */
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    /* Borders — very subtle, near-invisible */
-    --border: 227 28% 18%;
-    --input: 227 28% 14%;
-    --ring: 44 81% 67%;
+    --border: 0 0% 18%;
+    --input: 0 0% 12%;
+    --ring: 40 55% 51%;
 
-    /* Sidebar */
-    --sidebar-background: 226 100% 3%;
-    --sidebar-foreground: 153 6% 70%;
-    --sidebar-primary: 44 81% 67%;
-    --sidebar-primary-foreground: 226 100% 3%;
-    --sidebar-accent: 227 75% 8%;
-    --sidebar-accent-foreground: 75 13% 94%;
-    --sidebar-border: 227 28% 18%;
-    --sidebar-ring: 44 81% 67%;
+    --sidebar-background: 0 0% 4%;
+    --sidebar-foreground: 200 2% 70%;
+    --sidebar-primary: 40 55% 51%;
+    --sidebar-primary-foreground: 0 0% 4%;
+    --sidebar-accent: 0 0% 8%;
+    --sidebar-accent-foreground: 0 0% 96%;
+    --sidebar-border: 0 0% 18%;
+    --sidebar-ring: 40 55% 51%;
 
-    /* Semantic colours */
-    --success: 71 90% 68%;
-    --success-foreground: 226 100% 3%;
-    --warning: 44 81% 67%;
-    --warning-foreground: 226 100% 3%;
-    --info: 141 30% 91%;
-    --info-foreground: 226 100% 3%;
+    --success: 40 55% 60%;
+    --success-foreground: 0 0% 4%;
+    --warning: 40 55% 51%;
+    --warning-foreground: 0 0% 4%;
+    --info: 200 2% 76%;
+    --info-foreground: 0 0% 4%;
 
-    /* Chart palette — harmonised, slightly desaturated for dark bg */
-    --chart-1: 44 81% 67%;
-    --chart-2: 71 90% 68%;
-    --chart-3: 141 30% 91%;
-    --chart-4: 153 6% 70%;
-    --chart-5: 34 64% 33%;
+    --chart-1: 40 55% 51%;
+    --chart-2: 40 55% 70%;
+    --chart-3: 200 2% 76%;
+    --chart-4: 204 20% 40%;
+    --chart-5: 0 0% 96%;
 
-    /* Elevation tokens */
-    --surface-elevated: 227 75% 8%;
-    --surface-glow: 44 81% 67%;
+    --surface-elevated: 0 0% 8%;
+    --surface-glow: 40 55% 51%;
   }
 }
 
@@ -132,9 +132,9 @@
   /* ── Level 2: Standard Cards ── */
   .card-surface {
     @apply rounded-[28px];
-    border: 1px solid hsl(153 6% 70% / 0.22);
+    border: 1px solid hsl(200 2% 76% / 0.28);
     background: hsl(0 0% 100%);
-    box-shadow: 0 14px 34px -28px hsl(226 100% 3% / 0.16);
+    box-shadow: 0 14px 34px -28px hsl(0 0% 4% / 0.18);
   }
 
   /* Mobile: tighten oversized paddings/typography so content doesn't overflow */
@@ -150,8 +150,8 @@
     @apply card-surface transition-all duration-200 cursor-default;
   }
   .card-surface-hover:hover {
-    border-color: hsl(44 81% 67% / 0.38);
-    box-shadow: 0 18px 38px -28px hsl(226 100% 3% / 0.22);
+    border-color: hsl(40 55% 51% / 0.42);
+    box-shadow: 0 18px 38px -28px hsl(0 0% 4% / 0.24);
     transform: translateY(-2px);
   }
   .card-surface-hover:active {
@@ -162,9 +162,9 @@
   /* ── Level 3: Elevated / Hero surfaces ── */
   .hero-surface {
     @apply rounded-[36px] overflow-hidden relative;
-    border: 1px solid hsl(153 6% 70% / 0.22);
+    border: 1px solid hsl(200 2% 76% / 0.28);
     background: hsl(0 0% 100%);
-    box-shadow: 0 18px 44px -34px hsl(226 100% 3% / 0.18);
+    box-shadow: 0 18px 44px -34px hsl(0 0% 4% / 0.2);
   }
   .hero-surface::before {
     content: '';
@@ -173,7 +173,7 @@
     left: 0;
     right: 0;
     height: 100%;
-    background: hsl(44 81% 67% / 0.08);
+    background: hsl(40 55% 51% / 0.06);
     opacity: 0.5;
     pointer-events: none;
   }
@@ -181,31 +181,31 @@
   /* Alert card */
   .card-alert {
     @apply rounded-[28px] overflow-hidden;
-    border: 1px solid hsl(44 81% 67% / 0.45);
-    background: hsl(44 81% 67% / 0.12);
-    box-shadow: 0 18px 36px -30px hsl(34 64% 33% / 0.22);
+    border: 1px solid hsl(40 55% 51% / 0.5);
+    background: hsl(40 55% 51% / 0.12);
+    box-shadow: 0 18px 36px -30px hsl(204 20% 26% / 0.24);
   }
 
   /* Insight card */
   .card-insight {
     @apply rounded-[28px] overflow-hidden;
-    border: 1px solid hsl(153 6% 70% / 0.22);
+    border: 1px solid hsl(200 2% 76% / 0.28);
     background: hsl(0 0% 100%);
-    box-shadow: 0 14px 34px -30px hsl(226 100% 3% / 0.14);
+    box-shadow: 0 14px 34px -30px hsl(0 0% 4% / 0.16);
   }
 
   /* Action card */
   .card-action {
     @apply rounded-xl overflow-hidden relative;
-    border: 1px solid hsl(227 75% 14% / 0.8);
-    background: hsl(227 75% 14%);
-    box-shadow: 0 2px 12px -4px hsl(0 0% 0% / 0.3),
-                inset 0 1px 0 0 hsl(0 0% 100% / 0.03);
+    border: 1px solid hsl(0 0% 4% / 0.9);
+    background: hsl(0 0% 4%);
+    box-shadow: 0 2px 12px -4px hsl(0 0% 0% / 0.35),
+                inset 0 1px 0 0 hsl(0 0% 100% / 0.04);
     transition: all 180ms ease-out;
   }
   .card-action:hover {
-    border-color: hsl(44 81% 67% / 0.44);
-    box-shadow: 0 8px 32px -8px hsl(0 0% 0% / 0.5);
+    border-color: hsl(40 55% 51% / 0.5);
+    box-shadow: 0 8px 32px -8px hsl(0 0% 0% / 0.55);
     transform: translateY(-1px);
   }
 
@@ -215,7 +215,7 @@
   }
   .nav-item-active {
     @apply nav-item text-sidebar-primary;
-    background: hsl(141 30% 91%);
+    background: hsl(0 0% 92%);
   }
   .nav-item-active::before {
     content: '';
@@ -233,7 +233,7 @@
   }
   .nav-item-inactive:hover {
     @apply text-sidebar-accent-foreground;
-    background: hsl(75 13% 94%);
+    background: hsl(0 0% 96%);
   }
 
   /* Number display */
@@ -259,18 +259,18 @@
 
   /* Glow dot */
   .glow-dot {
-    filter: drop-shadow(0 0 6px hsl(44 81% 67% / 0.55));
+    filter: drop-shadow(0 0 6px hsl(40 55% 51% / 0.6));
   }
 
   /* Threshold bar */
   .threshold-bar {
     @apply relative h-2.5 rounded-full overflow-hidden;
-    background: hsl(227 75% 14% / 0.12);
+    background: hsl(0 0% 4% / 0.1);
     box-shadow: inset 0 1px 2px hsl(0 0% 0% / 0.3);
   }
   .threshold-bar-fill {
     @apply h-full rounded-full transition-all duration-700;
-    box-shadow: 0 0 8px hsl(44 81% 67% / 0.32);
+    box-shadow: 0 0 8px hsl(40 55% 51% / 0.35);
   }
   .threshold-marker {
     @apply absolute top-0 bottom-0 w-0.5;
@@ -283,24 +283,24 @@
   }
   .status-safe {
     @apply status-badge;
-    background: hsl(141 30% 91%);
-    color: hsl(34 64% 33%);
+    background: hsl(40 55% 51% / 0.14);
+    color: hsl(40 55% 32%);
   }
   .status-warning {
     @apply status-badge;
-    background: hsl(44 81% 67% / 0.2);
-    color: hsl(34 64% 33%);
+    background: hsl(40 55% 51% / 0.2);
+    color: hsl(204 20% 26%);
   }
   .status-danger {
     @apply status-badge;
-    background: hsl(4 77% 57% / 0.12);
+    background: hsl(4 77% 57% / 0.14);
     color: hsl(4 66% 45%);
   }
 }
 
 @layer utilities {
   .text-gradient {
-    color: hsl(227 75% 14%);
+    color: hsl(0 0% 4%);
   }
 }
 
