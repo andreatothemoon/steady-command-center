@@ -15,13 +15,15 @@ import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
+  SelectGroup,
+  SelectLabel,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
 import { useAddAccount, useAccounts } from "@/hooks/useAccounts";
 import { useHouseholdProfiles } from "@/hooks/useHouseholdProfiles";
-import { accountTypeLabels, wrapperLabels } from "@/data/types";
+import { accountTypeLabels, wrapperLabels, accountTypeGroups } from "@/data/types";
 import type { AccountType, WrapperType } from "@/data/types";
 import { toast } from "sonner";
 import { Link2 } from "lucide-react";
@@ -129,10 +131,21 @@ export default function AddAccountDialog({ open, onOpenChange }: Props) {
               <Label>Account Type</Label>
               <Select onValueChange={handleTypeChange} value={form.watch("account_type")}>
                 <SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
-                <SelectContent>
-                  {Object.entries(accountTypeLabels).filter(([key]) => !hiddenAddAccountTypes.has(key as AccountType)).sort(([, a], [, b]) => a.localeCompare(b)).map(([key, label]) => (
-                    <SelectItem key={key} value={key}>{label}</SelectItem>
-                  ))}
+                <SelectContent className="max-h-[60vh]">
+                  {accountTypeGroups.map((group) => {
+                    const items = group.types.filter((t) => !hiddenAddAccountTypes.has(t));
+                    if (items.length === 0) return null;
+                    return (
+                      <SelectGroup key={group.label}>
+                        <SelectLabel className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                          {group.label}
+                        </SelectLabel>
+                        {items.map((key) => (
+                          <SelectItem key={key} value={key}>{accountTypeLabels[key]}</SelectItem>
+                        ))}
+                      </SelectGroup>
+                    );
+                  })}
                 </SelectContent>
               </Select>
               {form.formState.errors.account_type && (

@@ -25,13 +25,15 @@ import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
+  SelectGroup,
+  SelectLabel,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
 import { useUpdateAccount, useDeleteAccount, useAccounts, type Account } from "@/hooks/useAccounts";
 import { useHouseholdProfiles } from "@/hooks/useHouseholdProfiles";
-import { accountTypeLabels, wrapperLabels } from "@/data/types";
+import { accountTypeLabels, wrapperLabels, accountTypeGroups } from "@/data/types";
 import type { AccountType, WrapperType } from "@/data/types";
 import { toast } from "sonner";
 import { Trash2, Link2 } from "lucide-react";
@@ -166,9 +168,16 @@ export default function EditAccountDialog({ account, open, onOpenChange }: Props
               <Label>Account Type</Label>
               <Select onValueChange={handleTypeChange} value={form.watch("account_type")}>
                 <SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
-                <SelectContent>
-                  {Object.entries(accountTypeLabels).sort(([, a], [, b]) => a.localeCompare(b)).map(([key, label]) => (
-                    <SelectItem key={key} value={key}>{label}</SelectItem>
+                <SelectContent className="max-h-[60vh]">
+                  {accountTypeGroups.map((group) => (
+                    <SelectGroup key={group.label}>
+                      <SelectLabel className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                        {group.label}
+                      </SelectLabel>
+                      {group.types.map((key) => (
+                        <SelectItem key={key} value={key}>{accountTypeLabels[key]}</SelectItem>
+                      ))}
+                    </SelectGroup>
                   ))}
                 </SelectContent>
               </Select>
