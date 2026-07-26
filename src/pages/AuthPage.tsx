@@ -365,9 +365,13 @@ export default function AuthPage() {
           variant="ghost"
           className="w-full"
           onClick={handleMagicLink}
-          disabled={magicLoading || !email}
+          disabled={magicLoading || !email || cooldownRemaining > 0}
         >
-          {magicLoading ? "Sending link..." : "Email me a magic link"}
+          {magicLoading
+            ? "Sending link..."
+            : cooldownRemaining > 0
+              ? `Resend available in ${cooldownRemaining}s`
+              : "Email me a magic link"}
         </Button>
 
         <p className="text-center text-sm text-muted-foreground">
