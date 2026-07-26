@@ -62,11 +62,12 @@ import { formatCurrency } from "@/lib/format";
 import { toast } from "@/hooks/use-toast";
 
 /* ─── Buckets ─── */
-type Bucket = "guaranteed" | "growth" | "safety" | "property";
+type Bucket = "guaranteed" | "growth" | "alternatives" | "safety" | "property";
 
 const BUCKET_COLOR: Record<Bucket, string> = {
   guaranteed: "#091540",
   growth: "#efcb68",
+  alternatives: "#7c5cff",
   safety: "#aeb7b3",
   property: "#895b1e",
 };
@@ -79,6 +80,24 @@ const BUCKETS: {
 }[] = [
   { key: "guaranteed", label: "Guaranteed", icon: Shield, types: ["db_pension", "workplace_pension", "sipp"] },
   { key: "growth", label: "Growth", icon: TrendingUp, types: ["stocks_and_shares_isa", "cash_isa", "gia", "crypto", "employer_share_scheme"] },
+  {
+    key: "alternatives",
+    label: "Alternatives",
+    icon: Gem,
+    types: [
+      // Investment structures
+      "foundation", "pp_life", "capital_participation", "trust",
+      // Alternative investments
+      "private_fund", "venture_capital_direct", "real_estate_open_end",
+      "hedge_fund_closed_end", "private_equity_fund", "real_estate_fund",
+      "venture_capital_fund_closed_end",
+      // Collections
+      "antique", "book", "horse", "jewelry", "other_collectible",
+      "painting", "photography", "sculpture", "watch", "wine_cellar",
+      // Motor vehicles
+      "airplane", "automobile", "helicopter", "motorcycle", "watercraft", "yacht",
+    ],
+  },
   { key: "safety", label: "Safety Net", icon: Landmark, types: ["current_account", "savings"] },
   { key: "property", label: "Property & Debt", icon: HomeIcon, types: ["property", "mortgage", "loan", "credit_card"] },
 ];
@@ -102,6 +121,13 @@ const ACCOUNT_ICON: Record<string, LucideIcon> = {
   loan: Landmark,
   credit_card: CreditCard,
   crypto: Bitcoin,
+  // Vehicles use car icon; everything else in "alternatives" defaults to Gem.
+  airplane: Car,
+  automobile: Car,
+  helicopter: Car,
+  motorcycle: Car,
+  watercraft: Car,
+  yacht: Car,
 };
 
 type NodeKind = "root" | "member" | "bucket" | "account";
