@@ -124,6 +124,21 @@ export default function WealthProjectionTile({
   const endValue = projection[projection.length - 1]?.total ?? netWorth;
   const growthMultiple = netWorth > 0 ? endValue / netWorth : 0;
 
+  // Most recent account update — used as the "last updated" for the present bar
+  const lastUpdatedLabel = useMemo(() => {
+    const times = accounts
+      .map((a) => (a.last_updated ? new Date(a.last_updated).getTime() : 0))
+      .filter((t) => t > 0);
+    if (times.length === 0) return null;
+    return new Date(Math.max(...times)).toLocaleDateString("en-GB", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    });
+  }, [accounts]);
+
+  const [hover, setHover] = useState<{ idx: number; x: number; y: number } | null>(null);
+
   return (
     <motion.div
       whileHover={{ y: -2 }}
