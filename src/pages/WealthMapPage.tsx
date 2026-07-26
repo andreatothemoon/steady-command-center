@@ -1,8 +1,10 @@
 /**
- * Wealth Map — visual hierarchy of the same buckets used on the Wealth page.
- * Household → Member → Bucket (Guaranteed / Growth / Safety / Property & Debt) → Account.
- * Values mirror WealthPage: DB pensions show projected income, guaranteed bucket
- * shows estimated annual income, others show balances.
+ * Wealth Map — clean hierarchical view of household wealth.
+ * Household → Member (or Region) → Bucket → Account.
+ *
+ * Design goals: family-tree readability with floating avatar badges,
+ * progressive disclosure (buckets collapsed by default, click to expand
+ * accounts), and a slide-in detail panel on selection.
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -21,7 +23,7 @@ import {
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import dagre from "@dagrejs/dagre";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Users,
   User,
@@ -35,13 +37,14 @@ import {
   CreditCard,
   Building2,
   Bitcoin,
-  GripVertical,
   Plus,
   Minus,
   Maximize2,
   RotateCcw,
   UsersRound,
   Globe2,
+  ChevronRight,
+  X,
   type LucideIcon,
 } from "lucide-react";
 import { useAccounts, useUpdateAccount, type Account } from "@/hooks/useAccounts";
@@ -56,10 +59,9 @@ import { accountRegion, REGION_META, type Region } from "@/lib/geography";
 import { formatCurrency } from "@/lib/format";
 import { toast } from "@/hooks/use-toast";
 
-/* ─── Buckets mirror WealthPage ─── */
+/* ─── Buckets ─── */
 type Bucket = "guaranteed" | "growth" | "safety" | "property";
 
-/* Bucket accent colors mirror WealthPage donut / allocation story */
 const BUCKET_COLOR: Record<Bucket, string> = {
   guaranteed: "#091540",
   growth: "#efcb68",
@@ -72,36 +74,11 @@ const BUCKETS: {
   label: string;
   icon: LucideIcon;
   types: string[];
-  description: string;
 }[] = [
-  {
-    key: "guaranteed",
-    label: "Guaranteed Income",
-    icon: Shield,
-    types: ["db_pension", "workplace_pension", "sipp"],
-    description: "Pensions & annuities",
-  },
-  {
-    key: "growth",
-    label: "Growth Assets",
-    icon: TrendingUp,
-    types: ["stocks_and_shares_isa", "cash_isa", "gia", "crypto", "employer_share_scheme"],
-    description: "Invested drawdown capacity",
-  },
-  {
-    key: "safety",
-    label: "Safety Net",
-    icon: Landmark,
-    types: ["current_account", "savings"],
-    description: "Cash & short-term savings",
-  },
-  {
-    key: "property",
-    label: "Property & Debt",
-    icon: HomeIcon,
-    types: ["property", "mortgage", "loan", "credit_card"],
-    description: "Property equity & liabilities",
-  },
+  { key: "guaranteed", label: "Guaranteed", icon: Shield, types: ["db_pension", "workplace_pension", "sipp"] },
+  { key: "growth", label: "Growth", icon: TrendingUp, types: ["stocks_and_shares_isa", "cash_isa", "gia", "crypto", "employer_share_scheme"] },
+  { key: "safety", label: "Safety Net", icon: Landmark, types: ["current_account", "savings"] },
+  { key: "property", label: "Property & Debt", icon: HomeIcon, types: ["property", "mortgage", "loan", "credit_card"] },
 ];
 
 function toBucket(type: string): Bucket {
@@ -130,18 +107,22 @@ type NodeKind = "root" | "member" | "bucket" | "account";
 interface NodeMeta {
   kind: NodeKind;
   label: string;
-  sublabel?: string;
+  amount: string;
+  amountSuffix?: string;
   count?: number;
-  color: string; // CSS color (hex or hsl()) for icon + ring tint
+  color: string;
   icon: LucideIcon;
   accountId?: string;
   memberId?: string;
   bucket?: Bucket;
   isNegative?: boolean;
+  expandable?: boolean;
+  expanded?: boolean;
+  onToggle?: () => void;
 }
 
-const NODE_WIDTH = 240;
-const NODE_HEIGHT = 76;
+const NODE_WIDTH = 260;
+const NODE_HEIGHT = 88;
 
 function WealthNode({ data, selected }: NodeProps) {
   const meta = data as unknown as NodeMeta;
@@ -150,53 +131,77 @@ function WealthNode({ data, selected }: NodeProps) {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 6 }}
+      initial={{ opacity: 0, y: 4 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.25, ease: "easeOut" }}
-      className="group relative flex items-center gap-3 rounded-2xl border border-border/60 bg-card px-4 py-3 shadow-sm"
-      style={{
-        width: NODE_WIDTH,
-        minHeight: NODE_HEIGHT,
-        boxShadow: `0 1px 2px hsl(var(--foreground) / 0.04), 0 8px 24px -12px ${meta.color}40`,
-        outline: selected ? `2px solid hsl(var(--ring))` : `1px solid ${meta.color}33`,
-        outlineOffset: selected ? 0 : -1,
-      }}
+      transition={{ duration: 0.2, ease: "easeOut" }}
+      className="group relative"
+      style={{ width: NODE_WIDTH, minHeight: NODE_HEIGHT }}
     >
-      {!isRoot && <Handle type="target" position={Position.Top} className="!h-2 !w-2 !border-0 !bg-border" />}
+      {!isRoot && <Handle type="target" position={Position.Top} className="!h-1.5 !w-1.5 !border-0 !bg-border" />}
       {meta.kind !== "account" && (
-        <Handle type="source" position={Position.Bottom} className="!h-2 !w-2 !border-0 !bg-border" />
+        <Handle type="source" position={Position.Bottom} className="!h-1.5 !w-1.5 !border-0 !bg-border" />
       )}
 
-      <span
-        className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl"
-        style={{ backgroundColor: `${meta.color}1a`, color: meta.color }}
+      {/* Floating badge — like the family-tree reference */}
+      <div
+        className="absolute -top-3 left-4 z-10 flex h-9 w-9 items-center justify-center rounded-full ring-4 ring-background"
+        style={{ backgroundColor: meta.color, color: "#fff" }}
       >
-        <Icon className="h-4 w-4" strokeWidth={2.25} />
-      </span>
-
-      <div className="min-w-0 flex-1">
-        <p className="truncate text-[14px] font-semibold leading-tight text-foreground">{meta.label}</p>
-        {meta.sublabel && (
-          <p
-            className={`mt-0.5 truncate text-[12px] tabular-nums ${
-              meta.isNegative ? "text-destructive" : "text-muted-foreground"
-            }`}
-          >
-            {meta.sublabel}
-          </p>
-        )}
+        <Icon className="h-4 w-4" strokeWidth={2.4} />
       </div>
 
+      {/* Count pill */}
       {typeof meta.count === "number" && meta.count > 0 && (
         <span
-          className="absolute -top-2 -right-2 flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-[10px] font-bold"
-          style={{ backgroundColor: `${meta.color}26`, color: meta.color }}
+          className="absolute -top-2 right-3 z-10 flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-[10px] font-semibold ring-2 ring-background"
+          style={{ backgroundColor: `${meta.color}`, color: "#fff" }}
         >
           {meta.count}
         </span>
       )}
 
-      <GripVertical className="h-3.5 w-3.5 flex-shrink-0 text-muted-foreground/40 transition-colors group-hover:text-muted-foreground" />
+      {/* Card */}
+      <div
+        className="relative flex h-full flex-col justify-center rounded-2xl border bg-card px-4 pt-5 pb-3 shadow-sm transition-shadow"
+        style={{
+          borderColor: selected ? "hsl(var(--ring))" : "hsl(var(--border) / 0.7)",
+          boxShadow: selected
+            ? `0 0 0 3px hsl(var(--ring) / 0.15), 0 8px 24px -12px ${meta.color}55`
+            : `0 1px 2px hsl(var(--foreground) / 0.04)`,
+        }}
+      >
+        <p className="truncate pl-11 text-[13px] font-semibold leading-tight text-foreground">
+          {meta.label}
+        </p>
+        <p
+          className={`mt-1 truncate pl-11 text-[15px] font-semibold tabular-nums leading-tight ${
+            meta.isNegative ? "text-destructive" : "text-foreground/90"
+          }`}
+        >
+          {meta.amount}
+          {meta.amountSuffix && (
+            <span className="ml-1 text-[11px] font-medium text-muted-foreground">{meta.amountSuffix}</span>
+          )}
+        </p>
+
+        {meta.expandable && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              meta.onToggle?.();
+            }}
+            className="absolute bottom-2 right-2 flex h-6 items-center gap-0.5 rounded-full border border-border/60 bg-background/80 px-2 text-[10px] font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+            aria-label={meta.expanded ? "Collapse accounts" : "Expand accounts"}
+          >
+            <span>{meta.expanded ? "Hide" : "Show"}</span>
+            <ChevronRight
+              className={`h-3 w-3 transition-transform ${meta.expanded ? "rotate-90" : ""}`}
+              strokeWidth={2.5}
+            />
+          </button>
+        )}
+      </div>
     </motion.div>
   );
 }
@@ -206,7 +211,7 @@ const nodeTypes = { wealth: WealthNode };
 function layout(nodes: Node[], edges: Edge[]): Node[] {
   const g = new dagre.graphlib.Graph();
   g.setDefaultEdgeLabel(() => ({}));
-  g.setGraph({ rankdir: "TB", nodesep: 40, ranksep: 90, marginx: 20, marginy: 20 });
+  g.setGraph({ rankdir: "TB", nodesep: 32, ranksep: 80, marginx: 24, marginy: 32, ranker: "tight-tree" });
   nodes.forEach((n) => g.setNode(n.id, { width: NODE_WIDTH, height: NODE_HEIGHT }));
   edges.forEach((e) => g.setEdge(e.source, e.target));
   dagre.layout(g);
@@ -216,7 +221,6 @@ function layout(nodes: Node[], edges: Edge[]): Node[] {
   });
 }
 
-/* ─── Value helpers aligned with WealthPage ─── */
 function accountDisplayValue(a: Account, dbProjected?: number): number {
   if (a.account_type === "db_pension") return dbProjected ?? 0;
   return Number(a.current_value);
@@ -229,21 +233,27 @@ function accountBucketContribution(a: Account, bucket: Bucket, dbProjected?: num
   return val;
 }
 
-function formatWithSuffix(bucket: Bucket, total: number): string {
-  const rounded = Math.round(total);
-  return `${formatCurrency(rounded, true)}${bucket === "guaranteed" ? "/yr" : ""}`;
-}
-
 export default function WealthMapPage() {
   const { data: accounts = [] } = useAccounts();
   const { data: dbPensions = [] } = useDBPensions();
   const { data: profiles = [] } = useHouseholdProfiles();
   const adults = useMemo(() => profiles.filter((p) => p.role === "adult"), [profiles]);
   const updateAccount = useUpdateAccount();
+
   const [groupJoint, setGroupJoint] = useState(true);
   const [groupBy, setGroupBy] = useState<"owner" | "region">("owner");
+  const [expandedBuckets, setExpandedBuckets] = useState<Set<string>>(new Set());
+  const [selectedId, setSelectedId] = useState<string | null>(null);
 
-  // DB pension projections keyed by account_id — same as WealthPage
+  const toggleBucket = useCallback((id: string) => {
+    setExpandedBuckets((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }, []);
+
   const dbProjections = useMemo(() => {
     const map: Record<string, { pension: DBPension; projected: number }> = {};
     dbPensions.forEach((p) => {
@@ -256,7 +266,7 @@ export default function WealthMapPage() {
     return map;
   }, [dbPensions]);
 
-  const { initialNodes, initialEdges, netWorth } = useMemo(() => {
+  const { initialNodes, initialEdges, netWorth, totalAccounts } = useMemo(() => {
     const nodes: Node[] = [];
     const edges: Edge[] = [];
 
@@ -275,10 +285,11 @@ export default function WealthMapPage() {
       data: {
         kind: "root",
         label: "Household",
-        sublabel: `${formatCurrency(nw, true)} net worth`,
+        amount: formatCurrency(nw, true),
+        amountSuffix: "net worth",
         count: accounts.length,
         icon: Users,
-        color: "hsl(var(--primary))",
+        color: "hsl(217 91% 60%)",
       } satisfies NodeMeta as unknown as Record<string, unknown>,
     });
 
@@ -316,7 +327,7 @@ export default function WealthMapPage() {
       groupList = memberList.map((m) => ({
         id: m.id,
         name: m.name,
-        color: m.isJoint ? "#4F8CFF" : "hsl(var(--primary))",
+        color: m.isJoint ? "#4F8CFF" : "hsl(217 91% 60%)",
         icon: m.isJoint ? UsersRound : User,
         isJoint: m.isJoint,
         filter: (a: Account) => {
@@ -343,7 +354,8 @@ export default function WealthMapPage() {
         data: {
           kind: "member",
           label: g.name,
-          sublabel: `${formatCurrency(memberNet, true)} net`,
+          amount: formatCurrency(memberNet, true),
+          amountSuffix: "net",
           count: memberAccounts.length,
           icon: g.icon,
           color: g.color,
@@ -351,7 +363,7 @@ export default function WealthMapPage() {
           isNegative: memberNet < 0,
         } satisfies NodeMeta as unknown as Record<string, unknown>,
       });
-      edges.push({ id: `e:root-${memberNodeId}`, source: "root", target: memberNodeId, type: "smoothstep" });
+      edges.push({ id: `e:root-${memberNodeId}`, source: "root", target: memberNodeId });
 
       BUCKETS.forEach((bucket) => {
         const bucketAccounts = memberAccounts.filter((a) => toBucket(a.account_type) === bucket.key);
@@ -362,6 +374,7 @@ export default function WealthMapPage() {
           0,
         );
         const bucketNodeId = `bucket:${g.id}:${bucket.key}`;
+        const isExpanded = expandedBuckets.has(bucketNodeId);
 
         nodes.push({
           id: bucketNodeId,
@@ -370,25 +383,30 @@ export default function WealthMapPage() {
           data: {
             kind: "bucket",
             label: bucket.label,
-            sublabel: formatWithSuffix(bucket.key, bucketTotal),
+            amount: formatCurrency(bucketTotal, true),
+            amountSuffix: bucket.key === "guaranteed" ? "/yr" : undefined,
             count: bucketAccounts.length,
             icon: bucket.icon,
             color: BUCKET_COLOR[bucket.key],
             bucket: bucket.key,
             isNegative: bucketTotal < 0,
+            expandable: true,
+            expanded: isExpanded,
+            onToggle: () => toggleBucket(bucketNodeId),
           } satisfies NodeMeta as unknown as Record<string, unknown>,
         });
         edges.push({
           id: `e:${memberNodeId}-${bucketNodeId}`,
           source: memberNodeId,
           target: bucketNodeId,
-          type: "smoothstep",
         });
+
+        if (!isExpanded) return;
 
         bucketAccounts.forEach((a) => {
           const acctNodeId = `acct:${g.id}:${a.id}`;
           const displayVal = accountDisplayValue(a, dbProjections[a.id]?.projected);
-          const suffix = a.account_type === "db_pension" ? "/yr projected" : "";
+          const suffix = a.account_type === "db_pension" ? "/yr" : undefined;
 
           nodes.push({
             id: acctNodeId,
@@ -397,7 +415,8 @@ export default function WealthMapPage() {
             data: {
               kind: "account",
               label: a.name,
-              sublabel: `${formatCurrency(displayVal, true)}${suffix ? ` ${suffix}` : ""}`,
+              amount: formatCurrency(displayVal, true),
+              amountSuffix: suffix,
               icon: ACCOUNT_ICON[a.account_type] ?? Wallet,
               color: BUCKET_COLOR[bucket.key],
               accountId: a.id,
@@ -410,7 +429,6 @@ export default function WealthMapPage() {
             id: `e:${bucketNodeId}-${acctNodeId}`,
             source: bucketNodeId,
             target: acctNodeId,
-            type: "smoothstep",
           });
         });
       });
@@ -419,28 +437,27 @@ export default function WealthMapPage() {
     const laid = layout(nodes, edges);
     const styledEdges: Edge[] = edges.map((e) => ({
       ...e,
+      type: "smoothstep",
       animated: false,
-      style: { stroke: "hsl(215 20% 30%)", strokeWidth: 1.25 },
+      style: { stroke: "hsl(var(--border))", strokeWidth: 1.5 },
     }));
 
-    return { initialNodes: laid, initialEdges: styledEdges, netWorth: nw };
-  }, [accounts, adults, dbProjections, groupJoint, groupBy]);
+    return { initialNodes: laid, initialEdges: styledEdges, netWorth: nw, totalAccounts: accounts.length };
+  }, [accounts, adults, dbProjections, groupJoint, groupBy, expandedBuckets, toggleBucket]);
 
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const [draggingAccount, setDraggingAccount] = useState<Account | null>(null);
   const flowRef = useRef<ReactFlowInstance | null>(null);
-
   const wrapperRef = useRef<HTMLDivElement | null>(null);
 
   const fitToView = useCallback((duration = 200) => {
-    flowRef.current?.fitView({ padding: 0.12, duration, maxZoom: 1 });
+    flowRef.current?.fitView({ padding: 0.15, duration, maxZoom: 1 });
   }, []);
 
   const onInit = useCallback(
     (instance: ReactFlowInstance) => {
       flowRef.current = instance;
-      // Defer so the container has measured
       requestAnimationFrame(() => fitToView(0));
     },
     [fitToView],
@@ -449,11 +466,10 @@ export default function WealthMapPage() {
   useEffect(() => {
     setNodes(initialNodes);
     setEdges(initialEdges);
-    const timer = setTimeout(() => fitToView(250), 60);
-    return () => clearTimeout(timer);
+    const t = setTimeout(() => fitToView(250), 60);
+    return () => clearTimeout(t);
   }, [initialNodes, initialEdges, setNodes, setEdges, fitToView]);
 
-  // Keep the graph aligned inside its container on resize (window + element)
   useEffect(() => {
     const el = wrapperRef.current;
     if (!el) return;
@@ -489,7 +505,6 @@ export default function WealthMapPage() {
         setDraggingAccount(null);
         return;
       }
-
       const point = "touches" in event ? event.changedTouches[0] : event;
       const el = document.elementFromPoint(point.clientX, point.clientY);
       const targetEl = el?.closest("[data-id]") as HTMLElement | null;
@@ -530,19 +545,37 @@ export default function WealthMapPage() {
     [adults, draggingAccount, nodes, initialNodes, setNodes, updateAccount],
   );
 
+  const expandAll = () => {
+    const ids = new Set<string>();
+    initialNodes.forEach((n) => {
+      const m = n.data as unknown as NodeMeta;
+      if (m.kind === "bucket") ids.add(n.id);
+    });
+    setExpandedBuckets(ids);
+  };
+  const collapseAll = () => setExpandedBuckets(new Set());
+
+  const selectedNode = selectedId ? nodes.find((n) => n.id === selectedId) : null;
+  const selectedMeta = selectedNode ? (selectedNode.data as unknown as NodeMeta) : null;
+  const selectedAccount =
+    selectedMeta?.kind === "account" && selectedMeta.accountId
+      ? accounts.find((a) => a.id === selectedMeta.accountId)
+      : null;
+
   return (
     <div className="flex h-[calc(100vh-4rem)] flex-col gap-4">
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+      {/* Header */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight text-foreground">Wealth map</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Household → {groupBy === "region" ? "region" : "owner"} → asset type → account.
-            {groupBy === "owner" && " Drag an account onto a member to reassign ownership."}
+            {totalAccounts} accounts · {formatCurrency(netWorth, true)} net worth ·{" "}
+            {groupBy === "region" ? "grouped by geography" : "grouped by owner"}
           </p>
         </div>
-        <div className="flex flex-wrap items-center gap-2 text-[11px]">
-          {/* Group-by selector */}
-          <div className="flex items-center gap-0.5 rounded-full border border-border/60 bg-card p-0.5">
+
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="flex items-center gap-0.5 rounded-full border border-border/60 bg-card p-0.5 text-[12px]">
             {([
               { key: "owner", label: "Owner", icon: User },
               { key: "region", label: "Geography", icon: Globe2 },
@@ -554,52 +587,55 @@ export default function WealthMapPage() {
                   key={opt.key}
                   type="button"
                   onClick={() => setGroupBy(opt.key)}
-                  className={`flex items-center gap-1.5 rounded-full px-2.5 py-1 transition-colors ${
-                    active
-                      ? "bg-primary/10 text-primary"
-                      : "text-muted-foreground hover:text-foreground"
+                  className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 transition-colors ${
+                    active ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground"
                   }`}
                   aria-pressed={active}
                 >
-                  <Icon className="h-3 w-3" strokeWidth={2.25} />
+                  <Icon className="h-3.5 w-3.5" strokeWidth={2.25} />
                   <span className="font-medium">{opt.label}</span>
                 </button>
               );
             })}
           </div>
 
-          <button
-            type="button"
-            onClick={() => setGroupJoint((v) => !v)}
-            disabled={groupBy !== "owner"}
-            className={`flex items-center gap-1.5 rounded-full border px-2.5 py-1 transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${
-              groupJoint && groupBy === "owner"
-                ? "border-primary/40 bg-primary/10 text-primary"
-                : "border-border/60 bg-card text-muted-foreground hover:bg-secondary"
-            }`}
-            aria-pressed={groupJoint}
-            title="Group joint assets under a single Joint node"
-          >
-            <UsersRound className="h-3 w-3" strokeWidth={2.25} />
-            <span className="font-medium">Group joint assets</span>
-          </button>
-          {BUCKETS.map((b) => {
-            const Icon = b.icon;
-            const color = BUCKET_COLOR[b.key];
-            return (
-              <span
-                key={b.key}
-                className="flex items-center gap-1.5 rounded-full border border-border/60 bg-card px-2.5 py-1 text-muted-foreground"
-                style={{ borderColor: `${color}33` }}
-              >
-                <Icon className="h-3 w-3" strokeWidth={2.25} style={{ color }} />
-                <span className="text-foreground/80">{b.label}</span>
-              </span>
-            );
-          })}
+          {groupBy === "owner" && adults.length > 1 && (
+            <button
+              type="button"
+              onClick={() => setGroupJoint((v) => !v)}
+              className={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[12px] transition-colors ${
+                groupJoint
+                  ? "border-primary/40 bg-primary/10 text-primary"
+                  : "border-border/60 bg-card text-muted-foreground hover:bg-secondary"
+              }`}
+              aria-pressed={groupJoint}
+              title="Group joint assets under a single Joint node"
+            >
+              <UsersRound className="h-3.5 w-3.5" strokeWidth={2.25} />
+              <span className="font-medium">Joint</span>
+            </button>
+          )}
+
+          <div className="flex items-center gap-0.5 rounded-full border border-border/60 bg-card p-0.5 text-[12px]">
+            <button
+              type="button"
+              onClick={expandAll}
+              className="rounded-full px-3 py-1.5 font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+            >
+              Expand all
+            </button>
+            <button
+              type="button"
+              onClick={collapseAll}
+              className="rounded-full px-3 py-1.5 font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+            >
+              Collapse
+            </button>
+          </div>
         </div>
       </div>
 
+      {/* Canvas */}
       <div ref={wrapperRef} className="card-surface relative flex-1 overflow-hidden !p-0">
         <ReactFlow
           nodes={nodes}
@@ -608,10 +644,12 @@ export default function WealthMapPage() {
           onEdgesChange={onEdgesChange}
           onNodeDragStart={onNodeDragStart}
           onNodeDragStop={onNodeDragStop}
+          onNodeClick={(_e, n) => setSelectedId(n.id)}
+          onPaneClick={() => setSelectedId(null)}
           onInit={onInit}
           nodeTypes={nodeTypes}
           fitView
-          fitViewOptions={{ padding: 0.12, maxZoom: 1 }}
+          fitViewOptions={{ padding: 0.15, maxZoom: 1 }}
           proOptions={{ hideAttribution: true }}
           minZoom={0.3}
           maxZoom={2}
@@ -622,9 +660,29 @@ export default function WealthMapPage() {
           zoomOnDoubleClick={false}
           nodesDraggable
           selectionOnDrag={false}
+          defaultEdgeOptions={{ type: "smoothstep" }}
         >
-          <Background color="hsl(var(--border))" gap={24} size={1} />
+          <Background color="hsl(var(--border))" gap={28} size={1} />
 
+          {/* Legend — top-left, subtle */}
+          <Panel position="top-left" className="!m-4">
+            <div className="flex flex-wrap items-center gap-1.5 rounded-full border border-border/60 bg-card/95 px-2 py-1.5 shadow-sm backdrop-blur">
+              {BUCKETS.map((b) => (
+                <span
+                  key={b.key}
+                  className="flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[11px] text-foreground/80"
+                >
+                  <span
+                    className="h-2 w-2 rounded-full"
+                    style={{ backgroundColor: BUCKET_COLOR[b.key] }}
+                  />
+                  {b.label}
+                </span>
+              ))}
+            </div>
+          </Panel>
+
+          {/* Overview + zoom controls — bottom-right */}
           <Panel position="bottom-right" className="!m-4 !mb-6">
             <div className="flex flex-col items-end gap-2">
               <div className="overflow-hidden rounded-2xl border border-border/60 bg-card/95 shadow-lg backdrop-blur">
@@ -632,9 +690,7 @@ export default function WealthMapPage() {
                   <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
                     Overview
                   </span>
-                  <span className="text-[10px] tabular-nums text-muted-foreground">
-                    {nodes.length} nodes
-                  </span>
+                  <span className="text-[10px] tabular-nums text-muted-foreground">{nodes.length} nodes</span>
                 </div>
                 <MiniMap
                   className="!m-0 !bg-transparent"
@@ -642,7 +698,7 @@ export default function WealthMapPage() {
                   maskColor="hsl(var(--background) / 0.75)"
                   nodeColor={(n) => {
                     const c = (n.data as unknown as NodeMeta | undefined)?.color;
-                    return c && c.startsWith("#") ? c : "hsl(var(--secondary))";
+                    return c && c.startsWith("#") ? c : "hsl(var(--primary))";
                   }}
                   nodeStrokeColor="hsl(var(--border))"
                   nodeBorderRadius={4}
@@ -656,7 +712,6 @@ export default function WealthMapPage() {
                   type="button"
                   onClick={() => flowRef.current?.zoomOut({ duration: 200 })}
                   className="flex h-7 w-7 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
-                  title="Zoom out"
                   aria-label="Zoom out"
                 >
                   <Minus className="h-3.5 w-3.5" />
@@ -664,8 +719,7 @@ export default function WealthMapPage() {
                 <button
                   type="button"
                   onClick={() => fitToView(250)}
-                  className="flex h-7 items-center justify-center gap-1 rounded-full px-2 text-[11px] font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
-                  title="Fit to view"
+                  className="flex h-7 items-center gap-1 rounded-full px-2 text-[11px] font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
                 >
                   <Maximize2 className="h-3.5 w-3.5" />
                   <span>Fit</span>
@@ -674,7 +728,6 @@ export default function WealthMapPage() {
                   type="button"
                   onClick={() => flowRef.current?.zoomIn({ duration: 200 })}
                   className="flex h-7 w-7 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
-                  title="Zoom in"
                   aria-label="Zoom in"
                 >
                   <Plus className="h-3.5 w-3.5" />
@@ -683,11 +736,10 @@ export default function WealthMapPage() {
                 <button
                   type="button"
                   onClick={() => {
-                    setNodes(initialNodes);
+                    setExpandedBuckets(new Set());
                     setTimeout(() => fitToView(250), 40);
                   }}
-                  className="flex h-7 items-center justify-center gap-1 rounded-full px-2 text-[11px] font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
-                  title="Reset layout"
+                  className="flex h-7 items-center gap-1 rounded-full px-2 text-[11px] font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
                 >
                   <RotateCcw className="h-3.5 w-3.5" />
                   <span>Reset</span>
@@ -697,16 +749,118 @@ export default function WealthMapPage() {
           </Panel>
         </ReactFlow>
 
-        <div className="pointer-events-none absolute left-6 top-6 rounded-2xl border border-border/60 bg-card/90 px-4 py-2 text-xs text-muted-foreground shadow-sm backdrop-blur">
-          <span>Net worth</span>{" "}
-          <span className="font-semibold text-foreground tabular-nums">{formatCurrency(netWorth, true)}</span>
-        </div>
-
         {draggingAccount && (
           <div className="pointer-events-none absolute left-1/2 top-6 -translate-x-1/2 rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground shadow-lg">
             Drop on a member to reassign {draggingAccount.name}
           </div>
         )}
+
+        {/* Slide-in detail panel */}
+        <AnimatePresence>
+          {selectedMeta && (
+            <motion.aside
+              key={selectedId}
+              initial={{ x: 24, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              exit={{ x: 24, opacity: 0 }}
+              transition={{ duration: 0.18, ease: "easeOut" }}
+              className="absolute right-4 top-4 z-20 w-[280px] overflow-hidden rounded-2xl border border-border/60 bg-card/95 shadow-xl backdrop-blur"
+            >
+              <div className="flex items-start justify-between gap-2 px-4 pt-4">
+                <div className="flex items-center gap-3">
+                  <span
+                    className="flex h-9 w-9 items-center justify-center rounded-full text-white"
+                    style={{ backgroundColor: selectedMeta.color }}
+                  >
+                    <selectedMeta.icon className="h-4 w-4" strokeWidth={2.4} />
+                  </span>
+                  <div className="min-w-0">
+                    <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                      {selectedMeta.kind === "root"
+                        ? "Household"
+                        : selectedMeta.kind === "member"
+                          ? "Member"
+                          : selectedMeta.kind === "bucket"
+                            ? "Bucket"
+                            : "Account"}
+                    </p>
+                    <p className="truncate text-sm font-semibold text-foreground">{selectedMeta.label}</p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setSelectedId(null)}
+                  className="flex h-7 w-7 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+                  aria-label="Close details"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              </div>
+
+              <div className="mt-3 space-y-2 px-4 pb-4">
+                <div className="rounded-xl bg-secondary/50 px-3 py-2">
+                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                    {selectedMeta.kind === "account" && selectedAccount?.account_type === "db_pension"
+                      ? "Projected income"
+                      : selectedMeta.kind === "bucket" && selectedMeta.bucket === "guaranteed"
+                        ? "Estimated income"
+                        : "Value"}
+                  </p>
+                  <p
+                    className={`mt-0.5 text-lg font-semibold tabular-nums ${
+                      selectedMeta.isNegative ? "text-destructive" : "text-foreground"
+                    }`}
+                  >
+                    {selectedMeta.amount}
+                    {selectedMeta.amountSuffix && (
+                      <span className="ml-1 text-[11px] font-medium text-muted-foreground">
+                        {selectedMeta.amountSuffix}
+                      </span>
+                    )}
+                  </p>
+                </div>
+
+                {typeof selectedMeta.count === "number" && selectedMeta.count > 0 && (
+                  <div className="flex items-center justify-between rounded-xl bg-secondary/50 px-3 py-2 text-[12px]">
+                    <span className="text-muted-foreground">Accounts</span>
+                    <span className="font-semibold text-foreground tabular-nums">{selectedMeta.count}</span>
+                  </div>
+                )}
+
+                {selectedAccount && (
+                  <>
+                    <div className="flex items-center justify-between rounded-xl bg-secondary/50 px-3 py-2 text-[12px]">
+                      <span className="text-muted-foreground">Owner</span>
+                      <span className="truncate font-medium text-foreground">
+                        {selectedAccount.owner_name || "Unassigned"}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between rounded-xl bg-secondary/50 px-3 py-2 text-[12px]">
+                      <span className="text-muted-foreground">Type</span>
+                      <span className="font-medium text-foreground">
+                        {selectedAccount.account_type.replace(/_/g, " ")}
+                      </span>
+                    </div>
+                  </>
+                )}
+
+                {selectedMeta.kind === "bucket" && (
+                  <button
+                    type="button"
+                    onClick={() => selectedId && toggleBucket(selectedId)}
+                    className="mt-1 flex w-full items-center justify-center gap-1 rounded-xl bg-primary/10 px-3 py-2 text-[12px] font-semibold text-primary transition-colors hover:bg-primary/15"
+                  >
+                    {selectedMeta.expanded ? "Hide accounts" : "Show accounts"}
+                    <ChevronRight
+                      className={`h-3.5 w-3.5 transition-transform ${selectedMeta.expanded ? "rotate-90" : ""}`}
+                      strokeWidth={2.5}
+                    />
+                  </button>
+                )}
+              </div>
+            </motion.aside>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );
