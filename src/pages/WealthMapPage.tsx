@@ -664,28 +664,30 @@ export default function WealthMapPage() {
         >
           <Background color="hsl(var(--border))" gap={28} size={1} />
 
-          {/* Legend — top-left, subtle */}
-          <Panel position="top-left" className="!m-4">
-            <div className="flex flex-wrap items-center gap-1.5 rounded-full border border-border/60 bg-card/95 px-2 py-1.5 shadow-sm backdrop-blur">
+          {/* Legend — top-left, subtle. Compact (dots only) on mobile */}
+          <Panel position="top-left" className="!m-3 sm:!m-4">
+            <div className="flex flex-wrap items-center gap-1 rounded-full border border-border/60 bg-card/95 px-2 py-1.5 shadow-sm backdrop-blur sm:gap-1.5">
               {BUCKETS.map((b) => (
                 <span
                   key={b.key}
-                  className="flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[11px] text-foreground/80"
+                  className="flex items-center gap-1.5 rounded-full px-1.5 py-0.5 text-[11px] text-foreground/80 sm:px-2"
+                  title={b.label}
                 >
                   <span
                     className="h-2 w-2 rounded-full"
                     style={{ backgroundColor: BUCKET_COLOR[b.key] }}
                   />
-                  {b.label}
+                  <span className="hidden sm:inline">{b.label}</span>
                 </span>
               ))}
             </div>
           </Panel>
 
           {/* Overview + zoom controls — bottom-right */}
-          <Panel position="bottom-right" className="!m-4 !mb-6">
+          <Panel position="bottom-right" className="!m-3 !mb-4 sm:!m-4 sm:!mb-6">
             <div className="flex flex-col items-end gap-2">
-              <div className="overflow-hidden rounded-2xl border border-border/60 bg-card/95 shadow-lg backdrop-blur">
+              {/* MiniMap hidden on mobile — cramped and low-value at that size */}
+              <div className="hidden overflow-hidden rounded-2xl border border-border/60 bg-card/95 shadow-lg backdrop-blur sm:block">
                 <div className="flex items-center justify-between border-b border-border/60 px-3 py-1.5">
                   <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
                     Overview
@@ -764,7 +766,7 @@ export default function WealthMapPage() {
               animate={{ x: 0, opacity: 1 }}
               exit={{ x: 24, opacity: 0 }}
               transition={{ duration: 0.18, ease: "easeOut" }}
-              className="absolute right-4 top-4 z-20 w-[280px] overflow-hidden rounded-2xl border border-border/60 bg-card/95 shadow-xl backdrop-blur"
+              className="absolute inset-x-3 top-3 z-20 max-h-[calc(100%-1.5rem)] overflow-y-auto rounded-2xl border border-border/60 bg-card/95 shadow-xl backdrop-blur sm:inset-x-auto sm:right-4 sm:top-4 sm:w-[280px]"
             >
               <div className="flex items-start justify-between gap-2 px-4 pt-4">
                 <div className="flex items-center gap-3">
