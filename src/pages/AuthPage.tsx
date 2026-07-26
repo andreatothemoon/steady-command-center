@@ -23,6 +23,30 @@ export default function AuthPage() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+  const [magicLoading, setMagicLoading] = useState(false);
+
+  const handleMagicLink = async () => {
+    if (!email) {
+      toast({ title: "Email required", description: "Enter your email to receive a magic link.", variant: "destructive" });
+      return;
+    }
+    setMagicLoading(true);
+    try {
+      const { error } = await supabase.auth.signInWithOtp({
+        email,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
+          shouldCreateUser: false,
+        },
+      });
+      if (error) throw error;
+      toast({ title: "Check your email", description: `We sent a magic link to ${email}.` });
+    } catch (error: any) {
+      toast({ title: "Magic link failed", description: error.message, variant: "destructive" });
+    } finally {
+      setMagicLoading(false);
+    }
+  };
   const { toast } = useToast();
 
   const { data: invite } = useInvitationByToken(inviteToken);
@@ -304,6 +328,15 @@ export default function AuthPage() {
             <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
           </svg>
           {googleLoading ? "Connecting..." : "Continue with Google"}
+        </Button>
+
+        <Button
+          variant="ghost"
+          className="w-full"
+          onClick={handleMagicLink}
+          disabled={magicLoading || !email}
+        >
+          {magicLoading ? "Sending link..." : "Email me a magic link"}
         </Button>
 
         <p className="text-center text-sm text-muted-foreground">
