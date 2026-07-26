@@ -6,6 +6,7 @@ import {
   LineChart,
   Wallet,
   Network,
+  CalendarDays,
   Zap,
   Receipt,
   User,
@@ -27,6 +28,7 @@ const navItems = [
   { to: "/retirement", label: "Retirement", icon: LineChart },
   { to: "/wealth", label: "Assets", icon: Wallet },
   { to: "/wealth-map", label: "Wealth map", icon: Network },
+  { to: "/life-events", label: "Life events", icon: CalendarDays },
   { to: "/actions", label: "Actions", icon: Zap },
   { to: "/tax", label: "Tax", icon: Receipt },
 ];
