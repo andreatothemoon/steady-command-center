@@ -684,9 +684,10 @@ export default function WealthMapPage() {
           </Panel>
 
           {/* Overview + zoom controls — bottom-right */}
-          <Panel position="bottom-right" className="!m-4 !mb-6">
+          <Panel position="bottom-right" className="!m-3 !mb-4 sm:!m-4 sm:!mb-6">
             <div className="flex flex-col items-end gap-2">
-              <div className="overflow-hidden rounded-2xl border border-border/60 bg-card/95 shadow-lg backdrop-blur">
+              {/* MiniMap hidden on mobile — cramped and low-value at that size */}
+              <div className="hidden overflow-hidden rounded-2xl border border-border/60 bg-card/95 shadow-lg backdrop-blur sm:block">
                 <div className="flex items-center justify-between border-b border-border/60 px-3 py-1.5">
                   <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
                     Overview
