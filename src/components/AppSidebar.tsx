@@ -6,6 +6,7 @@ import {
   LineChart,
   Wallet,
   Network,
+  CalendarDays,
   Zap,
   Receipt,
   User,
