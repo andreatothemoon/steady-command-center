@@ -189,60 +189,103 @@ export default function WealthProjectionTile({
 
       {/* Chart */}
       <div className="mt-5 flex-1">
-        <div className="relative h-[240px] w-full">
-          <div className="absolute inset-x-0 bottom-6 top-0 flex items-stretch gap-1.5 sm:gap-2">
-            {allBars.map((bar, idx) => {
-              const heightPct = (bar.total / maxTotal) * 100;
-              return (
-                <div key={idx} className="flex flex-1 flex-col items-center justify-end">
+        {(() => {
+          const Y_TICKS = 4;
+          const ticks = Array.from({ length: Y_TICKS + 1 }, (_, i) => (maxTotal * (Y_TICKS - i)) / Y_TICKS);
+          const AXIS_W = 44;
+          return (
+            <div className="relative h-full min-h-[340px] w-full">
+              {/* Y-axis labels + gridlines */}
+              <div className="absolute inset-y-0 left-0 bottom-6 top-2" style={{ width: AXIS_W }}>
+                {ticks.map((t, i) => (
                   <div
-                    className="relative flex w-full max-w-[46px] flex-col-reverse overflow-hidden rounded-t-md"
-                    style={{ height: `${heightPct}%` }}
-                    title={`${bar.label}: ${formatCurrency(bar.total, true)}`}
+                    key={i}
+                    className="absolute right-2 -translate-y-1/2 text-[10px] tabular-nums text-muted-foreground"
+                    style={{ top: `${(i / Y_TICKS) * 100}%` }}
                   >
-                    {bar.stacks.map((s, i) => {
-                      const segPct = bar.total > 0 ? (s.value / bar.total) * 100 : 0;
-                      if (segPct <= 0) return null;
-                      return (
-                        <div
-                          key={s.key + i}
-                          style={{ height: `${segPct}%`, backgroundColor: s.color }}
-                          className={cn(
-                            "w-full",
-                            bar.isPresent && "opacity-90",
-                          )}
-                        />
-                      );
-                    })}
+                    {formatCurrency(t, true)}
                   </div>
-                </div>
-              );
-            })}
-          </div>
-          {/* Axis labels */}
-          <div className="absolute inset-x-0 bottom-0 flex gap-1.5 sm:gap-2">
-            {allBars.map((bar, idx) => (
-              <div
-                key={idx}
-                className={cn(
-                  "flex flex-1 items-center justify-center text-[10px] tabular-nums",
-                  bar.isPresent ? "font-semibold text-foreground" : "text-muted-foreground",
-                )}
-              >
-                {bar.label}
+                ))}
               </div>
-            ))}
-          </div>
-          {/* Divider line between history and projection */}
-          {historic.length > 0 && (
-            <div
-              className="pointer-events-none absolute bottom-6 top-0 w-px border-l border-dashed border-border/70"
-              style={{
-                left: `calc(${((historic.length + 0.5) / allBars.length) * 100}% - 0.5px)`,
-              }}
-            />
-          )}
-        </div>
+              <div className="absolute bottom-6 top-2 right-0" style={{ left: AXIS_W }}>
+                {ticks.map((_, i) => (
+                  <div
+                    key={i}
+                    className="absolute inset-x-0 border-t border-dashed border-border/40"
+                    style={{ top: `${(i / Y_TICKS) * 100}%` }}
+                  />
+                ))}
+              </div>
+
+              {/* Bars */}
+              <div
+                className="absolute bottom-6 top-2 right-0 flex items-stretch gap-1.5 sm:gap-2"
+                style={{ left: AXIS_W }}
+              >
+                {allBars.map((bar, idx) => {
+                  const heightPct = (bar.total / maxTotal) * 100;
+                  return (
+                    <div key={idx} className="flex flex-1 flex-col items-center justify-end">
+                      <div
+                        className="relative flex w-full flex-col-reverse overflow-hidden rounded-t-md"
+                        style={{ height: `${heightPct}%` }}
+                        title={`${bar.label}: ${formatCurrency(bar.total, true)}`}
+                      >
+                        {bar.stacks.map((s, i) => {
+                          const segPct = bar.total > 0 ? (s.value / bar.total) * 100 : 0;
+                          if (segPct <= 0) return null;
+                          return (
+                            <div
+                              key={s.key + i}
+                              style={{ height: `${segPct}%`, backgroundColor: s.color }}
+                              className={cn("w-full", bar.isPresent && "opacity-90")}
+                            />
+                          );
+                        })}
+                        <span
+                          className={cn(
+                            "pointer-events-none absolute left-1/2 -top-4 -translate-x-1/2 whitespace-nowrap text-[10px] font-medium tabular-nums",
+                            bar.isPresent ? "text-foreground" : "text-muted-foreground",
+                          )}
+                        >
+                          {formatCurrency(bar.total, true)}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* X-axis labels */}
+              <div
+                className="absolute inset-x-0 bottom-0 flex gap-1.5 sm:gap-2"
+                style={{ left: AXIS_W }}
+              >
+                {allBars.map((bar, idx) => (
+                  <div
+                    key={idx}
+                    className={cn(
+                      "flex flex-1 items-center justify-center text-[10px] tabular-nums",
+                      bar.isPresent ? "font-semibold text-foreground" : "text-muted-foreground",
+                    )}
+                  >
+                    {bar.label}
+                  </div>
+                ))}
+              </div>
+
+              {/* Divider line between history and projection */}
+              {historic.length > 0 && (
+                <div
+                  className="pointer-events-none absolute bottom-6 top-2 w-px border-l border-dashed border-border/70"
+                  style={{
+                    left: `calc(${AXIS_W}px + ((${historic.length} + 0.5) / ${allBars.length}) * (100% - ${AXIS_W}px) - 0.5px)`,
+                  }}
+                />
+              )}
+            </div>
+          );
+        })()}
       </div>
 
       {/* Legend */}
