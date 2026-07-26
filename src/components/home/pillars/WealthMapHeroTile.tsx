@@ -168,10 +168,10 @@ export default function WealthMapHeroTile({ accounts, netWorth }: Props) {
         </div>
       </div>
 
-      {/* 3-column wide layout */}
-      <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-12 lg:gap-8">
+      {/* Responsive layout: 1-col on mobile, 2-col at md, 3-col at xl */}
+      <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-2 md:gap-8 xl:grid-cols-12">
         {/* Left: Hero number */}
-        <div className="lg:col-span-3 lg:border-r lg:border-border/60 lg:pr-6">
+        <div className="min-w-0 md:col-span-2 md:border-b md:border-border/60 md:pb-6 xl:col-span-3 xl:border-b-0 xl:border-r xl:pb-0 xl:pr-6">
           <p className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
             {focus === "all"
               ? "Total net worth"
@@ -179,7 +179,7 @@ export default function WealthMapHeroTile({ accounts, netWorth }: Props) {
                 ? "UK-based wealth"
                 : "International wealth"}
           </p>
-          <p className="mt-2 text-[2.5rem] font-semibold leading-none tracking-tight text-foreground tabular-nums md:text-[2.75rem]">
+          <p className="mt-2 text-[2.25rem] font-semibold leading-none tracking-tight text-foreground tabular-nums sm:text-[2.5rem] md:text-[2.75rem]">
             {formatCurrency(displayedTotal)}
           </p>
           {focus !== "all" && (
@@ -194,8 +194,8 @@ export default function WealthMapHeroTile({ accounts, netWorth }: Props) {
         </div>
 
         {/* Middle: Owner pie + legend */}
-        <div className="lg:col-span-5 lg:border-r lg:border-border/60 lg:pr-6">
-          <div className="mb-3 flex items-baseline justify-between">
+        <div className="min-w-0 md:col-span-1 md:border-r md:border-border/60 md:pr-6 xl:col-span-5">
+          <div className="mb-3 flex items-baseline justify-between gap-2">
             <p className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
               By owner
             </p>
@@ -208,8 +208,8 @@ export default function WealthMapHeroTile({ accounts, netWorth }: Props) {
               Add accounts to populate your wealth map.
             </div>
           ) : (
-            <div className="flex items-center gap-5">
-              <div className="h-[200px] w-[200px] flex-shrink-0">
+            <div className="flex flex-col items-center gap-5 sm:flex-row sm:items-center">
+              <div className="h-[160px] w-[160px] flex-shrink-0 sm:h-[180px] sm:w-[180px] xl:h-[200px] xl:w-[200px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
@@ -245,17 +245,20 @@ export default function WealthMapHeroTile({ accounts, netWorth }: Props) {
                   </PieChart>
                 </ResponsiveContainer>
               </div>
-              <ul className="flex flex-1 flex-col gap-2">
+              <ul className="flex w-full min-w-0 flex-1 flex-col gap-2">
                 {ownerCells.map((c) => (
-                  <li key={c.key} className="flex items-center justify-between gap-3 text-[13px]">
-                    <div className="flex items-center gap-2">
+                  <li
+                    key={c.key}
+                    className="flex flex-wrap items-center justify-between gap-x-3 gap-y-0.5 text-[13px]"
+                  >
+                    <div className="flex min-w-0 items-center gap-2">
                       <span
-                        className="h-2.5 w-2.5 rounded-full"
+                        className="h-2.5 w-2.5 flex-shrink-0 rounded-full"
                         style={{ backgroundColor: c.color }}
                       />
-                      <span className="text-foreground">{c.label}</span>
+                      <span className="truncate text-foreground">{c.label}</span>
                     </div>
-                    <div className="flex items-baseline gap-2">
+                    <div className="flex items-baseline gap-2 whitespace-nowrap">
                       <span className="text-foreground tabular-nums">
                         {formatCurrency(c.value, true)}
                       </span>
@@ -271,8 +274,8 @@ export default function WealthMapHeroTile({ accounts, netWorth }: Props) {
         </div>
 
         {/* Right: Geography */}
-        <div className="lg:col-span-4">
-          <div className="mb-3 flex items-baseline justify-between">
+        <div className="min-w-0 md:col-span-1 xl:col-span-4">
+          <div className="mb-3 flex items-baseline justify-between gap-2">
             <p className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
               By geography
             </p>
@@ -285,13 +288,13 @@ export default function WealthMapHeroTile({ accounts, netWorth }: Props) {
           ) : (
             <ul className="flex flex-col gap-3">
               {regionTotals.map((r) => (
-                <li key={r.region} className="flex flex-col gap-1.5">
-                  <div className="flex items-center justify-between text-[13px]">
-                    <div className="flex items-center gap-2">
+                <li key={r.region} className="flex min-w-0 flex-col gap-1.5">
+                  <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-0.5 text-[13px]">
+                    <div className="flex min-w-0 items-center gap-2">
                       <span className="text-base leading-none">{r.meta.flag}</span>
-                      <span className="text-foreground">{r.meta.label}</span>
+                      <span className="truncate text-foreground">{r.meta.label}</span>
                     </div>
-                    <div className="flex items-baseline gap-2">
+                    <div className="flex items-baseline gap-2 whitespace-nowrap">
                       <span className="text-foreground tabular-nums">
                         {formatCurrency(r.value, true)}
                       </span>
