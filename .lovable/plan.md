@@ -1,83 +1,52 @@
-# Regression Pack
+## Goal
 
-End-to-end Playwright suite that walks the app page by page as a dedicated seeded user. One command runs it; I run it automatically after any non-trivial feature change before I tell you I'm done.
+Persist life events in the database. Today the Plan page keeps them in memory only (`src/planning/store/PlanContext.tsx` + seed), so nothing survives a reload or syncs across household members. User data is already covered by `household_profiles`, and assets by `accounts` — the missing piece is **life events**.
 
-## Layout
+## Current state (verified)
 
-```text
-tests/regression/
-  README.md                  how to run, how to extend
-  playwright.config.ts       localhost:8080, chromium, 1 worker, video on failure
-  seed/
-    seed.ts                  idempotent: creates test user, household, members,
-                             accounts, DB pension, cash flows, snapshots
-    reset.ts                 wipes test-household data (keeps user)
-  fixtures/
-    auth.ts                  signs in once, reuses storageState for all tests
-    testUser.ts              reads REGRESSION_EMAIL / REGRESSION_PASSWORD
-  journeys/
-    01-auth.spec.ts          sign in, wrong password, sign out, pending-approval page
-    02-home.spec.ts          hero net worth, pillar tiles render, quick actions
-    03-assets.spec.ts        add / edit / snapshot / CSV import+export / delete account
-    04-retirement.spec.ts    scenarios list, projection chart, DB pension edit
-    05-plan.spec.ts          plan context save/load, milestones
-    06-tax.spec.ts           tax year summary, ANI calculation shows
-    07-actions.spec.ts       stale-account action opens, severity colours present
-    08-wealth-map.spec.ts    map nodes render, drag reassign
-    09-profile.spec.ts       profile edit, NI number gated to owner
-    10-household.spec.ts     invite create, invite accept flow (second browser context)
-    11-admin-approval.spec.ts  admin sees pending queue, approve/reject
-  smoke/
-    routes.spec.ts           every route mounts with no console error
-snapshots/                   reference screenshots per journey (gitignored artifacts)
-```
+- `households`, `household_members`, `household_profiles` — user/household data ✅
+- `accounts`, `cash_flows`, `db_pensions`, `holdings` — assets & flows ✅
+- Retirement scenarios persisted in `retirement_scenarios` ✅
+- Life events: **only in-memory** in `src/planning/store/PlanContext.tsx`, seeded from `src/planning/store/seed.ts`. No table exists.
 
-## Seeded test data
+The in-memory model (`PlanEvent` in `src/planning/types.ts`) has: title, type, date, probability, status, notes, scenarioId, optional decisionId, and a list of `FinancialEffect` rows (kind, amount, frequency, start/end year, label).
 
-Idempotent SQL migration + a Node seed script that hits the auth admin API through an edge function `seed-regression-user` (service-role only, gated behind `LOVABLE_ENV !== 'production'`).
+## Proposed schema
 
-Seeded fixture:
-- User: `regression@wealthos.test` / password from secret
-- Household "Regression Household", approved, role `user`
-- 3 members: Test Adult A (primary, owner), Test Adult B, Test Child
-- 5 accounts: current, ISA, SIPP, mortgage (debt), property
-- 1 DB pension with 3 accrual slices
-- 6 cash-flow entries across current + prior tax year
-- 2 monthly account snapshots
+Two new tables in `public`, scoped by household with RLS via existing `is_household_member` helper.
 
-Reset script clears account/pension/cashflow rows for that household so each run starts deterministic. The user itself is preserved to keep the login fast.
+### 1. `life_events`
+- `household_id` → `households(id)` on delete cascade
+- `scenario_id` uuid (nullable — nullable because current Plan scenarios live client-side; ties in later if we persist scenarios)
+- `profile_id` → `household_profiles(id)` nullable (optional: whose event)
+- `title` text
+- `event_type` text (enum-like: matches `EventType` union — home_purchase, child, retirement, etc.)
+- `event_date` date
+- `probability` numeric default 1.0 (0–1)
+- `status` text default 'planned' ('planned' | 'confirmed' | 'cancelled')
+- `notes` text nullable
+- `decision_id` uuid nullable (future link)
+- standard `created_at` / `updated_at` with trigger
 
-## Run modes
+### 2. `life_event_effects`
+- `event_id` → `life_events(id)` on delete cascade
+- `kind` text ('cash_delta' | 'recurring_income' | 'recurring_expense' | 'asset_delta' | 'liability_delta' | 'salary_delta' | 'pension_contribution_delta')
+- `amount` numeric (GBP, signed)
+- `frequency` text nullable ('monthly' | 'annual' | 'one_off')
+- `start_year` int
+- `end_year` int nullable
+- `label` text
+- timestamps
 
-- `bun run regression` — full suite, ~2–4 min. Prints pass/fail summary + failing screenshot paths.
-- `bun run regression:smoke` — routes-only smoke, ~15 s.
-- `bun run regression -- --grep assets` — filter to one journey.
-- **Auto-run policy**: after any feature change touching pages, data flow, RLS, or shared components, I run `bun run regression:smoke` before claiming done; I run the full pack when the change spans multiple journeys or backend.
+### RLS
+Household members can select/insert/update/delete their own household's events and effects (via `is_household_member(auth.uid(), household_id)` — effects check through parent event). Standard grants to `authenticated` + `service_role`. No anon.
 
-## Secrets
+## Not in this plan
 
-- `REGRESSION_EMAIL` — plain, added to `.env` template
-- `REGRESSION_PASSWORD` — stored via `add_secret`, also read from local `.env` for tests
-- Seed edge function uses existing `SUPABASE_SERVICE_ROLE_KEY`
+- Frontend wiring (hook `useLifeEvents`, replacing `PlanContext` seed with DB fetch, mutations from `TimelineEventEditor`) — I'll do that in a follow-up once you confirm the shape.
+- Migrating existing seed events into real rows.
+- Linking to `retirement_scenarios` (kept as free-text uuid for now to avoid coupling with the client-side Plan scenario store).
 
-## Guardrails
+## Deliverable
 
-- Suite refuses to run if `VITE_SUPABASE_URL` points at anything other than the dev project (checked in `playwright.config.ts` global setup).
-- Every test starts by calling `reset.ts` for the seeded household so ordering doesn't matter.
-- Console errors during any journey fail the test (listener attached in `fixtures/auth.ts`).
-- Google OAuth is not exercised end-to-end (broker is external); instead the auth journey asserts the button initiates `/~oauth/initiate` and the callback code path is covered by a mocked response.
-
-## Deliverables in this build
-
-1. Playwright config + fixtures + seed edge function + seed/reset scripts
-2. All 11 journey specs + smoke spec, each with 3–8 assertions
-3. `tests/regression/README.md` explaining run commands, adding new journeys, and the auto-run policy
-4. `package.json` scripts: `regression`, `regression:smoke`, `regression:seed`, `regression:reset`
-5. First green run captured, failing-test screenshot flow demonstrated
-
-## Out of scope
-
-- Visual/pixel diffing (can add later with `toHaveScreenshot`)
-- CI integration (no CI yet; can wire to GitHub Actions when you add one)
-- Load/perf testing
-- Real Google OAuth exchange (external broker)
+One migration creating both tables with grants, RLS, policies, and `updated_at` triggers. After you approve, I'll switch to build mode and run it.
