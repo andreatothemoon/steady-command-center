@@ -55,6 +55,7 @@ import {
   type LifeEventInput,
 } from "@/hooks/useLifeEvents";
 import { useHouseholdProfiles } from "@/hooks/useHouseholdProfiles";
+import SubNav from "@/components/SubNav";
 
 const EVENT_TYPES: { value: string; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
   { value: "home_purchase", label: "Home purchase", icon: Home },
