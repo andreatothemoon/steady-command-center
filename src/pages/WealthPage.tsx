@@ -79,11 +79,30 @@ export default function WealthPage() {
   const [importOpen, setImportOpen] = useState(false);
   const [confirmingId, setConfirmingId] = useState<string | null>(null);
   const [bulkConfirming, setBulkConfirming] = useState(false);
+  const queryClient = useQueryClient();
+
+  const writeSnapshots = async (items: Account[]) => {
+    const today = new Date().toISOString().slice(0, 10);
+    const rows = items
+      .filter((a) => a.current_value !== null && a.current_value !== undefined)
+      .map((a) => ({
+        account_id: a.id,
+        snapshot_date: today,
+        balance: Number(a.current_value),
+      }));
+    if (rows.length === 0) return;
+    const { error } = await supabase
+      .from("account_snapshots")
+      .upsert(rows, { onConflict: "account_id,snapshot_date" });
+    if (error) throw error;
+  };
 
   const handleConfirm = async (account: Account) => {
     setConfirmingId(account.id);
     try {
       await updateAccount.mutateAsync({ id: account.id, last_updated: new Date().toISOString() });
+      await writeSnapshots([account]);
+      await queryClient.invalidateQueries({ queryKey: ["net_worth_history"] });
       toast({ title: "Confirmed", description: `${account.name} marked as up to date.` });
     } catch (e: any) {
       toast({ title: "Failed to confirm", description: e?.message ?? "Try again", variant: "destructive" });
@@ -98,6 +117,8 @@ export default function WealthPage() {
     const now = new Date().toISOString();
     try {
       await Promise.all(accounts.map((a) => updateAccount.mutateAsync({ id: a.id, last_updated: now })));
+      await writeSnapshots(accounts);
+      await queryClient.invalidateQueries({ queryKey: ["net_worth_history"] });
       toast({ title: "All accounts confirmed", description: `${accounts.length} accounts marked as up to date.` });
     } catch (e: any) {
       toast({ title: "Some confirmations failed", description: e?.message ?? "Try again", variant: "destructive" });
