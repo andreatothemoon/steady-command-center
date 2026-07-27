@@ -592,6 +592,7 @@ export default function WealthMapPage() {
 
   return (
     <div className="flex h-[calc(100vh-4rem)] flex-col gap-4">
+      <SubNav items={[{ to: "/wealth", label: "Overview", end: true }, { to: "/wealth-map", label: "Wealth map" }]} />
       {/* Header */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
