@@ -13,6 +13,13 @@ import GoalsRail from "@/components/life-plan/GoalsRail";
 import DecisionsSection from "@/components/life-plan/DecisionsSection";
 import InsightsSection from "@/components/life-plan/InsightsSection";
 import FloatingImpactCard from "@/components/life-plan/FloatingImpactCard";
+import SubNav from "@/components/SubNav";
+
+const planSubNav = [
+  { to: "/plan", label: "Overview", end: true },
+  { to: "/retirement", label: "Retirement" },
+  { to: "/life-events", label: "Life events" },
+];
 
 export default function PlanPage() {
   return (
