@@ -60,6 +60,7 @@ import { splitOwnerNames } from "@/lib/accountOwners";
 import { accountRegion, REGION_META, type Region } from "@/lib/geography";
 import { formatCurrency } from "@/lib/format";
 import { toast } from "@/hooks/use-toast";
+import SubNav from "@/components/SubNav";
 
 /* ─── Buckets ─── */
 type Bucket = "guaranteed" | "growth" | "alternatives" | "safety" | "property";
