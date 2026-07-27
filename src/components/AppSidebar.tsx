@@ -7,7 +7,6 @@ import {
   Wallet,
   Network,
   CalendarDays,
-  Zap,
   Receipt,
   User,
   Shield,
@@ -26,7 +25,6 @@ const navItems = [
   { to: "/", label: "Home", icon: Home },
   { to: "/plan", label: "Plan", icon: Compass },
   { to: "/wealth", label: "Assets", icon: Wallet },
-  { to: "/actions", label: "Actions", icon: Zap },
   { to: "/tax", label: "Tax", icon: Receipt },
 ];
 
