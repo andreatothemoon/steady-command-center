@@ -21,14 +21,14 @@ const item = {
 // Palette aligned to project design tokens (index.css):
 // primary navy #091540, accent gold #efcb68, secondary mint, muted olive, success bronze.
 const chartColors = {
-  dc: "hsl(227 75% 14%)",        // primary navy — headline series
-  db: "hsl(44 81% 67%)",         // accent gold
-  state: "hsl(141 30% 82%)",     // secondary mint (slightly deeper for legibility)
-  isa: "hsl(153 6% 70%)",        // muted olive/grey
-  other: "hsl(34 64% 33%)",      // success/bronze
-  taxFreeCash: "hsl(227 75% 14%)",
-  grid: "hsl(227 75% 14% / 0.10)",
-  axis: "hsl(227 75% 14% / 0.45)",
+  dc: "#0A0A0A",        // primary navy — headline series
+  db: "#C69B3C",         // accent gold
+  state: "#BFC1C2",     // secondary mint (slightly deeper for legibility)
+  isa: "#EDECE7",        // muted olive/grey
+  other: "#36454F",      // success/bronze
+  taxFreeCash: "#0A0A0A",
+  grid: "rgba(10,10,10,0.10)",
+  axis: "rgba(10,10,10,0.45)",
 };
 
 interface Props {
@@ -174,13 +174,13 @@ export default function IncomeTimeline({ timeline, retireAge, targetIncome }: Pr
           <ReferenceLine x={retireAge} stroke={chartColors.dc} strokeDasharray="3 3" strokeWidth={2.25} />
           <ReferenceLine
             y={targetMonthly}
-            stroke="hsl(227 75% 14% / 0.32)"
+            stroke="rgba(10,10,10,0.32)"
             strokeDasharray="4 4"
             strokeWidth={1.5}
             label={{
               value: `Target ${formatCurrency(targetMonthly)}/mo`,
               position: "insideTopLeft",
-              fill: "hsl(227 75% 14% / 0.65)",
+              fill: "rgba(10,10,10,0.65)",
               fontSize: 12,
               fontWeight: 600,
             }}
