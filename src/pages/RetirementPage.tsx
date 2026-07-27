@@ -38,6 +38,7 @@ import IncomeTimeline from "@/components/retirement/IncomeTimeline";
 import IncomeSourceCards from "@/components/retirement/IncomeSourceCards";
 import ActionsPanel from "@/components/retirement/ActionsPanel";
 import QuickControls from "@/components/retirement/QuickControls";
+import SubNav from "@/components/SubNav";
 import ScenarioTabs, { type ScenarioMeta } from "@/components/retirement/ScenarioTabs";
 import ScenarioComparison from "@/components/retirement/ScenarioComparison";
 
@@ -423,6 +424,7 @@ export default function RetirementPage() {
 
   return (
     <motion.div className="space-y-8" variants={stagger.container} initial="initial" animate="animate">
+      <SubNav items={[{ to: "/plan", label: "Overview", end: true }, { to: "/retirement", label: "Retirement" }, { to: "/life-events", label: "Life events" }]} />
       <motion.div variants={stagger.item}>
         <h1 className="text-4xl font-semibold tracking-tight text-foreground">Retirement</h1>
         <p className="mt-2 text-muted-foreground">Compare scenarios, explore trade-offs, and tune the assumptions behind your retirement income.</p>

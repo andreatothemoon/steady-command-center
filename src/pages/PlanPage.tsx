@@ -13,6 +13,13 @@ import GoalsRail from "@/components/life-plan/GoalsRail";
 import DecisionsSection from "@/components/life-plan/DecisionsSection";
 import InsightsSection from "@/components/life-plan/InsightsSection";
 import FloatingImpactCard from "@/components/life-plan/FloatingImpactCard";
+import SubNav from "@/components/SubNav";
+
+const planSubNav = [
+  { to: "/plan", label: "Overview", end: true },
+  { to: "/retirement", label: "Retirement" },
+  { to: "/life-events", label: "Life events" },
+];
 
 export default function PlanPage() {
   return (
@@ -28,6 +35,7 @@ function PlanPageInner() {
 
   return (
     <div className="mx-auto flex max-w-6xl flex-col gap-12 px-4 py-8 md:px-6 md:py-10">
+      <SubNav items={planSubNav} />
       <PlanHero />
       <ScenarioSelector />
       <LifeTimeline

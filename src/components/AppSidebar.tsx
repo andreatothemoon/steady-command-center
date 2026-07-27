@@ -25,10 +25,7 @@ import { useState } from "react";
 const navItems = [
   { to: "/", label: "Home", icon: Home },
   { to: "/plan", label: "Plan", icon: Compass },
-  { to: "/retirement", label: "Retirement", icon: LineChart },
   { to: "/wealth", label: "Assets", icon: Wallet },
-  { to: "/wealth-map", label: "Wealth map", icon: Network },
-  { to: "/life-events", label: "Life events", icon: CalendarDays },
   { to: "/actions", label: "Actions", icon: Zap },
   { to: "/tax", label: "Tax", icon: Receipt },
 ];
@@ -65,7 +62,15 @@ function SidebarContent({ collapsed, toggle, onNavigate }: { collapsed: boolean;
 
       <nav className={cn("flex-1", collapsed ? "px-2 space-y-3" : "px-3 space-y-2")}>
         {navItems.map(({ to, label, icon: Icon }) => {
-          const isActive = to === "/" ? location.pathname === "/" : location.pathname === to || location.pathname.startsWith(`${to}/`);
+          const path = location.pathname;
+          const isActive =
+            to === "/"
+              ? path === "/"
+              : to === "/plan"
+                ? path === "/plan" || path.startsWith("/plan/") || path === "/retirement" || path.startsWith("/retirement/") || path === "/life-events" || path.startsWith("/life-events/")
+                : to === "/wealth"
+                  ? path === "/wealth" || path.startsWith("/wealth/") || path === "/wealth-map" || path.startsWith("/wealth-map/")
+                  : path === to || path.startsWith(`${to}/`);
           return (
             <NavLink
               key={to}
