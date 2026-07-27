@@ -2,6 +2,8 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 import type { Decision, Goal, PlanEvent, PlanState, Scenario, Projection, Recommendation } from "../types";
 import { seedPlanState } from "./seed";
 import { projectScenario, evaluateGoals, generateRecommendations } from "../engine";
+import { useLifeEvents } from "@/hooks/useLifeEvents";
+import { lifeEventToPlanEvent } from "./lifeEventMapper";
 
 const STORAGE_KEY = "wealthos.plan.v1";
 
@@ -50,9 +52,22 @@ export function PlanProvider({ children }: { children: ReactNode }) {
   const activeScenario =
     state.scenarios.find((s) => s.id === state.activeScenarioId) ?? state.scenarios[0];
 
+  const { data: lifeEventRows } = useLifeEvents();
+
+  const lifeEvents = useMemo(
+    () =>
+      (lifeEventRows ?? [])
+        .filter((r) => r.status !== "cancelled")
+        .map((r) => lifeEventToPlanEvent(r, activeScenario.id)),
+    [lifeEventRows, activeScenario.id],
+  );
+
   const scenarioEvents = useMemo(
-    () => state.events.filter((e) => activeScenario.eventIds.includes(e.id)),
-    [state.events, activeScenario]
+    () => [
+      ...state.events.filter((e) => activeScenario.eventIds.includes(e.id)),
+      ...lifeEvents,
+    ],
+    [state.events, activeScenario, lifeEvents]
   );
 
   const projection = useMemo(
