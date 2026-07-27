@@ -38,6 +38,7 @@ import IncomeTimeline from "@/components/retirement/IncomeTimeline";
 import IncomeSourceCards from "@/components/retirement/IncomeSourceCards";
 import ActionsPanel from "@/components/retirement/ActionsPanel";
 import QuickControls from "@/components/retirement/QuickControls";
+import SubNav from "@/components/SubNav";
 import ScenarioTabs, { type ScenarioMeta } from "@/components/retirement/ScenarioTabs";
 import ScenarioComparison from "@/components/retirement/ScenarioComparison";
 
