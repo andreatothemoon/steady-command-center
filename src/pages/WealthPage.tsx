@@ -13,6 +13,8 @@ import {
 } from "lucide-react";
 import { useAccounts, useUpdateAccount, type Account } from "@/hooks/useAccounts";
 import { useToast } from "@/hooks/use-toast";
+import { useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { useDBPensions, useUpsertDBPension } from "@/hooks/useDBPensions";
 import type { DBPension, DBPensionInput } from "@/hooks/useDBPensions";
 import { accountTypeLabels } from "@/data/types";
