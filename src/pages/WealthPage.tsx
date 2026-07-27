@@ -164,6 +164,7 @@ export default function WealthPage() {
 
   return (
     <motion.div className="space-y-8" variants={stagger.container} initial="initial" animate="animate">
+      <SubNav items={[{ to: "/wealth", label: "Overview", end: true }, { to: "/wealth-map", label: "Wealth map" }]} />
       <motion.section variants={stagger.item} className="flex flex-col gap-6">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <div>
