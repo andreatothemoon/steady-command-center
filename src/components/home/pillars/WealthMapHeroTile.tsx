@@ -29,7 +29,7 @@ interface Props {
   netWorth: number;
 }
 
-const OWNER_PALETTE = ["#091540", "#4F8CFF", "#895b1e", "#efcb68", "#22C55E", "#6b7280"];
+const OWNER_PALETTE = ["#0A0A0A", "#C69B3C", "#36454F", "#BFC1C2", "#8A6A2A", "#6b7280"];
 
 type OwnerCell = {
   key: string;
