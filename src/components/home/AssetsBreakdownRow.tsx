@@ -10,11 +10,11 @@ interface Props {
 }
 
 const CLASSES: { key: string; label: string; color: string; types: string[] }[] = [
-  { key: "cash", label: "Cash", color: "#aeb7b3", types: ["current_account", "savings", "cash_isa"] },
-  { key: "equities", label: "Equities", color: "#efcb68", types: ["stocks_and_shares_isa", "gia", "employer_share_scheme"] },
-  { key: "property", label: "Property", color: "#895b1e", types: ["property"] },
-  { key: "pension", label: "Pension", color: "#091540", types: ["sipp", "workplace_pension", "db_pension"] },
-  { key: "crypto", label: "Crypto", color: "#dcf763", types: ["crypto"] },
+  { key: "cash", label: "Cash", color: "#BFC1C2", types: ["current_account", "savings", "cash_isa"] },
+  { key: "equities", label: "Equities", color: "#C69B3C", types: ["stocks_and_shares_isa", "gia", "employer_share_scheme"] },
+  { key: "property", label: "Property", color: "#36454F", types: ["property"] },
+  { key: "pension", label: "Pension", color: "#0A0A0A", types: ["sipp", "workplace_pension", "db_pension"] },
+  { key: "crypto", label: "Crypto", color: "#8A6A2A", types: ["crypto"] },
 ];
 
 export default function AssetsBreakdownRow({ accounts }: Props) {
