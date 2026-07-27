@@ -35,6 +35,7 @@ function PlanPageInner() {
 
   return (
     <div className="mx-auto flex max-w-6xl flex-col gap-12 px-4 py-8 md:px-6 md:py-10">
+      <SubNav items={planSubNav} />
       <PlanHero />
       <ScenarioSelector />
       <LifeTimeline
