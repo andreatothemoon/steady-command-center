@@ -142,7 +142,7 @@ export default function NetWorthHero({ accounts, adultsCount, childrenCount }: P
                   </feMerge>
                 </filter>
               </defs>
-              <XAxis dataKey="month" tick={{ fontSize: 11, fill: "hsl(153 6% 42%)" }} tickLine={false} axisLine={false} />
+              <XAxis dataKey="month" tick={{ fontSize: 11, fill: "#36454F" }} tickLine={false} axisLine={false} />
               <YAxis hide domain={["dataMin - 5000", "dataMax + 5000"]} />
               <Tooltip
                 content={({ active, payload, label }) => {
@@ -156,9 +156,9 @@ export default function NetWorthHero({ accounts, adultsCount, childrenCount }: P
                   );
                 }}
               />
-              <Area type="monotone" dataKey="value" stroke="hsl(227 75% 14%)" strokeWidth={2.25} fill="hsl(44 81% 67% / 0.14)" animationDuration={1500} animationEasing="ease-out" />
+              <Area type="monotone" dataKey="value" stroke="#0A0A0A" strokeWidth={2.25} fill="rgba(198,155,60,0.14)" animationDuration={1500} animationEasing="ease-out" />
               {lastPoint && (
-                <ReferenceDot x={lastPoint.month} y={lastPoint.value} r={4} fill="hsl(44 81% 67%)" stroke="white" strokeWidth={2} filter="url(#glowDot)" />
+                <ReferenceDot x={lastPoint.month} y={lastPoint.value} r={4} fill="#C69B3C" stroke="white" strokeWidth={2} filter="url(#glowDot)" />
               )}
             </AreaChart>
           </ResponsiveContainer>
