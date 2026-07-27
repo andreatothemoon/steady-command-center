@@ -7,7 +7,6 @@ import {
   Wallet,
   Network,
   CalendarDays,
-  Receipt,
   User,
   Shield,
   ChevronLeft,
@@ -25,7 +24,6 @@ const navItems = [
   { to: "/", label: "Home", icon: Home },
   { to: "/plan", label: "Plan", icon: Compass },
   { to: "/wealth", label: "Assets", icon: Wallet },
-  { to: "/tax", label: "Tax", icon: Receipt },
 ];
 
 function SidebarContent({ collapsed, toggle, onNavigate }: { collapsed: boolean; toggle: () => void; onNavigate?: () => void }) {
