@@ -231,7 +231,8 @@ export default function LifeEventsPage() {
 
   return (
     <div className="mx-auto max-w-5xl px-4 pb-24 pt-8 md:px-8 md:pt-12">
-      <header className="mb-8 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+      <SubNav items={[{ to: "/plan", label: "Overview", end: true }, { to: "/retirement", label: "Retirement" }, { to: "/life-events", label: "Life events" }]} />
+      <header className="mb-8 mt-6 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
             Household journey
