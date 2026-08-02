@@ -24,7 +24,6 @@ import NextLifeEventTile from "@/components/home/pillars/NextLifeEventTile";
 import AssetsBreakdownRow from "@/components/home/AssetsBreakdownRow";
 import HouseholdWealthTile from "@/components/home/pillars/HouseholdWealthTile";
 import RetirementTile from "@/components/home/pillars/RetirementTile";
-import TaxTile from "@/components/home/pillars/TaxTile";
 import type { MemberANI } from "@/types/tax";
 
 

@@ -4,7 +4,6 @@ const ALL_TOGGLEABLE_PAGES = [
   { key: "accounts", label: "Accounts", path: "/accounts" },
   { key: "contributions", label: "Contributions", path: "/contributions" },
   { key: "documents", label: "Documents", path: "/documents" },
-  { key: "tax", label: "Tax", path: "/tax" },
   { key: "retirement", label: "Retirement", path: "/retirement" },
   { key: "db-pensions", label: "DB Pensions", path: "/db-pensions" },
 ] as const;
