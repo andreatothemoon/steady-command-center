@@ -24,7 +24,6 @@ import NextLifeEventTile from "@/components/home/pillars/NextLifeEventTile";
 import AssetsBreakdownRow from "@/components/home/AssetsBreakdownRow";
 import HouseholdWealthTile from "@/components/home/pillars/HouseholdWealthTile";
 import RetirementTile from "@/components/home/pillars/RetirementTile";
-import TaxTile from "@/components/home/pillars/TaxTile";
 import type { MemberANI } from "@/types/tax";
 
 
@@ -174,9 +173,8 @@ export default function HomePage() {
         <WealthMapHeroTile accounts={accounts} netWorth={netWorth} />
       </motion.section>
 
-      {/* LEVEL 3 — Tax · Retirement · Household */}
-      <motion.section variants={stagger.item} className="grid grid-cols-1 gap-5 md:grid-cols-3">
-        <TaxTile memberANIs={memberANIs} isaUsed={householdIsaUsed} isaLimit={isaLimit} />
+      {/* LEVEL 3 — Retirement · Household */}
+      <motion.section variants={stagger.item} className="grid grid-cols-1 gap-5 md:grid-cols-2">
         <RetirementTile projection={projection} retireAge={retireAge} targetIncome={targetIncome} />
         <HouseholdWealthTile accounts={accounts} netWorth={netWorth} adults={adults} />
       </motion.section>
